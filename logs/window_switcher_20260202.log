@@ -1,0 +1,269 @@
+2026-02-02 00:08:39,317 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:08:39,317 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:08:39,318 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:08:39,318 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:08:39,333 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:08:39,334 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:08:39,345 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:08:39,345 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:08:39,345 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:08:39,345 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:08:39,345 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:08:39,345 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:08:39,345 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:08:39,347 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:09:06,532 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:09:06,533 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:09:06,533 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:09:06,533 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:09:06,545 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:09:06,545 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:09:06,553 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:09:06,554 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:09:06,555 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:09:06,556 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:09:06,556 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:09:06,557 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:09:06,557 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:09:06,558 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:09:07,524 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:09:07,525 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:09:07,525 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:09:07,525 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:09:07,543 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:09:07,543 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:09:07,553 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:09:07,553 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:09:07,553 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:09:07,553 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:09:07,554 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:09:07,554 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:09:07,555 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:09:07,555 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:09:24,736 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:09:24,737 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:09:24,737 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:09:24,737 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:09:24,748 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:09:24,749 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:09:24,755 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:09:24,756 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:09:24,756 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:09:24,757 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:09:24,757 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:09:24,759 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:09:24,759 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:09:24,759 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:09:25,790 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:09:25,790 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:09:25,791 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:09:25,791 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:09:25,803 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:09:25,804 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:09:25,812 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:09:25,812 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:09:25,813 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:09:25,813 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:09:25,813 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:09:25,813 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:09:25,814 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:09:25,814 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:10:11,561 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:10:11,561 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:10:11,562 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:10:11,562 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:10:11,575 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:10:11,575 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:10:11,583 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:10:11,583 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:10:11,583 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:10:11,583 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:10:11,583 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:10:11,583 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:10:11,583 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:10:11,583 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:10:12,644 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:10:12,644 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:10:12,644 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:10:12,644 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:10:12,657 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:10:12,658 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:10:12,664 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:10:12,665 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:10:12,665 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:10:12,665 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:10:12,665 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:10:12,666 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:10:12,666 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:10:12,666 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:11:24,982 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:11:24,982 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:11:24,982 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:11:24,982 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:11:24,991 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:11:24,993 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:11:24,997 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:11:24,997 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:11:24,999 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:11:24,999 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:11:24,999 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:11:24,999 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:11:25,001 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:11:25,001 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:11:31,889 [WindowSwitcher] [INFO] Using mouse position: -1179, 843
+2026-02-02 00:11:31,890 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:11:31,891 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1179,843) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:11:31,904 [WindowSwitcher] [INFO] Fetched from cache in 15ms (cache age: 1281ms, windows: 7)
+2026-02-02 00:11:31,930 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:11:34,005 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:11:34,005 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:11:34,009 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 6 monitors
+2026-02-02 00:12:49,400 [WindowSwitcher] [INFO] Using mouse position: -2013, 1299
+2026-02-02 00:12:49,401 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:12:49,401 [WindowSwitcher] [INFO] POS_CALC: mouse=(-2013,1299) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:12:49,405 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 1382ms, windows: 8)
+2026-02-02 00:12:49,419 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:12:52,571 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:12:52,571 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:12:52,577 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 6 monitors
+2026-02-02 00:13:04,176 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:13:04,176 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:13:04,176 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:13:04,176 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:13:04,186 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:13:04,188 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:13:04,192 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:13:04,192 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:13:04,194 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:13:04,194 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:13:04,194 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:13:04,194 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:13:04,196 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:13:04,196 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:13:05,788 [WindowSwitcher] [INFO] Using mouse position: -1142, 843
+2026-02-02 00:13:05,789 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:13:05,790 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1142,843) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:13:05,804 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 1743ms, windows: 8)
+2026-02-02 00:13:05,813 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:13:08,224 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:13:08,224 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:13:08,228 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 6 monitors
+2026-02-02 00:15:17,121 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:15:17,121 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:15:17,121 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:15:17,123 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:15:17,135 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:15:17,135 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:15:17,143 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:15:17,143 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:15:17,143 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:15:17,143 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:15:17,145 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:15:17,145 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:15:17,145 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:15:17,147 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:15:58,722 [WindowSwitcher] [INFO] Using mouse position: -521, 861
+2026-02-02 00:15:58,723 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:15:58,723 [WindowSwitcher] [INFO] POS_CALC: mouse=(-521,861) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:15:58,727 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 134ms, windows: 8)
+2026-02-02 00:15:58,760 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:16:07,143 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:16:07,143 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:16:07,149 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 6 monitors
+2026-02-02 00:16:08,694 [WindowSwitcher] [INFO] Deleting monitor: monitor_8a45db70
+2026-02-02 00:16:08,701 [WindowSwitcher] [INFO] Monitor monitor_8a45db70 deleted successfully
+2026-02-02 00:16:12,458 [WindowSwitcher] [INFO] Deleting monitor: monitor_ac47373a
+2026-02-02 00:16:12,464 [WindowSwitcher] [INFO] Monitor monitor_ac47373a deleted successfully
+2026-02-02 00:16:13,951 [WindowSwitcher] [INFO] Deleting monitor: monitor_799383ae
+2026-02-02 00:16:13,956 [WindowSwitcher] [INFO] Monitor monitor_799383ae deleted successfully
+2026-02-02 00:16:15,242 [WindowSwitcher] [INFO] Deleting monitor: monitor_9a4d0493
+2026-02-02 00:16:15,248 [WindowSwitcher] [INFO] Monitor monitor_9a4d0493 deleted successfully
+2026-02-02 00:16:18,630 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:16:18,630 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:16:18,645 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 4 monitors
+2026-02-02 00:16:19,758 [WindowSwitcher] [INFO] Deleting monitor: monitor_a853e65d
+2026-02-02 00:16:19,774 [WindowSwitcher] [INFO] Monitor monitor_a853e65d deleted successfully
+2026-02-02 00:16:26,571 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:16:26,571 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:16:26,586 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 3 monitors
+2026-02-02 00:17:06,273 [WindowSwitcher] [INFO] Using mouse position: -555, 887
+2026-02-02 00:17:06,274 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:17:06,275 [WindowSwitcher] [INFO] POS_CALC: mouse=(-555,887) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:17:06,279 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 1571ms, windows: 8)
+2026-02-02 00:17:06,287 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:17:09,160 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:17:09,160 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:17:09,177 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 3 monitors
+2026-02-02 00:20:18,002 [WindowSwitcher] [INFO] Using mouse position: -1279, 859
+2026-02-02 00:20:18,003 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:20:18,006 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1279,859) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:20:18,011 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 1752ms, windows: 8)
+2026-02-02 00:20:18,023 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:20:27,712 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 00:20:27,712 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 00:20:27,713 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 00:20:27,713 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 00:20:27,724 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 00:20:27,725 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 00:20:27,731 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 00:20:27,732 [WindowSwitcher] [DEBUG]   Monitor monitor_4d1cb810: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 00:20:27,732 [WindowSwitcher] [DEBUG]   Monitor monitor_77150378: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 00:20:27,733 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 00:20:27,733 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 00:20:27,733 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 00:20:27,734 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 00:20:27,735 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 00:20:37,657 [WindowSwitcher] [INFO] Using mouse position: -1525, 1009
+2026-02-02 00:20:37,658 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:20:37,658 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1525,1009) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:20:37,662 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 1365ms, windows: 8)
+2026-02-02 00:20:37,692 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:20:40,829 [WindowSwitcher] [INFO] Executing command: /monitors
+2026-02-02 00:20:40,829 [WindowSwitcher.Commands] [INFO] Executing /monitors command
+2026-02-02 00:20:40,835 [WindowSwitcher.Commands] [INFO] MonitorManagementView initialized with 3 monitors
+2026-02-02 00:20:42,382 [WindowSwitcher] [INFO] Deleting monitor: monitor_59c57a26
+2026-02-02 00:20:42,388 [WindowSwitcher] [INFO] Monitor monitor_59c57a26 deleted successfully
+2026-02-02 19:27:27,509 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260202.log ===
+2026-02-02 19:27:27,511 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-02 19:27:27,511 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260202.log
+2026-02-02 19:27:27,512 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-02 19:27:28,106 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-02 19:27:28,106 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-02 19:27:28,111 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-02 19:27:28,111 [WindowSwitcher] [DEBUG]   Monitor monitor_4d1cb810: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-02 19:27:28,112 [WindowSwitcher] [DEBUG]   Monitor monitor_77150378: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-02 19:27:28,112 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-02 19:27:28,112 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-02 19:27:28,112 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-02 19:27:28,112 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-02 19:27:28,113 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-02 22:12:19,375 [WindowSwitcher] [INFO] Using mouse position: -2116, 1131
+2026-02-02 22:12:19,377 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 22:12:19,377 [WindowSwitcher] [INFO] POS_CALC: mouse=(-2116,1131) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 22:12:19,379 [WindowSwitcher] [INFO] Fetched from cache in 4ms (cache age: 24ms, windows: 7)
+2026-02-02 22:12:19,438 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 22:12:20,352 [WindowSwitcher] [INFO] Using mouse position: -2148, 1218
+2026-02-02 22:12:20,353 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 22:12:20,353 [WindowSwitcher] [INFO] POS_CALC: mouse=(-2148,1218) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 22:12:20,356 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1002ms, windows: 7)
+2026-02-02 22:12:20,404 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 23:47:16,465 [WindowSwitcher] [INFO] Using mouse position: -1750, 1123
+2026-02-02 23:47:16,466 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 23:47:16,467 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1750,1123) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 23:47:16,470 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1612ms, windows: 7)
+2026-02-02 23:47:16,509 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 23:47:17,646 [WindowSwitcher] [INFO] Using mouse position: -1737, 1111
+2026-02-02 23:47:17,647 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 23:47:17,647 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1737,1111) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 23:47:17,660 [WindowSwitcher] [INFO] Fetched from cache in 15ms (cache age: 800ms, windows: 8)
+2026-02-02 23:47:17,687 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 23:47:18,489 [WindowSwitcher] [INFO] Using mouse position: -1737, 1111
+2026-02-02 23:47:18,490 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 23:47:18,491 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1737,1111) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 23:47:18,496 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 1635ms, windows: 8)
+2026-02-02 23:47:18,525 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 23:47:19,295 [WindowSwitcher] [INFO] Using mouse position: -1737, 1111
+2026-02-02 23:47:19,296 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 23:47:19,296 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1737,1111) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 23:47:19,300 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 422ms, windows: 8)
+2026-02-02 23:47:19,332 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)

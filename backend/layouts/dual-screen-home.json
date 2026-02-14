@@ -1,0 +1,94 @@
+{
+  "name": "Dual Screen Home",
+  "description": "Layout with 2 screens",
+  "version": "1.0",
+  "screen_requirements": {
+    "total_screens": 2,
+    "screens": [
+      {
+        "display_number": 1,
+        "orientation": "vertical",
+        "description": "Vertical screen - \\\\.\\DISPLAY1 (1080×1920)"
+      },
+      {
+        "display_number": 2,
+        "orientation": "horizontal",
+        "description": "Horizontal screen - \\\\.\\DISPLAY2 (1920×1080)"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "rule_id": "rule_b243a7be",
+      "match_type": "exe",
+      "match_value": "wezterm-gui.exe",
+      "target_display": 2,
+      "fullscreen": true,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_01358c03",
+      "match_type": "exe",
+      "match_value": "explorer.exe",
+      "target_display": 2,
+      "fullscreen": false,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_27f4d7fa",
+      "match_type": "exe",
+      "match_value": "vivaldi.exe",
+      "target_display": 1,
+      "fullscreen": true,
+      "maximize": false
+    },
+    {
+      "rule_id": "rule_4e389e3e",
+      "match_type": "exe",
+      "match_value": "olk.exe",
+      "target_display": 2,
+      "fullscreen": false,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_37b6c00f",
+      "match_type": "exe",
+      "match_value": "Code.exe",
+      "target_display": 2,
+      "fullscreen": true,
+      "maximize": false
+    },
+    {
+      "rule_id": "rule_ceaba664",
+      "match_type": "exe",
+      "match_value": "OUTLOOK.EXE",
+      "target_display": 2,
+      "fullscreen": true,
+      "maximize": false
+    },
+    {
+      "rule_id": "rule_6f9442ad",
+      "match_type": "exe",
+      "match_value": "msedge.exe",
+      "target_display": 2,
+      "fullscreen": true,
+      "maximize": false
+    },
+    {
+      "rule_id": "rule_5b16e291",
+      "match_type": "exe",
+      "match_value": "WindowsTerminal.exe",
+      "target_display": 2,
+      "fullscreen": true,
+      "maximize": false
+    }
+  ],
+  "metadata": {
+    "created": "2026-02-02T14:05:12.557031",
+    "author": "screeny",
+    "tags": [
+      "vertical",
+      "horizontal"
+    ]
+  }
+}

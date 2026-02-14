@@ -1,0 +1,22 @@
+2026-02-14 13:31:47,317 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260214.log ===
+2026-02-14 13:31:47,317 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-14 13:31:47,317 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260214.log
+2026-02-14 13:31:47,317 [WindowSwitcher] [INFO] Pre-warming HTTP connection (attempt 1/10)...
+2026-02-14 13:31:47,330 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-14 13:31:47,330 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-14 13:31:47,337 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-14 13:31:47,337 [WindowSwitcher] [DEBUG]   Monitor monitor_e936f43e: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-14 13:31:47,337 [WindowSwitcher] [DEBUG]   Monitor monitor_7a122ffa: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-14 13:31:47,337 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] Registered command: /layouts
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] Registered command: /screen-config
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] Registered command: /windows
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] Registered command: /settings
+2026-02-14 13:31:47,337 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-14 13:31:47,339 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-14 13:31:47,361 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-14 13:31:47,361 [WindowSwitcher] [INFO] Auto-activating default layout: dual-screen-home
+2026-02-14 13:31:47,368 [WindowSwitcher] [ERROR] Failed to activate layout: Screen configuration doesn't match layout requirements: DISPLAY1 is horizontal, but layout needs vertical
+2026-02-14 13:31:47,368 [WindowSwitcher] [WARNING] Failed to activate default layout: Screen configuration doesn't match layout requirements: DISPLAY1 is horizontal, but layout needs vertical

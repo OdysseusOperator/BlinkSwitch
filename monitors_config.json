@@ -1,0 +1,77 @@
+{
+  "known_monitors": [
+    {
+      "name": "\\\\.\\DISPLAY2 (3840×2160)",
+      "width": 3840,
+      "height": 2160,
+      "x": -3840,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY2_3840x2160",
+        "secondary": "3840x2160"
+      },
+      "id": "monitor_4d1cb810",
+      "first_detected": "2026-02-02T00:16:08.705488",
+      "connected": true
+    },
+    {
+      "name": "\\\\.\\DISPLAY1 (1080×1920)",
+      "width": 1080,
+      "height": 1920,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY1_1080x1920",
+        "secondary": "1080x1920"
+      },
+      "id": "monitor_77150378",
+      "first_detected": "2026-02-02T00:16:12.468525",
+      "connected": true
+    },
+    {
+      "name": "\\\\.\\DISPLAY1 (900×1440)",
+      "width": 900,
+      "height": 1440,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY1_900x1440",
+        "secondary": "900x1440"
+      },
+      "id": "monitor_4671ed2d",
+      "first_detected": "2026-02-03T18:59:32.999596"
+    },
+    {
+      "name": "\\\\.\\DISPLAY2 (1440×900)",
+      "width": 1440,
+      "height": 900,
+      "x": -1440,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY2_1440x900",
+        "secondary": "1440x900"
+      },
+      "id": "monitor_5923ac5e",
+      "first_detected": "2026-02-03T18:59:53.039136"
+    },
+    {
+      "name": "\\\\.\\DISPLAY2 (1920×1080)",
+      "width": 1920,
+      "height": 1080,
+      "x": -1920,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY2_1920x1080",
+        "secondary": "1920x1080"
+      },
+      "id": "monitor_755c2513",
+      "first_detected": "2026-02-07T16:01:27.576256"
+    }
+  ],
+  "application_rules": []
+}

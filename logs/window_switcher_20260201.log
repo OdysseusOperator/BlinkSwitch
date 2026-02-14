@@ -1,0 +1,30 @@
+2026-02-01 14:56:54,878 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260201.log ===
+2026-02-01 14:56:54,879 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-01 14:56:54,879 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260201.log
+2026-02-01 14:56:54,879 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-01 14:56:55,503 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-01 14:56:55,503 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-01 14:56:55,512 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-01 14:56:55,515 [WindowSwitcher] [DEBUG]   Monitor monitor_8a45db70: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-01 14:56:55,515 [WindowSwitcher] [DEBUG]   Monitor monitor_ac47373a: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-01 14:56:55,516 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-01 19:42:16,382 [WindowSwitcher] [INFO] Using mouse position: -1284, 916
+2026-02-01 19:42:16,382 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-01 19:42:16,384 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1284,916) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-01 19:42:16,386 [WindowSwitcher] [INFO] Fetched from cache in 4ms (cache age: 2024ms, windows: 6)
+2026-02-01 19:42:16,439 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:02:08,470 [WindowSwitcher] [INFO] Using mouse position: -1201, 926
+2026-02-02 00:02:08,476 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 659ms, windows: 9)
+2026-02-02 00:02:08,481 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:02:08,481 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1201,926) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:02:08,563 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:02:09,984 [WindowSwitcher] [INFO] Using mouse position: -1201, 926
+2026-02-02 00:02:09,986 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 2.25
+2026-02-02 00:02:09,987 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1201,926) monitor_1={pos=(-3840.0,0.0), size=(3840x2160)} window={logical=(720x420), actual=(1620x945), dpi_scale=2.25} final_pos=(-2730,607)
+2026-02-02 00:02:09,990 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 148ms, windows: 9)
+2026-02-02 00:02:10,059 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-2730,607), expected_size=(1620x945)
+2026-02-02 00:06:56,810 [WindowSwitcher] [INFO] Using mouse position: 326, 1891
+2026-02-02 00:06:56,811 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-02 00:06:56,811 [WindowSwitcher] [INFO] POS_CALC: mouse=(326,1891) monitor_0={pos=(0.0,0.0), size=(1080x1920)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(180,750)
+2026-02-02 00:06:56,815 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 938ms, windows: 6)
+2026-02-02 00:06:56,944 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(180,750), expected_size=(720x420)

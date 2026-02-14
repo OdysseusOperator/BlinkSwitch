@@ -1,0 +1,95 @@
+{
+  "known_monitors": [
+    {
+      "name": "\\\\.\\DISPLAY1 (1080\u00d71920)",
+      "width": 1080,
+      "height": 1920,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY1_1080x1920",
+        "secondary": "1080x1920"
+      },
+      "id": "monitor_af72b14b",
+      "first_detected": "2026-02-02T12:10:05.608482",
+      "connected": true
+    },
+    {
+      "name": "\\\\.\\DISPLAY2 (1920\u00d71080)",
+      "width": 1920,
+      "height": 1080,
+      "x": -1920,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY2_1920x1080",
+        "secondary": "1920x1080"
+      },
+      "id": "monitor_892be5c9",
+      "first_detected": "2026-02-02T12:10:06.103987",
+      "connected": true
+    }
+  ],
+  "application_rules": [
+    {
+      "match_type": "exe",
+      "match_value": "Taskmgr.exe",
+      "target_monitor_id": "monitor_892be5c9",
+      "fullscreen": false,
+      "maximize": true,
+      "enabled": false,
+      "rule_id": "rule_905bcb04"
+    },
+    {
+      "match_type": "exe",
+      "match_value": "Code.exe",
+      "target_monitor_id": "monitor_af72b14b",
+      "fullscreen": false,
+      "maximize": true,
+      "enabled": false,
+      "_from_layout": "Vertical + Horizontal",
+      "rule_id": "rule_fd443dcb"
+    },
+    {
+      "match_type": "exe",
+      "match_value": "WindowsTerminal.exe",
+      "target_monitor_id": "monitor_af72b14b",
+      "fullscreen": false,
+      "maximize": false,
+      "enabled": false,
+      "_from_layout": "Vertical + Horizontal",
+      "rule_id": "rule_1066eab8"
+    },
+    {
+      "match_type": "exe",
+      "match_value": "vivaldi.exe",
+      "target_monitor_id": "monitor_892be5c9",
+      "fullscreen": true,
+      "maximize": false,
+      "enabled": false,
+      "_from_layout": "Vertical + Horizontal",
+      "rule_id": "rule_fb9bf1f9"
+    },
+    {
+      "match_type": "exe",
+      "match_value": "chrome.exe",
+      "target_monitor_id": "monitor_892be5c9",
+      "fullscreen": true,
+      "maximize": false,
+      "enabled": false,
+      "_from_layout": "Vertical + Horizontal",
+      "rule_id": "rule_e6e315ad"
+    },
+    {
+      "match_type": "exe",
+      "match_value": "wezterm-gui.exe",
+      "target_monitor_id": "monitor_892be5c9",
+      "fullscreen": true,
+      "maximize": true,
+      "enabled": true,
+      "rule_id": "rule_b243a7be",
+      "_from_layout": "Dual Screen Home"
+    }
+  ]
+}

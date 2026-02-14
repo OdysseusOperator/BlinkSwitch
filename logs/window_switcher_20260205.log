@@ -1,0 +1,14 @@
+2026-02-05 02:41:39,274 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260205.log ===
+2026-02-05 02:41:39,276 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-05 02:41:39,278 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260205.log
+2026-02-05 02:41:39,278 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-05 02:41:40,327 [WindowSwitcher] [WARNING] Could not pre-warm connection: HTTPConnectionPool(host='127.0.0.1', port=5555): Read timed out. (read timeout=1)
+2026-02-05 02:41:40,330 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-05 02:41:40,838 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-05 02:41:40,839 [WindowSwitcher] [DEBUG]   Monitor monitor_4d1cb810: pos=(-3840,0), size=(3840x2160), dpi_scale=2.25
+2026-02-05 02:41:40,840 [WindowSwitcher] [DEBUG]   Monitor monitor_77150378: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-05 02:41:40,840 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-05 02:41:40,841 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-05 02:41:40,841 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-05 02:41:40,842 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-05 02:41:40,843 [WindowSwitcher] [INFO] Built-in commands registered

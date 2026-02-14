@@ -1,0 +1,917 @@
+2026-02-04 23:35:20,046 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log ===
+2026-02-04 23:35:20,046 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-04 23:35:20,047 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log
+2026-02-04 23:35:20,048 [WindowSwitcher] [INFO] Pre-warming HTTP connection (attempt 1/10)...
+2026-02-04 23:35:20,053 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-04 23:35:20,053 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-04 23:35:20,053 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-04 23:35:20,064 [WindowSwitcher] [DEBUG]   Monitor monitor_7a122ffa: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-04 23:35:20,064 [WindowSwitcher] [DEBUG]   Monitor monitor_0ec6d598: pos=(-1920,0), size=(1920x1080), dpi_scale=1.0
+2026-02-04 23:35:20,064 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-04 23:35:20,064 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-04 23:35:20,064 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-04 23:35:20,064 [WindowSwitcher.Commands] [INFO] Registered command: /layouts
+2026-02-04 23:35:20,064 [WindowSwitcher.Commands] [INFO] Registered command: /screen-config
+2026-02-04 23:35:20,066 [WindowSwitcher.Commands] [INFO] Registered command: /windows
+2026-02-04 23:35:20,066 [WindowSwitcher.Commands] [INFO] Registered command: /settings
+2026-02-04 23:35:20,066 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-04 23:35:20,067 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-04 23:35:20,095 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:35:20,105 [WindowSwitcher] [INFO] Auto-activating default layout: dual-screen-home
+2026-02-04 23:35:20,182 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:35:20,183 [WindowSwitcher] [INFO] Default layout activated successfully: dual-screen-home
+2026-02-04 23:35:28,962 [WindowSwitcher] [INFO] Using mouse position: -1395, 218
+2026-02-04 23:35:28,964 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:35:28,965 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1395,218) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:35:28,971 [WindowSwitcher] [INFO] Fetched from cache in 9ms (cache age: 208ms, windows: 8)
+2026-02-04 23:35:29,021 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:35:30,670 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-04 23:35:30,671 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-04 23:35:30,690 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:35:30,707 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-04 23:35:31,321 [WindowSwitcher] [INFO] Layout deactivation result: {'deactivated': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' deactivated successfully", 'success': True}
+2026-02-04 23:35:31,331 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:35:39,518 [WindowSwitcher] [INFO] Using mouse position: -1395, 218
+2026-02-04 23:35:39,520 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:35:39,520 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1395,218) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:35:39,525 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 715ms, windows: 8)
+2026-02-04 23:35:39,574 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:35:50,967 [WindowSwitcher] [INFO] Using mouse position: -1161, 782
+2026-02-04 23:35:50,969 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:35:50,970 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1161,782) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:35:50,975 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 131ms, windows: 8)
+2026-02-04 23:35:51,020 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:35:54,290 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-04 23:35:54,290 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-04 23:35:54,306 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:35:54,322 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-04 23:35:55,016 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:35:55,033 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:36:00,833 [WindowSwitcher] [INFO] Using mouse position: -1076, 495
+2026-02-04 23:36:00,834 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:36:00,835 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1076,495) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:36:00,840 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 1983ms, windows: 8)
+2026-02-04 23:36:00,879 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:36:03,889 [WindowSwitcher] [INFO] Using mouse position: -1077, 500
+2026-02-04 23:36:03,891 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:36:03,892 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1077,500) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:36:03,898 [WindowSwitcher] [INFO] Fetched from cache in 9ms (cache age: 1001ms, windows: 8)
+2026-02-04 23:36:03,947 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:36:06,053 [WindowSwitcher] [INFO] Using mouse position: -1078, 500
+2026-02-04 23:36:06,055 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:36:06,056 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1078,500) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:36:06,071 [WindowSwitcher] [INFO] Fetched from cache in 18ms (cache age: 989ms, windows: 8)
+2026-02-04 23:36:06,098 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:36:08,106 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:36:08,107 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:36:20,189 [WindowSwitcher] [INFO] Using mouse position: -1550, 165
+2026-02-04 23:36:20,192 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:36:20,193 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1550,165) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:36:20,198 [WindowSwitcher] [INFO] Fetched from cache in 10ms (cache age: 1009ms, windows: 8)
+2026-02-04 23:36:20,248 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:36:23,110 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:36:23,111 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:38:34,450 [WindowSwitcher] [INFO] Using mouse position: -1592, 282
+2026-02-04 23:38:34,452 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:38:34,454 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1592,282) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:38:34,457 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 460ms, windows: 8)
+2026-02-04 23:38:34,482 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:42:16,934 [WindowSwitcher] [INFO] Using mouse position: -1592, 282
+2026-02-04 23:42:16,937 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:42:16,937 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1592,282) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:42:16,983 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:42:17,438 [WindowSwitcher] [WARNING] Cache API unavailable after 504ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b65c790>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:42:17,439 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:42:18,160 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-04 23:42:18,160 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-04 23:42:18,468 [WindowSwitcher] [INFO] Fallback completed in 1029ms
+2026-02-04 23:42:19,163 [WindowSwitcher] [WARNING] Failed to fetch layouts: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/layouts (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x22764cc6b90>, 'Connection to 127.0.0.1 timed out. (connect timeout=1.0)'))
+2026-02-04 23:42:20,165 [WindowSwitcher] [WARNING] Failed to get active layout: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/layouts/active (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x22764cc6050>, 'Connection to 127.0.0.1 timed out. (connect timeout=1.0)'))
+2026-02-04 23:42:20,165 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 0 layouts
+2026-02-04 23:42:23,557 [WindowSwitcher] [INFO] Executing command: /windows
+2026-02-04 23:42:23,557 [WindowSwitcher.Commands] [INFO] Executing /windows command
+2026-02-04 23:42:24,560 [WindowSwitcher] [WARNING] Failed to fetch windows: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b638990>, 'Connection to 127.0.0.1 timed out. (connect timeout=1.0)'))
+2026-02-04 23:42:25,562 [WindowSwitcher] [WARNING] Failed to get active layout: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/layouts/active (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x22764c42b50>, 'Connection to 127.0.0.1 timed out. (connect timeout=1.0)'))
+2026-02-04 23:42:25,563 [WindowSwitcher.Commands] [INFO] WindowsView initialized with 0 windows, active_layout: None
+2026-02-04 23:42:29,522 [WindowSwitcher] [WARNING] Failed to fetch settings: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/settings (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b6652d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=1.0)'))
+2026-02-04 23:42:33,205 [WindowSwitcher] [INFO] Using mouse position: 786, 1755
+2026-02-04 23:42:33,207 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:42:33,208 [WindowSwitcher] [INFO] POS_CALC: mouse=(786,1755) monitor_0={pos=(0.0,0.0), size=(1080x1920)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(180,750)
+2026-02-04 23:42:33,263 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(180,750), expected_size=(720x420)
+2026-02-04 23:42:33,708 [WindowSwitcher] [WARNING] Cache API unavailable after 504ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b668450>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:42:33,709 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:42:34,785 [WindowSwitcher] [INFO] Fallback completed in 1075ms
+2026-02-04 23:42:38,862 [WindowSwitcher] [INFO] Using mouse position: -475, 914
+2026-02-04 23:42:38,863 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:42:38,864 [WindowSwitcher] [INFO] POS_CALC: mouse=(-475,914) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:42:38,903 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:42:39,364 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b6560d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:42:39,365 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:42:40,406 [WindowSwitcher] [INFO] Fallback completed in 1041ms
+2026-02-04 23:42:41,794 [WindowSwitcher] [WARNING] Failed to fetch settings: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/settings (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b64ea50>, 'Connection to 127.0.0.1 timed out. (connect timeout=1.0)'))
+2026-02-04 23:42:47,377 [WindowSwitcher] [INFO] Using mouse position: -1322, 439
+2026-02-04 23:42:47,379 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:42:47,380 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1322,439) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:42:47,413 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:42:47,880 [WindowSwitcher] [WARNING] Cache API unavailable after 503ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b65b950>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:42:47,880 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:42:48,919 [WindowSwitcher] [INFO] Fallback completed in 1038ms
+2026-02-04 23:42:50,991 [WindowSwitcher] [INFO] Using mouse position: -1305, 451
+2026-02-04 23:42:50,993 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:42:50,993 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1305,451) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:42:51,039 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:42:51,494 [WindowSwitcher] [WARNING] Cache API unavailable after 504ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b66d550>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:42:51,495 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:42:52,512 [WindowSwitcher] [INFO] Fallback completed in 1017ms
+2026-02-04 23:42:55,507 [WindowSwitcher] [INFO] Using mouse position: 577, 1419
+2026-02-04 23:42:55,510 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:42:55,510 [WindowSwitcher] [INFO] POS_CALC: mouse=(577,1419) monitor_0={pos=(0.0,0.0), size=(1080x1920)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(180,750)
+2026-02-04 23:42:55,552 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(180,750), expected_size=(720x420)
+2026-02-04 23:42:56,010 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b65d810>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:42:56,010 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:42:57,054 [WindowSwitcher] [INFO] Fallback completed in 1043ms
+2026-02-04 23:43:38,452 [WindowSwitcher] [INFO] Using mouse position: -523, 888
+2026-02-04 23:43:38,453 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:43:38,453 [WindowSwitcher] [INFO] POS_CALC: mouse=(-523,888) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:43:38,472 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:43:38,954 [WindowSwitcher] [WARNING] Cache API unavailable after 503ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x22764c49ed0>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:43:38,955 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:43:40,511 [WindowSwitcher] [INFO] Fallback completed in 1556ms
+2026-02-04 23:43:51,825 [WindowSwitcher] [INFO] Using mouse position: -976, 771
+2026-02-04 23:43:51,826 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:43:51,827 [WindowSwitcher] [INFO] POS_CALC: mouse=(-976,771) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:43:51,836 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:43:52,328 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x2275b669f10>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:43:52,328 [WindowSwitcher] [INFO] Falling back to direct window enumeration
+2026-02-04 23:43:53,363 [WindowSwitcher] [INFO] Fallback completed in 1034ms
+2026-02-04 23:46:59,846 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log ===
+2026-02-04 23:46:59,846 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-04 23:46:59,846 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log
+2026-02-04 23:46:59,846 [WindowSwitcher] [INFO] Pre-warming HTTP connection (attempt 1/10)...
+2026-02-04 23:46:59,877 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-04 23:46:59,877 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-04 23:46:59,895 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-04 23:46:59,895 [WindowSwitcher] [DEBUG]   Monitor monitor_7a122ffa: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-04 23:46:59,895 [WindowSwitcher] [DEBUG]   Monitor monitor_0ec6d598: pos=(-1920,0), size=(1920x1080), dpi_scale=1.0
+2026-02-04 23:46:59,895 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-04 23:46:59,895 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-04 23:46:59,895 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-04 23:46:59,900 [WindowSwitcher.Commands] [INFO] Registered command: /layouts
+2026-02-04 23:46:59,900 [WindowSwitcher.Commands] [INFO] Registered command: /screen-config
+2026-02-04 23:46:59,900 [WindowSwitcher.Commands] [INFO] Registered command: /windows
+2026-02-04 23:46:59,900 [WindowSwitcher.Commands] [INFO] Registered command: /settings
+2026-02-04 23:46:59,900 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-04 23:46:59,901 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-04 23:46:59,926 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:46:59,927 [WindowSwitcher] [INFO] Auto-activating default layout: dual-screen-home
+2026-02-04 23:46:59,990 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:46:59,990 [WindowSwitcher] [INFO] Default layout activated successfully: dual-screen-home
+2026-02-04 23:47:02,454 [WindowSwitcher] [INFO] Using mouse position: -1308, 280
+2026-02-04 23:47:02,456 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:47:02,457 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1308,280) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:47:02,462 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 1374ms, windows: 8)
+2026-02-04 23:47:02,521 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:47:04,105 [WindowSwitcher] [INFO] Using mouse position: -1308, 280
+2026-02-04 23:47:04,108 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:47:04,108 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1308,280) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:47:04,123 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 1006ms, windows: 8)
+2026-02-04 23:47:04,150 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:47:05,126 [WindowSwitcher] [INFO] Using mouse position: -1308, 280
+2026-02-04 23:47:05,128 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:47:05,128 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1308,280) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:47:05,143 [WindowSwitcher] [INFO] Fetched from cache in 18ms (cache age: 22ms, windows: 8)
+2026-02-04 23:47:05,168 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:47:06,133 [WindowSwitcher] [INFO] Using mouse position: -1308, 280
+2026-02-04 23:47:06,134 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:47:06,135 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1308,280) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:47:06,153 [WindowSwitcher] [INFO] Fetched from cache in 20ms (cache age: 1030ms, windows: 8)
+2026-02-04 23:47:06,183 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:47:08,466 [WindowSwitcher] [INFO] Using mouse position: -1494, 161
+2026-02-04 23:47:08,467 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:47:08,468 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1494,161) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:47:08,484 [WindowSwitcher] [INFO] Fetched from cache in 18ms (cache age: 1360ms, windows: 8)
+2026-02-04 23:47:08,509 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:47:13,896 [WindowSwitcher] [INFO] Using mouse position: -1421, 67
+2026-02-04 23:47:13,898 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:47:13,898 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1421,67) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:47:13,903 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 724ms, windows: 8)
+2026-02-04 23:47:13,936 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:47:16,958 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:47:16,970 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:48:51,323 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:48:51,325 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:48:51,325 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:48:51,329 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 71ms, windows: 8)
+2026-02-04 23:48:51,348 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:48:52,803 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:48:52,804 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:49:03,216 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log ===
+2026-02-04 23:49:03,216 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-04 23:49:03,216 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log
+2026-02-04 23:49:03,216 [WindowSwitcher] [INFO] Pre-warming HTTP connection (attempt 1/10)...
+2026-02-04 23:49:03,229 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-04 23:49:03,229 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-04 23:49:03,240 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-04 23:49:03,240 [WindowSwitcher] [DEBUG]   Monitor monitor_7a122ffa: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-04 23:49:03,241 [WindowSwitcher] [DEBUG]   Monitor monitor_0ec6d598: pos=(-1920,0), size=(1920x1080), dpi_scale=1.0
+2026-02-04 23:49:03,241 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-04 23:49:03,241 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-04 23:49:03,241 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-04 23:49:03,242 [WindowSwitcher.Commands] [INFO] Registered command: /layouts
+2026-02-04 23:49:03,242 [WindowSwitcher.Commands] [INFO] Registered command: /screen-config
+2026-02-04 23:49:03,242 [WindowSwitcher.Commands] [INFO] Registered command: /windows
+2026-02-04 23:49:03,242 [WindowSwitcher.Commands] [INFO] Registered command: /settings
+2026-02-04 23:49:03,242 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-04 23:49:03,242 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-04 23:49:03,248 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:49:03,249 [WindowSwitcher] [INFO] Auto-activating default layout: dual-screen-home
+2026-02-04 23:49:03,324 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:49:03,325 [WindowSwitcher] [INFO] Default layout activated successfully: dual-screen-home
+2026-02-04 23:49:34,306 [WindowSwitcher] [INFO] Using mouse position: -648, 635
+2026-02-04 23:49:34,308 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:49:34,309 [WindowSwitcher] [INFO] POS_CALC: mouse=(-648,635) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:49:34,313 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 687ms, windows: 8)
+2026-02-04 23:49:34,359 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:49:37,138 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:49:37,153 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:49:55,517 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:49:55,519 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:49:55,520 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:49:55,526 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 1724ms, windows: 8)
+2026-02-04 23:49:55,571 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:49:57,569 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-04 23:49:57,569 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-04 23:49:57,575 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:49:57,581 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-04 23:49:58,215 [WindowSwitcher] [INFO] Layout deactivation result: {'deactivated': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' deactivated successfully", 'success': True}
+2026-02-04 23:49:58,233 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:49:59,037 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:49:59,048 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:51:46,177 [WindowSwitcher] [INFO] Using mouse position: -1360, 349
+2026-02-04 23:51:46,180 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:51:46,180 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1360,349) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:51:46,183 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1669ms, windows: 8)
+2026-02-04 23:51:46,211 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:51:47,347 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-04 23:51:47,347 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-04 23:51:47,367 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:51:47,372 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-04 23:51:56,927 [WindowSwitcher] [INFO] Using mouse position: -1360, 349
+2026-02-04 23:51:56,929 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:51:56,930 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1360,349) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:51:56,933 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 354ms, windows: 8)
+2026-02-04 23:51:56,967 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:00,755 [WindowSwitcher] [INFO] Executing command: /windows
+2026-02-04 23:52:00,755 [WindowSwitcher.Commands] [INFO] Executing /windows command
+2026-02-04 23:52:00,762 [WindowSwitcher] [INFO] Fetched 8 windows
+2026-02-04 23:52:00,769 [WindowSwitcher] [ERROR] Command execution failed: No module named 'window_stuff'
+2026-02-04 23:52:01,599 [WindowSwitcher] [INFO] Executing command: /windows
+2026-02-04 23:52:01,599 [WindowSwitcher.Commands] [INFO] Executing /windows command
+2026-02-04 23:52:01,616 [WindowSwitcher] [INFO] Fetched 8 windows
+2026-02-04 23:52:01,629 [WindowSwitcher] [ERROR] Command execution failed: No module named 'window_stuff'
+2026-02-04 23:52:07,074 [WindowSwitcher] [INFO] Using mouse position: -1710, 79
+2026-02-04 23:52:07,076 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:07,076 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1710,79) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:07,082 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 441ms, windows: 8)
+2026-02-04 23:52:07,111 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:09,063 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:52:09,064 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:52:21,544 [WindowSwitcher] [INFO] Using mouse position: -744, 152
+2026-02-04 23:52:21,546 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:21,546 [WindowSwitcher] [INFO] POS_CALC: mouse=(-744,152) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:21,563 [WindowSwitcher] [INFO] Fetched from cache in 18ms (cache age: 798ms, windows: 8)
+2026-02-04 23:52:21,567 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:23,329 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:52:23,330 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:52:48,570 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:52:48,573 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:48,573 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:48,579 [WindowSwitcher] [INFO] Fetched from cache in 9ms (cache age: 1513ms, windows: 8)
+2026-02-04 23:52:48,611 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:49,656 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:52:49,656 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:49,657 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:49,665 [WindowSwitcher] [INFO] Fetched from cache in 10ms (cache age: 592ms, windows: 8)
+2026-02-04 23:52:49,710 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:56,142 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:52:56,145 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:56,146 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:56,187 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:56,646 [WindowSwitcher] [WARNING] Cache API unavailable after 506ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Read timed out. (read timeout=0.5)
+2026-02-04 23:52:56,646 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-04 23:52:57,862 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:52:57,865 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:57,865 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:57,870 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 1372ms, windows: 8)
+2026-02-04 23:52:57,908 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:52:58,646 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:52:58,648 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:52:58,649 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:52:58,655 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 103ms, windows: 8)
+2026-02-04 23:52:58,684 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:53:01,642 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:53:01,646 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:53:01,647 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:53:01,655 [WindowSwitcher] [INFO] Fetched from cache in 13ms (cache age: 1098ms, windows: 8)
+2026-02-04 23:53:01,688 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:53:02,628 [WindowSwitcher] [INFO] Using mouse position: -964, 545
+2026-02-04 23:53:02,632 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:53:02,634 [WindowSwitcher] [INFO] POS_CALC: mouse=(-964,545) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:53:02,657 [WindowSwitcher] [INFO] Fetched from cache in 29ms (cache age: 82ms, windows: 8)
+2026-02-04 23:53:02,692 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:53:47,725 [WindowSwitcher] [INFO] Using mouse position: -681, 242
+2026-02-04 23:53:47,726 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:53:47,727 [WindowSwitcher] [INFO] POS_CALC: mouse=(-681,242) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:53:47,739 [WindowSwitcher] [INFO] Fetched from cache in 14ms (cache age: 1323ms, windows: 8)
+2026-02-04 23:53:47,777 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:53:49,586 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:53:49,587 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:54:43,763 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log ===
+2026-02-04 23:54:43,763 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-04 23:54:43,764 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\frontend\logs\window_switcher_20260204.log
+2026-02-04 23:54:43,764 [WindowSwitcher] [INFO] Pre-warming HTTP connection (attempt 1/10)...
+2026-02-04 23:54:43,773 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-04 23:54:43,773 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-04 23:54:43,801 [WindowSwitcher] [INFO] Fetched 2 monitors with DPI info
+2026-02-04 23:54:43,802 [WindowSwitcher] [DEBUG]   Monitor monitor_7a122ffa: pos=(0,0), size=(1080x1920), dpi_scale=1.0
+2026-02-04 23:54:43,803 [WindowSwitcher] [DEBUG]   Monitor monitor_0ec6d598: pos=(-1920,0), size=(1920x1080), dpi_scale=1.0
+2026-02-04 23:54:43,803 [WindowSwitcher] [INFO] Cached 2 monitors locally
+2026-02-04 23:54:43,803 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-04 23:54:43,803 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-04 23:54:43,804 [WindowSwitcher.Commands] [INFO] Registered command: /layouts
+2026-02-04 23:54:43,804 [WindowSwitcher.Commands] [INFO] Registered command: /screen-config
+2026-02-04 23:54:43,804 [WindowSwitcher.Commands] [INFO] Registered command: /windows
+2026-02-04 23:54:43,804 [WindowSwitcher.Commands] [INFO] Registered command: /settings
+2026-02-04 23:54:43,804 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-04 23:54:43,804 [WindowSwitcher] [INFO] Built-in commands registered
+2026-02-04 23:54:43,832 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:54:43,832 [WindowSwitcher] [INFO] Auto-activating default layout: dual-screen-home
+2026-02-04 23:54:43,913 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:54:43,914 [WindowSwitcher] [INFO] Default layout activated successfully: dual-screen-home
+2026-02-04 23:54:45,822 [WindowSwitcher] [INFO] Using mouse position: -1493, 316
+2026-02-04 23:54:45,824 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:54:45,824 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1493,316) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:54:45,827 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1441ms, windows: 8)
+2026-02-04 23:54:45,861 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:54:49,682 [WindowSwitcher] [INFO] Using mouse position: -1493, 316
+2026-02-04 23:54:49,684 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:54:49,684 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1493,316) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:54:49,700 [WindowSwitcher] [INFO] Fetched from cache in 16ms (cache age: 1265ms, windows: 8)
+2026-02-04 23:54:49,710 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:54:51,280 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:54:51,289 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:54:54,372 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:54:54,374 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:54:54,374 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:54:54,378 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 1939ms, windows: 8)
+2026-02-04 23:54:54,390 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:54:57,502 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:54:57,503 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:55:00,787 [WindowSwitcher] [INFO] Using mouse position: -686, 522
+2026-02-04 23:55:00,787 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:55:00,787 [WindowSwitcher] [INFO] POS_CALC: mouse=(-686,522) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:55:00,792 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 239ms, windows: 8)
+2026-02-04 23:55:00,800 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:55:02,481 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:55:02,481 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:55:06,073 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:55:06,073 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:55:06,073 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:55:06,078 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1093ms, windows: 8)
+2026-02-04 23:55:06,125 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:55:07,483 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:55:07,483 [WindowSwitcher] [INFO] Mouse centered on monitor at (540, 960)
+2026-02-04 23:56:18,742 [WindowSwitcher] [INFO] Using mouse position: -485, 832
+2026-02-04 23:56:18,742 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:56:18,744 [WindowSwitcher] [INFO] POS_CALC: mouse=(-485,832) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:56:18,754 [WindowSwitcher] [INFO] Fetched from cache in 11ms (cache age: 775ms, windows: 8)
+2026-02-04 23:56:18,777 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:56:20,360 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:56:20,361 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:56:27,757 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:56:27,760 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:56:27,760 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:56:27,802 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:56:28,272 [WindowSwitcher] [WARNING] Cache API unavailable after 516ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c4ba10e50>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:56:28,274 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-04 23:56:33,256 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:56:33,259 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:56:33,259 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:56:33,269 [WindowSwitcher] [INFO] Fetched from cache in 12ms (cache age: 939ms, windows: 8)
+2026-02-04 23:56:33,307 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:56:37,003 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:56:37,004 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:56:42,505 [WindowSwitcher] [INFO] Using mouse position: -1546, 137
+2026-02-04 23:56:42,507 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:56:42,507 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1546,137) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:56:42,512 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 83ms, windows: 8)
+2026-02-04 23:56:42,548 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:56:43,628 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:56:43,629 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:56:49,807 [WindowSwitcher] [INFO] Using mouse position: -798, 662
+2026-02-04 23:56:49,809 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:56:49,810 [WindowSwitcher] [INFO] POS_CALC: mouse=(-798,662) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:56:49,858 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:56:50,310 [WindowSwitcher] [WARNING] Cache API unavailable after 503ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55dfe450>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-04 23:56:50,310 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-04 23:57:00,623 [WindowSwitcher] [INFO] Using mouse position: -798, 662
+2026-02-04 23:57:00,624 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:57:00,624 [WindowSwitcher] [INFO] POS_CALC: mouse=(-798,662) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:57:00,640 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 1136ms, windows: 8)
+2026-02-04 23:57:00,657 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:57:01,691 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:57:01,692 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:57:03,087 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:57:03,089 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:57:03,089 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:57:03,093 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 1587ms, windows: 8)
+2026-02-04 23:57:03,111 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:57:04,388 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:57:04,389 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:57:04,390 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:57:04,412 [WindowSwitcher] [INFO] Fetched from cache in 24ms (cache age: 894ms, windows: 8)
+2026-02-04 23:57:04,420 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:57:05,306 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:57:05,308 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:57:05,308 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:57:05,323 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 1812ms, windows: 8)
+2026-02-04 23:57:05,332 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:57:12,285 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-04 23:57:12,287 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:57:12,287 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:57:12,290 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 763ms, windows: 8)
+2026-02-04 23:57:12,301 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:57:14,789 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:57:14,790 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-04 23:57:22,724 [WindowSwitcher] [INFO] Using mouse position: -1161, 865
+2026-02-04 23:57:22,725 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:57:22,725 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1161,865) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:57:22,729 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1181ms, windows: 8)
+2026-02-04 23:57:22,770 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:57:24,279 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-04 23:57:24,279 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-04 23:57:24,296 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:57:24,299 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-04 23:57:24,974 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-04 23:57:24,998 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-04 23:58:28,863 [WindowSwitcher] [INFO] Using mouse position: -1618, 151
+2026-02-04 23:58:28,864 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-04 23:58:28,865 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1618,151) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-04 23:58:28,879 [WindowSwitcher] [INFO] Fetched from cache in 16ms (cache age: 1659ms, windows: 8)
+2026-02-04 23:58:28,880 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-04 23:58:30,089 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-04 23:58:30,089 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:00:36,721 [WindowSwitcher] [INFO] Using mouse position: -428, 382
+2026-02-05 00:00:36,722 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:00:36,723 [WindowSwitcher] [INFO] POS_CALC: mouse=(-428,382) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:00:36,741 [WindowSwitcher] [INFO] Fetched from cache in 21ms (cache age: 608ms, windows: 8)
+2026-02-05 00:00:36,751 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:00:39,194 [WindowSwitcher] [INFO] Using mouse position: 438, 1657
+2026-02-05 00:00:39,195 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:00:39,195 [WindowSwitcher] [INFO] POS_CALC: mouse=(438,1657) monitor_0={pos=(0.0,0.0), size=(1080x1920)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(180,750)
+2026-02-05 00:00:39,199 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1066ms, windows: 8)
+2026-02-05 00:00:39,234 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(180,750), expected_size=(720x420)
+2026-02-05 00:00:53,195 [WindowSwitcher] [INFO] Using mouse position: -566, 388
+2026-02-05 00:00:53,197 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:00:53,197 [WindowSwitcher] [INFO] POS_CALC: mouse=(-566,388) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:00:53,213 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 1623ms, windows: 8)
+2026-02-05 00:00:53,215 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:00:54,695 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:00:54,696 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:00:54,707 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:00:54,712 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:00:55,961 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:00:55,977 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:01:09,144 [WindowSwitcher] [INFO] Using mouse position: -566, 388
+2026-02-05 00:01:09,146 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:01:09,146 [WindowSwitcher] [INFO] POS_CALC: mouse=(-566,388) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:01:09,159 [WindowSwitcher] [INFO] Fetched from cache in 15ms (cache age: 256ms, windows: 8)
+2026-02-05 00:01:09,163 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:01:14,275 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:01:14,275 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:01:14,291 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:01:14,305 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:01:29,950 [WindowSwitcher] [INFO] Using mouse position: -566, 388
+2026-02-05 00:01:29,952 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:01:29,952 [WindowSwitcher] [INFO] POS_CALC: mouse=(-566,388) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:01:29,955 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1476ms, windows: 8)
+2026-02-05 00:01:29,996 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:01:32,233 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:01:32,233 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:03:08,982 [WindowSwitcher] [INFO] Using mouse position: -941, 529
+2026-02-05 00:03:08,984 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:03:08,984 [WindowSwitcher] [INFO] POS_CALC: mouse=(-941,529) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:03:08,998 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:03:09,012 [WindowSwitcher] [INFO] Fetched from cache in 30ms (cache age: 1885ms, windows: 8)
+2026-02-05 00:03:11,304 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:03:11,305 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:03:32,402 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:03:32,404 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:03:32,404 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:03:32,420 [WindowSwitcher] [INFO] Fetched from cache in 18ms (cache age: 71ms, windows: 8)
+2026-02-05 00:03:32,447 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:03:33,988 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:03:33,988 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:03:34,003 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:03:34,018 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:03:34,730 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:03:34,745 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:04:12,202 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:04:12,204 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:04:12,204 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:04:12,222 [WindowSwitcher] [INFO] Fetched from cache in 20ms (cache age: 177ms, windows: 8)
+2026-02-05 00:04:12,275 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:04:14,812 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:04:14,813 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:05:46,662 [WindowSwitcher] [INFO] Using mouse position: -824, 382
+2026-02-05 00:05:46,664 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:05:46,664 [WindowSwitcher] [INFO] POS_CALC: mouse=(-824,382) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:05:46,669 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 861ms, windows: 8)
+2026-02-05 00:05:46,705 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:05:49,590 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:05:49,590 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:06:06,542 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:06:06,543 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:06:06,543 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:06:06,546 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 3ms, windows: 8)
+2026-02-05 00:06:06,579 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:06:08,245 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:06:08,246 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:06:08,261 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:06:08,275 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:06:09,368 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:06:09,391 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:09:00,805 [WindowSwitcher] [INFO] Using mouse position: -993, 597
+2026-02-05 00:09:00,808 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:09:00,808 [WindowSwitcher] [INFO] POS_CALC: mouse=(-993,597) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:09:00,849 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:09:01,309 [WindowSwitcher] [WARNING] Cache API unavailable after 504ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e23750>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:09:01,310 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:11:56,617 [WindowSwitcher] [INFO] Using mouse position: -1531, 271
+2026-02-05 00:11:56,617 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:11:56,617 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1531,271) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:11:56,632 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:11:57,122 [WindowSwitcher] [WARNING] Cache API unavailable after 505ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c56063650>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:11:57,122 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:15:45,121 [WindowSwitcher] [INFO] Using mouse position: -1509, 400
+2026-02-05 00:15:45,123 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:15:45,123 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1509,400) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:15:45,151 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:15:45,631 [WindowSwitcher] [WARNING] Cache API unavailable after 511ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55fa7f50>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:15:45,632 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:16:01,453 [WindowSwitcher] [INFO] Using mouse position: -1334, 295
+2026-02-05 00:16:01,455 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:16:01,455 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1334,295) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:16:01,459 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 300ms, windows: 8)
+2026-02-05 00:16:01,499 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:16:06,069 [WindowSwitcher] [INFO] Using mouse position: -1334, 295
+2026-02-05 00:16:06,071 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:16:06,071 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1334,295) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:16:06,076 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 908ms, windows: 8)
+2026-02-05 00:16:06,116 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:16:07,436 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:16:07,436 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:16:07,442 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:16:07,457 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:16:08,310 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:16:08,319 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:16:39,046 [WindowSwitcher] [INFO] Using mouse position: -893, 402
+2026-02-05 00:16:39,047 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:16:39,047 [WindowSwitcher] [INFO] POS_CALC: mouse=(-893,402) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:16:39,051 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 428ms, windows: 8)
+2026-02-05 00:16:39,084 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:16:44,172 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:16:44,173 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:17:55,989 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:17:55,991 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:17:55,991 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:17:55,995 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 889ms, windows: 8)
+2026-02-05 00:17:56,025 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:17:57,220 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:17:57,220 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:17:59,408 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:17:59,410 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:17:59,410 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:17:59,425 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 308ms, windows: 8)
+2026-02-05 00:17:59,444 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:18:00,304 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:18:00,304 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:18:07,222 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:18:07,222 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:18:07,222 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:18:07,247 [WindowSwitcher] [INFO] Fetched from cache in 25ms (cache age: 109ms, windows: 8)
+2026-02-05 00:18:07,250 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:18:09,541 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:18:09,542 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:18:26,084 [WindowSwitcher] [INFO] Using mouse position: -1506, 282
+2026-02-05 00:18:26,086 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:18:26,086 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1506,282) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:18:26,091 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 531ms, windows: 8)
+2026-02-05 00:18:26,100 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:18:27,463 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:18:27,463 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:18:27,479 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:18:27,493 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:18:28,357 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:18:28,377 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:18:47,797 [WindowSwitcher] [INFO] Using mouse position: -1149, 45
+2026-02-05 00:18:47,799 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:18:47,799 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1149,45) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:18:47,804 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 326ms, windows: 8)
+2026-02-05 00:18:47,839 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:19:28,799 [WindowSwitcher] [INFO] Using mouse position: -1055, 626
+2026-02-05 00:19:28,801 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:19:28,801 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1055,626) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:19:28,805 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 31ms, windows: 8)
+2026-02-05 00:19:28,837 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:19:36,286 [WindowSwitcher] [INFO] Using mouse position: -1076, 572
+2026-02-05 00:19:36,289 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:19:36,289 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1076,572) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:19:36,327 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:19:36,789 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e55f50>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:19:36,789 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:19:40,339 [WindowSwitcher] [INFO] Using mouse position: -1076, 573
+2026-02-05 00:19:40,340 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:19:40,340 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1076,573) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:19:40,346 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 1503ms, windows: 8)
+2026-02-05 00:19:40,359 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:19:41,908 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:19:41,909 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:21:15,682 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:21:15,684 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:21:15,685 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:21:15,689 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 1209ms, windows: 8)
+2026-02-05 00:21:15,712 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:21:16,830 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:21:16,830 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:21:27,495 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:21:27,497 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:21:27,497 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:21:27,504 [WindowSwitcher] [INFO] Fetched from cache in 9ms (cache age: 682ms, windows: 8)
+2026-02-05 00:21:27,547 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:21:29,148 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:21:29,148 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:21:29,165 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:21:29,168 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:21:29,900 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:21:29,913 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:22:01,044 [WindowSwitcher] [INFO] Using mouse position: -809, 233
+2026-02-05 00:22:01,046 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:22:01,046 [WindowSwitcher] [INFO] POS_CALC: mouse=(-809,233) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:22:01,049 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1546ms, windows: 8)
+2026-02-05 00:22:01,092 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:22:03,189 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:22:03,189 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:22:51,164 [WindowSwitcher] [INFO] Using mouse position: -1795, 161
+2026-02-05 00:22:51,165 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:22:51,166 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1795,161) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:22:51,181 [WindowSwitcher] [INFO] Fetched from cache in 17ms (cache age: 873ms, windows: 8)
+2026-02-05 00:22:51,190 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:22:53,438 [WindowSwitcher] [INFO] Using mouse position: -1794, 162
+2026-02-05 00:22:53,440 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:22:53,440 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1794,162) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:22:53,453 [WindowSwitcher] [INFO] Fetched from cache in 15ms (cache age: 1055ms, windows: 8)
+2026-02-05 00:22:53,455 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:22:57,201 [WindowSwitcher] [INFO] Using mouse position: -1794, 162
+2026-02-05 00:22:57,202 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:22:57,204 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1794,162) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:22:57,206 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 801ms, windows: 8)
+2026-02-05 00:22:57,231 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:22:58,297 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:22:58,297 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:23:01,768 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:23:01,770 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:23:01,771 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:23:01,808 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:23:02,272 [WindowSwitcher] [WARNING] Cache API unavailable after 504ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e3d150>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:23:02,272 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:23:02,851 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:23:02,853 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:23:02,853 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:23:02,885 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:23:03,353 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e47e10>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:23:03,354 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:23:59,354 [WindowSwitcher] [INFO] Using mouse position: -1688, 228
+2026-02-05 00:23:59,356 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:23:59,356 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1688,228) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:23:59,373 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:23:59,856 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e45ad0>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:23:59,857 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:24:00,784 [WindowSwitcher] [INFO] Using mouse position: -1693, 237
+2026-02-05 00:24:00,786 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:24:00,786 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1693,237) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:24:00,808 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:24:01,286 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e3f450>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:24:01,286 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:25:58,038 [WindowSwitcher] [INFO] Using mouse position: -1512, 481
+2026-02-05 00:25:58,039 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:25:58,039 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1512,481) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:25:58,057 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:25:58,540 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e482d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:25:58,540 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:26:08,949 [WindowSwitcher] [INFO] Using mouse position: -1123, 845
+2026-02-05 00:26:08,950 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:26:08,950 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1123,845) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:26:08,985 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:26:09,451 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e59050>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:26:09,451 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:26:10,649 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:26:10,649 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:26:10,657 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:26:10,660 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:26:11,291 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:26:11,311 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:26:26,897 [WindowSwitcher] [INFO] Using mouse position: -895, 790
+2026-02-05 00:26:26,899 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:26:26,899 [WindowSwitcher] [INFO] POS_CALC: mouse=(-895,790) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:26:26,902 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 533ms, windows: 8)
+2026-02-05 00:26:26,938 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:27:41,945 [WindowSwitcher] [INFO] Using mouse position: -1675, 162
+2026-02-05 00:27:41,947 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:27:41,947 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1675,162) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:27:41,951 [WindowSwitcher] [INFO] Fetched from cache in 4ms (cache age: 285ms, windows: 7)
+2026-02-05 00:27:41,988 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:27:43,924 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:27:43,925 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:29:17,649 [WindowSwitcher] [INFO] Using mouse position: -610, 816
+2026-02-05 00:29:17,651 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:29:17,651 [WindowSwitcher] [INFO] POS_CALC: mouse=(-610,816) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:29:17,655 [WindowSwitcher] [INFO] Fetched from cache in 4ms (cache age: 1124ms, windows: 7)
+2026-02-05 00:29:17,679 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:29:19,925 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:29:19,926 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:29:34,077 [WindowSwitcher] [INFO] Using mouse position: -339, 836
+2026-02-05 00:29:34,079 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:29:34,079 [WindowSwitcher] [INFO] POS_CALC: mouse=(-339,836) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:29:34,083 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 1462ms, windows: 7)
+2026-02-05 00:29:34,116 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:29:36,308 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:29:36,309 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:29:59,095 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:29:59,097 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:29:59,098 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:29:59,103 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 1526ms, windows: 7)
+2026-02-05 00:29:59,127 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:30:05,884 [WindowSwitcher] [INFO] Using mouse position: -1463, 377
+2026-02-05 00:30:05,886 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:30:05,887 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1463,377) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:30:05,892 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 291ms, windows: 7)
+2026-02-05 00:30:05,927 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:30:10,206 [WindowSwitcher] [INFO] Using mouse position: 938, 1040
+2026-02-05 00:30:10,208 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:30:10,208 [WindowSwitcher] [INFO] POS_CALC: mouse=(938,1040) monitor_0={pos=(0.0,0.0), size=(1080x1920)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(180,750)
+2026-02-05 00:30:10,213 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 603ms, windows: 7)
+2026-02-05 00:30:10,272 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(180,750), expected_size=(720x420)
+2026-02-05 00:30:11,380 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:30:11,381 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:30:23,776 [WindowSwitcher] [INFO] Using mouse position: -1610, 162
+2026-02-05 00:30:23,777 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:30:23,777 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1610,162) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:30:23,782 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 1615ms, windows: 7)
+2026-02-05 00:30:23,824 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:30:28,395 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:30:28,395 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:30:30,985 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:30:30,987 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:30:30,987 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:30:31,003 [WindowSwitcher] [INFO] Fetched from cache in 18ms (cache age: 815ms, windows: 7)
+2026-02-05 00:30:31,006 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:30:33,719 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:30:33,719 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:30:40,370 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:30:40,372 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:30:40,372 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:30:40,384 [WindowSwitcher] [INFO] Fetched from cache in 14ms (cache age: 178ms, windows: 7)
+2026-02-05 00:30:40,402 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:30:42,061 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:30:42,061 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:30:42,068 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:30:42,072 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:30:42,673 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:30:42,691 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:30:57,224 [WindowSwitcher] [INFO] Using mouse position: -1450, 288
+2026-02-05 00:30:57,226 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:30:57,226 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1450,288) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:30:57,229 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 922ms, windows: 7)
+2026-02-05 00:30:57,258 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:30:59,575 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:30:59,577 [WindowSwitcher] [INFO] Mouse centered on monitor at (540, 960)
+2026-02-05 00:31:00,812 [WindowSwitcher] [INFO] Using mouse position: 540, 960
+2026-02-05 00:31:00,813 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:31:00,814 [WindowSwitcher] [INFO] POS_CALC: mouse=(540,960) monitor_0={pos=(0.0,0.0), size=(1080x1920)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(180,750)
+2026-02-05 00:31:00,817 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 486ms, windows: 7)
+2026-02-05 00:31:00,844 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(180,750), expected_size=(720x420)
+2026-02-05 00:31:04,013 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:31:04,013 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:31:06,095 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:31:06,097 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:31:06,097 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:31:06,109 [WindowSwitcher] [INFO] Fetched from cache in 14ms (cache age: 1753ms, windows: 7)
+2026-02-05 00:31:06,131 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:31:09,957 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:31:09,957 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:35:55,199 [WindowSwitcher] [INFO] Using mouse position: -1039, 472
+2026-02-05 00:35:55,201 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:35:55,201 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1039,472) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:35:55,206 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 561ms, windows: 7)
+2026-02-05 00:35:55,231 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:35:58,724 [WindowSwitcher] [INFO] Using mouse position: -1039, 472
+2026-02-05 00:35:58,726 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:35:58,726 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1039,472) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:35:58,731 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 76ms, windows: 7)
+2026-02-05 00:35:58,750 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:35:59,568 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:35:59,569 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:36:17,032 [WindowSwitcher] [INFO] Using mouse position: -1456, 537
+2026-02-05 00:36:17,034 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:36:17,034 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1456,537) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:36:17,039 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 621ms, windows: 7)
+2026-02-05 00:36:17,070 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:36:18,854 [WindowSwitcher] [INFO] Executing command: /layouts
+2026-02-05 00:36:18,854 [WindowSwitcher.Commands] [INFO] Executing /layouts command
+2026-02-05 00:36:18,870 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:36:18,885 [WindowSwitcher.Commands] [INFO] LayoutManagementView initialized with 1 layouts
+2026-02-05 00:36:19,414 [WindowSwitcher] [INFO] Layout activation result: {'layout': 'Dual Screen Home', 'message': "Layout 'Dual Screen Home' activated successfully", 'rules_applied': 8, 'success': True}
+2026-02-05 00:36:19,431 [WindowSwitcher] [INFO] Fetched 1 layouts
+2026-02-05 00:36:38,924 [WindowSwitcher] [INFO] Using mouse position: -801, 173
+2026-02-05 00:36:38,926 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:36:38,926 [WindowSwitcher] [INFO] POS_CALC: mouse=(-801,173) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:36:38,960 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:36:39,427 [WindowSwitcher] [WARNING] Cache API unavailable after 503ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e31a90>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:36:39,427 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:37:24,098 [WindowSwitcher] [INFO] Using mouse position: -479, 752
+2026-02-05 00:37:24,099 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:37:24,099 [WindowSwitcher] [INFO] POS_CALC: mouse=(-479,752) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:37:24,115 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:37:24,601 [WindowSwitcher] [WARNING] Cache API unavailable after 503ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55fb8190>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:37:24,601 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:39:03,620 [WindowSwitcher] [INFO] Using mouse position: -405, 818
+2026-02-05 00:39:03,623 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:39:03,624 [WindowSwitcher] [INFO] POS_CALC: mouse=(-405,818) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:39:03,665 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:39:04,124 [WindowSwitcher] [WARNING] Cache API unavailable after 505ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e59f10>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:39:04,125 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:39:17,053 [WindowSwitcher] [INFO] Using mouse position: -561, 673
+2026-02-05 00:39:17,055 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:39:17,055 [WindowSwitcher] [INFO] POS_CALC: mouse=(-561,673) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:39:17,061 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 787ms, windows: 7)
+2026-02-05 00:39:17,096 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:39:20,640 [WindowSwitcher] [INFO] Using mouse position: -561, 673
+2026-02-05 00:39:20,643 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:39:20,644 [WindowSwitcher] [INFO] POS_CALC: mouse=(-561,673) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:39:20,727 [WindowSwitcher] [INFO] Fetched from cache in 86ms (cache age: 386ms, windows: 7)
+2026-02-05 00:39:20,788 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:39:37,103 [WindowSwitcher] [INFO] Using mouse position: -1317, 411
+2026-02-05 00:39:37,105 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:39:37,105 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1317,411) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:39:37,108 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 738ms, windows: 7)
+2026-02-05 00:39:37,138 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:39:47,049 [WindowSwitcher] [INFO] Using mouse position: -1299, 436
+2026-02-05 00:39:47,050 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:39:47,051 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1299,436) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:39:47,055 [WindowSwitcher] [INFO] Fetched from cache in 6ms (cache age: 663ms, windows: 7)
+2026-02-05 00:39:47,087 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:39:49,263 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:39:49,263 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:41:02,160 [WindowSwitcher] [INFO] Using mouse position: -708, 439
+2026-02-05 00:41:02,160 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:41:02,160 [WindowSwitcher] [INFO] POS_CALC: mouse=(-708,439) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:41:02,168 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 1467ms, windows: 7)
+2026-02-05 00:41:02,194 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:41:03,552 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:41:03,553 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:41:21,086 [WindowSwitcher] [INFO] Using mouse position: -1391, 503
+2026-02-05 00:41:21,088 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:41:21,088 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1391,503) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:41:21,127 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:41:21,588 [WindowSwitcher] [WARNING] Cache API unavailable after 502ms: HTTPConnectionPool(host='127.0.0.1', port=5555): Max retries exceeded with url: /screenassign/windows-and-tabs (Caused by ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=5555) at 0x19c55e449d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=0.5)'))
+2026-02-05 00:41:21,588 [WindowSwitcher] [WARNING] API unavailable - cannot fetch windows without backend
+2026-02-05 00:41:26,653 [WindowSwitcher] [INFO] Using mouse position: -1391, 503
+2026-02-05 00:41:26,655 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:41:26,655 [WindowSwitcher] [INFO] POS_CALC: mouse=(-1391,503) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:41:26,661 [WindowSwitcher] [INFO] Fetched from cache in 8ms (cache age: 244ms, windows: 7)
+2026-02-05 00:41:26,692 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:41:28,747 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:41:28,748 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)
+2026-02-05 00:41:57,705 [WindowSwitcher] [INFO] Using mouse position: -960, 540
+2026-02-05 00:41:57,705 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:41:57,705 [WindowSwitcher] [INFO] POS_CALC: mouse=(-960,540) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:41:57,710 [WindowSwitcher] [INFO] Fetched from cache in 5ms (cache age: 1231ms, windows: 7)
+2026-02-05 00:41:57,729 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:42:04,205 [WindowSwitcher] [INFO] Using mouse position: -735, 520
+2026-02-05 00:42:04,205 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:42:04,205 [WindowSwitcher] [INFO] POS_CALC: mouse=(-735,520) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:42:04,229 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:42:04,238 [WindowSwitcher] [INFO] Fetched from cache in 32ms (cache age: 1742ms, windows: 7)
+2026-02-05 00:43:58,622 [WindowSwitcher] [INFO] Using mouse position: -274, 800
+2026-02-05 00:43:58,622 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:43:58,622 [WindowSwitcher] [INFO] POS_CALC: mouse=(-274,800) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:43:58,629 [WindowSwitcher] [INFO] Fetched from cache in 7ms (cache age: 1868ms, windows: 8)
+2026-02-05 00:43:58,690 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:44:02,544 [WindowSwitcher] [INFO] Using mouse position: -276, 797
+2026-02-05 00:44:02,546 [WindowSwitcher] [DEBUG] Found cached DPI for monitor: 1.0
+2026-02-05 00:44:02,548 [WindowSwitcher] [INFO] POS_CALC: mouse=(-276,797) monitor_1={pos=(-1920.0,0.0), size=(1920x1080)} window={logical=(720x420), actual=(720x420), dpi_scale=1.00} final_pos=(-1320,330)
+2026-02-05 00:44:02,553 [WindowSwitcher] [INFO] Fetched from cache in 10ms (cache age: 1768ms, windows: 8)
+2026-02-05 00:44:02,588 [WindowSwitcher] [INFO] Window shown and positioned: calculated=(-1320,330), expected_size=(720x420)
+2026-02-05 00:44:05,703 [WindowSwitcher] [INFO] Fetched settings: {'center_mouse_on_switch': True, 'default_layout': 'dual-screen-home'}
+2026-02-05 00:44:05,704 [WindowSwitcher] [INFO] Mouse centered on monitor at (-960, 540)

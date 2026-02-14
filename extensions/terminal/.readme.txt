@@ -1,0 +1,2 @@
+I would always suggest, that you enable the auto grouping of terminal windows first. As this generally makes things a little bit more tidy.
+

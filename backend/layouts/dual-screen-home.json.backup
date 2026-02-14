@@ -1,0 +1,39 @@
+{
+  "name": "Dual Screen Home",
+  "description": "Layout with 2 screens",
+  "version": "1.0",
+  "screen_requirements": {
+    "total_screens": 2,
+    "screens": [
+      {
+        "display_number": 1,
+        "orientation": "vertical",
+        "description": "Vertical screen - \\\\.\\DISPLAY1 (1080×1920)"
+      },
+      {
+        "display_number": 2,
+        "orientation": "horizontal",
+        "description": "Horizontal screen - \\\\.\\DISPLAY2 (1920×1080)"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "match_type": "exe",
+      "match_value": "wezterm-gui.exe",
+      "target_monitor_id": "monitor_892be5c9",
+      "fullscreen": true,
+      "maximize": true,
+      "enabled": true,
+      "rule_id": "rule_b243a7be"
+    }
+  ],
+  "metadata": {
+    "created": "2026-02-02T14:05:12.557031",
+    "author": "screeny",
+    "tags": [
+      "vertical",
+      "horizontal"
+    ]
+  }
+}

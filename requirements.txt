@@ -1,0 +1,13 @@
+raylib>=5.5.0
+requests
+rapidfuzz
+pynput
+keyboard
+mouse
+screeninfo>=0.8.1
+pygetwindow>=0.0.9
+psutil>=5.9.5
+pywin32>=306
+flask>=2.0.0
+flask-cors>=3.0.10
+watchdog>=3.0.0

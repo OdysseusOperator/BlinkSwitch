@@ -1,0 +1,107 @@
+{
+  "known_monitors": [
+    {
+      "name": "\\\\.\\DISPLAY2 (1080\u00d71920)",
+      "width": 1080,
+      "height": 1920,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY2_1080x1920",
+        "secondary": "1080x1920"
+      },
+      "id": "monitor_7a122ffa",
+      "first_detected": "2026-02-02T15:17:00.481256"
+    },
+    {
+      "name": "\\\\.\\DISPLAY1 (1920\u00d71080)",
+      "width": 1920,
+      "height": 1080,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY1_1920x1080",
+        "secondary": "1920x1080"
+      },
+      "id": "monitor_0ec6d598",
+      "first_detected": "2026-02-02T15:17:00.524047"
+    },
+    {
+      "name": "\\\\.\\DISPLAY1 (3840\u00d72160)",
+      "width": 3840,
+      "height": 2160,
+      "x": -3840,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY1_3840x2160",
+        "secondary": "3840x2160"
+      },
+      "id": "monitor_e936f43e",
+      "first_detected": "2026-02-09T18:43:24.211432"
+    },
+    {
+      "name": "\\\\.\\DISPLAY2 (900\u00d71440)",
+      "width": 900,
+      "height": 1440,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY2_900x1440",
+        "secondary": "900x1440"
+      },
+      "id": "monitor_7f6997d1",
+      "first_detected": "2026-02-09T18:44:59.373072"
+    },
+    {
+      "name": "\\\\.\\DISPLAY1 (1440\u00d7900)",
+      "width": 1440,
+      "height": 900,
+      "x": -1440,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY1_1440x900",
+        "secondary": "1440x900"
+      },
+      "id": "monitor_14490295",
+      "first_detected": "2026-02-09T18:45:54.772043"
+    },
+    {
+      "name": "\\\\.\\DISPLAY1 (1600\u00d7900)",
+      "width": 1600,
+      "height": 900,
+      "x": -1600,
+      "y": 0,
+      "is_primary": false,
+      "fingerprints": {
+        "primary": "DISPLAY1_1600x900",
+        "secondary": "1600x900"
+      },
+      "id": "monitor_916d962d",
+      "first_detected": "2026-02-13T23:20:17.281666"
+    },
+    {
+      "name": "\\\\.\\DISPLAY2 (1024\u00d71280)",
+      "width": 1024,
+      "height": 1280,
+      "x": 0,
+      "y": 0,
+      "is_primary": true,
+      "fingerprints": {
+        "primary": "DISPLAY2_1024x1280",
+        "secondary": "1024x1280"
+      },
+      "id": "monitor_beca5407",
+      "first_detected": "2026-02-13T23:24:24.387204"
+    }
+  ],
+  "application_rules": [],
+  "settings": {
+    "default_layout": "dual-screen-home",
+    "center_mouse_on_switch": true
+  }
+}

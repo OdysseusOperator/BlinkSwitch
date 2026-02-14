@@ -1,0 +1,13 @@
+2026-02-06 19:36:34,735 [WindowSwitcher] [INFO] === Logger initialized, writing to: C:\dev\mytools\screeny\logs\window_switcher_20260206.log ===
+2026-02-06 19:36:34,735 [WindowSwitcher] [INFO] === Starting Window Switcher ===
+2026-02-06 19:36:34,737 [WindowSwitcher] [INFO] Log file: C:\dev\mytools\screeny\logs\window_switcher_20260206.log
+2026-02-06 19:36:34,737 [WindowSwitcher] [INFO] Pre-warming HTTP connection...
+2026-02-06 19:36:35,379 [WindowSwitcher] [INFO] HTTP connection established
+2026-02-06 19:36:35,379 [WindowSwitcher] [INFO] Fetching monitor DPI information from ScreenAssign...
+2026-02-06 19:36:35,388 [WindowSwitcher] [INFO] Fetched 1 monitors with DPI info
+2026-02-06 19:36:35,388 [WindowSwitcher] [DEBUG]   Monitor monitor_4d1cb810: pos=(0,0), size=(3840x2160), dpi_scale=2.25
+2026-02-06 19:36:35,388 [WindowSwitcher] [INFO] Cached 1 monitors locally
+2026-02-06 19:36:35,388 [WindowSwitcher.Commands] [INFO] CommandRegistry initialized
+2026-02-06 19:36:35,390 [WindowSwitcher.Commands] [INFO] Registered command: /monitors
+2026-02-06 19:36:35,390 [WindowSwitcher.Commands] [INFO] Built-in commands registered
+2026-02-06 19:36:35,390 [WindowSwitcher] [INFO] Built-in commands registered
