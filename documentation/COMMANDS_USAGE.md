@@ -1,8 +1,8 @@
-# Screeny Commands System
+# BlinkSwitch Commands System
 
 ## Overview
 
-The Screeny window switcher supports two primary modes:
+The BlinkSwitch window frontend supports two primary modes:
 
 1. **Switch Mode** (default): Normal window selection and switching mode
 2. **Command Mode**: Fuzzy-findable commands starting with `/` for system management features
@@ -25,7 +25,7 @@ Access system management features by typing commands starting with `/`.
 
 ### Accessing Commands
 
-1. **Open Screeny**: Press `Alt+Space` to open the window switcher (enters switch_mode)
+1. **Open BlinkSwitch**: Press `Alt+Space` to open the window frontend (enters switch_mode)
 2. **Type a command**: Start typing `/` to enter command mode
 3. **Fuzzy search**: Type part of the command name (e.g., `/mon` for monitors)
 4. **Execute**: Press `Enter` to execute the selected command
@@ -55,7 +55,7 @@ Manage your known monitors (including disconnected ones).
 3. Press Enter
 4. Navigate to old disconnected monitor
 5. Press 'd' to delete
-6. Press Esc to return to window switcher
+6. Press Esc to return to window frontend
 ```
 
 ### Command Mode Indicators
@@ -98,7 +98,7 @@ When inside `/monitors`:
    - `DELETE /screenassign/monitors/<monitor_id>` endpoint
    - Deletes monitor from configuration
 
-4. **Window Switcher Integration** (`window_switcher.py`):
+4. **Window Frontend Integration** (`frontend/frontend-switcher.py`):
    - Detects `/` prefix to enter command mode
    - Routes input to appropriate view
    - Manages view lifecycle
@@ -128,6 +128,6 @@ registry.register(
 
 Potential future commands:
 - `/rules` - Manage application window placement rules
-- `/settings` - Configure Screeny preferences
+- `/settings` - Configure BlinkSwitch preferences
 - `/help` - Show keyboard shortcuts and tips
 - `/reload` - Reload configuration without restart

@@ -56,7 +56,7 @@
 - [ ] Update UI to show: "Display 1: ... [vertical]"
 - [ ] Update `get_rule_config()` to return `target_display` number
 
-### Step 9: Update window_switcher.py
+### Step 9: Update frontend/frontend-switcher.py
 - [ ] Remove `monitors` parameter from WindowDetailsView instantiation
 - [ ] Pass only `active_layout` to WindowDetailsView
 
@@ -74,7 +74,7 @@
 6. ✅ `window_stuff/service.py` - Pass layout_manager, removed rule methods
 7. ✅ `window_stuff/api.py` - Removed old endpoints, updated rule endpoint
 8. ⏳ `commands.py` - WindowDetailsView (IN PROGRESS)
-9. ⏳ `window_switcher.py` - WindowDetailsView instantiation (IN PROGRESS)
+9. ⏳ `frontend/frontend-switcher.py` - WindowDetailsView instantiation (IN PROGRESS)
 
 ## 🧪 Testing Needed
 

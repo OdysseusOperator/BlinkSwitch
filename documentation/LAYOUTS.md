@@ -1,4 +1,4 @@
-# Screeny Layout System
+# BlinkSwitch Layout System
 
 ## Overview
 
@@ -99,7 +99,7 @@ Create a file in the `layouts/` directory (e.g., `layouts/my-coding-setup.json`)
 
 ### 3. Activate the Layout
 
-**Via Command (in window switcher - switch_mode):**
+**Via Command (in window frontend - switch_mode):**
 ```
 Alt+Space → /layouts → Select layout → Press Enter or 'A'
 ```
@@ -457,7 +457,7 @@ Returns current connected screens with DISPLAY# and orientation.
 
 ## Commands
 
-Use these commands in the window switcher (Alt+Space opens switch_mode):
+Use these commands in the window frontend (Alt+Space opens switch_mode):
 
 ### `/layouts`
 
@@ -585,7 +585,7 @@ Bad:
 Layouts are just JSON files - commit them to Git!
 
 ```bash
-cd screeny/layouts
+cd BlinkSwitch/layouts
 git add my-coding-setup.json
 git commit -m "Add coding setup layout for dual vertical screens"
 ```
@@ -695,17 +695,17 @@ A: Yes, as long as the DISPLAY# numbers and orientations match.
 
 ## File Locations
 
-- **Layout files:** `screeny/layouts/*.json`
+- **Layout files:** `BlinkSwitch/layouts/*.json`
 - **Example layouts:** Included in distribution
-- **Logs:** `screeny/logs/screenassign_*.log`
-- **Configuration:** `screeny/monitors_config.json`
+- **Logs:** `BlinkSwitch/logs/screenassign_*.log`
+- **Configuration:** `BlinkSwitch/monitors_config.json`
 
 ---
 
 ## Support
 
 For issues or questions:
-1. Check logs in `screeny/logs/`
+1. Check logs in `BlinkSwitch/logs/`
 2. Run `/screen-config` to debug screen detection
 3. Verify layout JSON syntax at jsonlint.com
 4. Create an issue on GitHub with layout file and logs

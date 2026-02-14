@@ -89,7 +89,7 @@ Accept `target_display` instead of `target_monitor_id`, validate against screen_
 ### Step 9: Update WindowDetailsView
 Show displays from layout's screen_requirements, return `target_display` in rule config
 
-### Step 10: Update window_switcher.py
+### Step 10: Update frontend/frontend-switcher.py
 Remove `monitors` parameter from WindowDetailsView instantiation
 
 ---
@@ -116,6 +116,6 @@ Remove `monitors` parameter from WindowDetailsView instantiation
 6. `window_stuff/service.py` - Pass layout_manager
 7. `window_stuff/api.py` - Update rule endpoint
 8. `commands.py` - Update WindowDetailsView
-9. `window_switcher.py` - Update WindowDetailsView instantiation
+9. `frontend/frontend-switcher.py` - Update WindowDetailsView instantiation
 
 **Total: 9 files**

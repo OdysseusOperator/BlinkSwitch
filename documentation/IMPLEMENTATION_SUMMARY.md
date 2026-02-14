@@ -3,7 +3,7 @@
 ## ✅ COMPLETED IMPLEMENTATION
 
 ### Overview
-Successfully implemented a comprehensive system to prevent duplicate window rules and provide visual feedback in the screeny application.
+Successfully implemented a comprehensive system to prevent duplicate window rules and provide visual feedback in the BlinkSwitch application.
 
 ---
 
@@ -86,7 +86,7 @@ Successfully implemented a comprehensive system to prevent duplicate window rule
   - Adds "D=delete" to help text in edit mode
   - Displays error messages
 
-### 4. **window_switcher.py**
+### 4. **frontend/frontend-switcher.py**
 **Modified color rendering:**
 - Changed from gray (128, 128, 128) to white (255, 255, 255) for no-rule windows
 - Yellow (255, 255, 0) remains for windows with rules
@@ -119,7 +119,7 @@ WindowsView.__init__()
        └─> find_matching_rule_for_window() for each window
             └─> Returns set of HWNDs with rules
   └─> get_render_data() sets "connected" flag
-       └─> window_switcher.py renders colors
+       └─> frontend/frontend-switcher.py renders colors
 ```
 
 ### Edit Mode Flow:
