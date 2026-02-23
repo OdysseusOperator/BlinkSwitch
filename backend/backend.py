@@ -404,6 +404,107 @@ def get_windows_and_tabs():
     )
 
 
+def _activate_browser_window(exe_name: str) -> bool:
+    """Activate and focus a browser window by executable name.
+
+    Args:
+        exe_name: Browser executable name (e.g., "msedge.exe", "chrome.exe")
+
+    Returns:
+        True if browser window was found and focused, False otherwise
+    """
+    try:
+        svc = _require_service()
+        window_manager = svc.window_manager
+
+        # Get all windows
+        all_windows = window_manager.get_all_windows()
+
+        # Find first browser window matching the exe_name
+        browser_hwnd = None
+        for window in all_windows:
+            if window.get("exe_name") == exe_name:
+                browser_hwnd = window.get("hwnd")
+                break
+
+        if not browser_hwnd:
+            api_logger.warning(f"No window found for {exe_name}")
+            return False
+
+        api_logger.info(f"Activating browser window: {exe_name} (hwnd={browser_hwnd})")
+
+        # Use existing focus function
+        _focus_window(browser_hwnd)
+
+        return True
+
+    except Exception as e:
+        api_logger.error(f"Error activating browser window: {e}")
+        return False
+
+        api_logger.info(f"Activating browser window: {exe_name} (hwnd={browser_hwnd})")
+
+        # Step 1: Activate the window (restore if minimized)
+        try:
+            import win32gui
+            import win32con
+
+            # Restore window if minimized
+            placement = win32gui.GetWindowPlacement(browser_hwnd)
+            if placement[1] == win32con.SW_SHOWMINIMIZED:
+                win32gui.ShowWindow(browser_hwnd, win32con.SW_RESTORE)
+
+            # Bring window to top
+            win32gui.BringWindowToTop(browser_hwnd)
+
+        except Exception as e:
+            api_logger.error(f"Failed to activate window: {e}")
+            return False
+
+        # Step 2: Focus the window
+        try:
+            user32 = ctypes.windll.user32
+            kernel32 = ctypes.windll.kernel32
+
+            # Get current foreground window
+            fg_hwnd = user32.GetForegroundWindow()
+
+            # Attach thread input to bypass foreground restrictions
+            fg_pid = ctypes.c_uint(0)
+            target_pid = ctypes.c_uint(0)
+            fg_thread = user32.GetWindowThreadProcessId(fg_hwnd, ctypes.byref(fg_pid))
+            target_thread = user32.GetWindowThreadProcessId(
+                browser_hwnd, ctypes.byref(target_pid)
+            )
+            current_thread = kernel32.GetCurrentThreadId()
+
+            if fg_thread:
+                user32.AttachThreadInput(current_thread, fg_thread, True)
+            if target_thread:
+                user32.AttachThreadInput(current_thread, target_thread, True)
+
+            # Set foreground and active
+            user32.SetForegroundWindow(browser_hwnd)
+            user32.SetActiveWindow(browser_hwnd)
+
+            # Detach threads
+            if target_thread:
+                user32.AttachThreadInput(current_thread, target_thread, False)
+            if fg_thread:
+                user32.AttachThreadInput(current_thread, fg_thread, False)
+
+            api_logger.info(f"Successfully activated and focused {exe_name}")
+            return True
+
+        except Exception as e:
+            api_logger.error(f"Failed to focus window: {e}")
+            return False
+
+    except Exception as e:
+        api_logger.error(f"Error activating browser window: {e}")
+        return False
+
+
 @screenassign_api.route("/activate-tab", methods=["POST"])
 def activate_tab():
     """Queue a tab activation command for Chrome extension.
@@ -428,7 +529,15 @@ def activate_tab():
     if not tab:
         return jsonify({"error": "Tab not found"}), 404
 
-    # Add command to queue for extension to poll
+    # Step 1 & 2: Activate and focus the browser window FIRST
+    exe_name = tab.get("exe_name", "chrome.exe")
+    browser_activated = _activate_browser_window(exe_name)
+
+    if not browser_activated:
+        api_logger.warning(f"Failed to activate browser window for {exe_name}")
+        # Continue anyway - extension will try to activate the tab
+
+    # Step 3: Add command to queue for extension to navigate to tab
     with chrome_commands_lock:
         chrome_command_id[0] += 1
         chrome_commands.append(
@@ -441,7 +550,9 @@ def activate_tab():
             }
         )
 
-    return jsonify({"success": True, "queued": True})
+    return jsonify(
+        {"success": True, "queued": True, "browser_activated": browser_activated}
+    )
 
 
 @screenassign_api.route("/chrome-commands", methods=["GET"])
