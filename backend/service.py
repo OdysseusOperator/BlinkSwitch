@@ -69,27 +69,6 @@ class ScreenAssignService:
         self.service_thread.daemon = True
         self.service_thread.start()
 
-        # Auto-activate default layout if configured
-        try:
-            settings = self.config_manager.get_settings()
-            default_layout = settings.get("default_layout")
-            if default_layout:
-                self.logger.info(f"Auto-activating default layout: {default_layout}")
-                try:
-                    result = self.layout_manager.activate_layout(default_layout)
-                    if result.get("success"):
-                        self.logger.info(f"Default layout activated: {default_layout}")
-                    else:
-                        self.logger.warning(
-                            f"Failed to activate default layout: {result.get('message', 'Unknown error')}"
-                        )
-                except Exception as layout_error:
-                    self.logger.warning(
-                        f"Could not activate default layout: {layout_error}"
-                    )
-        except Exception as e:
-            self.logger.warning(f"Error during auto-activation: {e}")
-
         self.logger.info("Service started")
         return True
 
@@ -126,8 +105,11 @@ class ScreenAssignService:
         """
         return self.status
 
-    def apply_rules_now(self):
+    def apply_rules_now(self, layout_name: str):
         """Apply all rules immediately.
+
+        Args:
+            layout_name: Name of the layout whose rules to apply
 
         Returns:
             dict: Results of rule application
@@ -136,7 +118,7 @@ class ScreenAssignService:
         self.monitor_manager.detect_monitors()
 
         # Apply all rules
-        results = self.window_manager.apply_rules()
+        results = self.window_manager.apply_rules(layout_name)
 
         # Update status
         self.status["last_run"] = datetime.now().isoformat()
@@ -146,17 +128,32 @@ class ScreenAssignService:
 
         return results
 
+    def apply_rules_for_window(self, hwnd: int, layout_name: str) -> dict:
+        """Apply rules to a single window identified by hwnd.
+
+        Args:
+            hwnd: Window handle
+            layout_name: Name of the layout whose rules to apply
+
+        Returns:
+            dict: Result of rule application for that window
+        """
+        self.monitor_manager.detect_monitors()
+        return self.window_manager.apply_rules_for_window(hwnd, layout_name)
+
     def _service_loop(self):
-        """Main service loop that runs in a separate thread."""
+        """Main service loop that runs in a separate thread.
+
+        Note: rule application (apply_rules) is intentionally NOT driven from
+        here.  The frontend owns that timer so it can suppress rule ticks while
+        the switcher overlay is visible, preventing focus theft.
+        Use POST /apply-rules from the frontend to trigger rule application.
+        """
         check_interval = 1  # seconds - check frequently for cache updates
-        rules_apply_interval = 5  # seconds - apply rules less frequently
         window_cache_interval = 2  # seconds - faster updates for window switcher
         monitor_detect_interval = 30  # seconds
-        layout_check_interval = 10  # seconds - check active layout validity
         last_monitor_detect = 0
         last_window_cache_update = 0
-        last_rules_apply = 0
-        last_layout_check = 0
 
         self.status["status"] = "running"
         self._save_status()
@@ -187,27 +184,6 @@ class ScreenAssignService:
                         for monitor_id in monitor_ids
                     ]
                     last_monitor_detect = current_time
-
-                # Check active layout validity (auto-deactivate if screen config changed)
-                if current_time - last_layout_check >= layout_check_interval:
-                    try:
-                        self.layout_manager.check_active_layout_validity()
-                        last_layout_check = current_time
-                    except Exception as e:
-                        self.logger.error(f"Error checking layout validity: {str(e)}")
-
-                # Apply window rules (less frequently to reduce CPU usage)
-                if current_time - last_rules_apply >= rules_apply_interval:
-                    results = self.window_manager.apply_rules()
-
-                    # Update status
-                    self.status["status"] = "running"
-                    self.status["last_run"] = datetime.now().isoformat()
-                    self.status["rules_applied"] = results["applied"]
-                    self.status["errors"] = results["failed"]
-                    self._save_status()
-
-                    last_rules_apply = current_time
 
             except Exception as e:
                 self.logger.error(f"Error in service loop: {str(e)}")

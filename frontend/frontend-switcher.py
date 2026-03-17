@@ -201,61 +201,17 @@ def fetch_screen_config() -> dict[str, Any]:
     return {"screens": [], "summary": "No screens detected"}
 
 
-def activate_layout(layout_name: str) -> dict[str, Any]:
-    """Activate a layout via API."""
-    try:
-        response = _http_session.post(
-            f"{TABS_API_URL}/layouts/activate",
-            json={"layout_name": layout_name},
-            timeout=TABS_API_TIMEOUT,
-        )
-        if response.ok:
-            result = response.json()
-            logger.info(f"Layout activation result: {result}")
-            return result
-        else:
-            error_msg = (
-                response.json().get("error", "Unknown error")
-                if response.text
-                else "Request failed"
-            )
-            logger.error(f"Failed to activate layout: {error_msg}")
-            return {"success": False, "error": error_msg}
-    except Exception as e:
-        logger.error(f"Layout activate error: {e}")
-        return {"success": False, "error": str(e)}
-
-
-def deactivate_layout() -> dict[str, Any]:
-    """Deactivate current layout via API."""
-    try:
-        response = _http_session.post(
-            f"{TABS_API_URL}/layouts/deactivate",
-            timeout=TABS_API_TIMEOUT,
-        )
-        if response.ok:
-            result = response.json()
-            logger.info(f"Layout deactivation result: {result}")
-            return result
-        else:
-            logger.error(f"Failed to deactivate layout")
-            return {"success": False, "message": "Request failed"}
-    except Exception as e:
-        logger.error(f"Layout deactivate error: {e}")
-        return {"success": False, "message": str(e)}
-
-
-def get_active_layout() -> Optional[dict[str, Any]]:
-    """Get currently active layout from API."""
+def fetch_layout_data(name: str) -> Optional[dict[str, Any]]:
+    """Fetch full layout data dict (including 'data' key) from GET /layouts/<name>."""
     try:
         response = _http_session.get(
-            f"{TABS_API_URL}/layouts/active",
+            f"{TABS_API_URL}/layouts/{name}",
             timeout=TABS_API_TIMEOUT,
         )
         if response.ok:
             return response.json()
     except Exception as e:
-        logger.warning(f"Failed to get active layout: {e}")
+        logger.warning(f"Failed to fetch layout data for '{name}': {e}")
     return None
 
 
@@ -391,6 +347,47 @@ def focus_window_async(hwnd: int) -> None:
         focus_window_with_retry(hwnd)
 
     thread = threading.Thread(target=_focus_in_background, daemon=True)
+    thread.start()
+
+
+def apply_rule_for_window_async(hwnd: int, layout_name: Optional[str]) -> None:
+    """Fire-and-forget: ask the backend to apply the matching layout rule for a window.
+
+    Called after focusing a window so that layout rules (e.g. fullscreen on a
+    specific monitor) are enforced immediately on switch, rather than waiting
+    for the background timer.
+    """
+    if layout_name is None:
+        logger.debug(f"apply_rule_for_window_async: no active layout, skipping hwnd={hwnd}")
+        return
+
+    # Capture layout_name at call time (closure-safe)
+    _layout_name = layout_name
+
+    def _apply_in_background():
+        try:
+            response = _http_session.post(
+                f"{TABS_API_URL}/apply-rule-for-window",
+                json={"hwnd": hwnd, "layout_name": _layout_name},
+                timeout=10.0,  # rules can take a few seconds (F11 + waits)
+            )
+            if response.ok:
+                result = response.json()
+                logger.info(
+                    f"Rule applied for hwnd={hwnd}: matched={result.get('matched')}, "
+                    f"changed={result.get('changed')}, ops={result.get('operations')}, "
+                    f"msg={result.get('message')}"
+                )
+            else:
+                logger.warning(
+                    f"apply-rule-for-window returned {response.status_code} for hwnd={hwnd}"
+                )
+        except Exception as e:
+            logger.warning(f"apply-rule-for-window failed for hwnd={hwnd}: {e}")
+        except Exception as e:
+            logger.warning(f"apply-rule-for-window failed for hwnd={hwnd}: {e}")
+
+    thread = threading.Thread(target=_apply_in_background, daemon=True)
     thread.start()
 
 
@@ -564,34 +561,65 @@ def main() -> None:
     logger.info(f"Cached {len(monitors_with_dpi)} monitors locally")
 
     # Register built-in commands
+    # Frontend-owned active_layout state (str | None — layout filename stem)
+    active_layout: Optional[str] = None
+
+    def activate_layout_tracked(layout_name: str) -> dict:
+        nonlocal active_layout
+        active_layout = layout_name
+        logger.info(f"Active layout set to: {layout_name}")
+
+        def _apply():
+            try:
+                response = _http_session.post(
+                    f"{TABS_API_URL}/apply-rules",
+                    json={"layout_name": layout_name},
+                    timeout=15.0,
+                )
+                if response.ok:
+                    result = response.json()
+                    logger.info(
+                        f"apply-rules on activate: applied={result.get('applied')}, "
+                        f"failed={result.get('failed')}"
+                    )
+                else:
+                    logger.warning(f"apply-rules on activate returned {response.status_code}")
+            except Exception as e:
+                logger.warning(f"apply-rules on activate failed: {e}")
+
+        threading.Thread(target=_apply, daemon=True).start()
+        return {"success": True}
+
+    def deactivate_layout_tracked() -> dict:
+        nonlocal active_layout
+        prev = active_layout
+        active_layout = None
+        logger.info(f"Active layout cleared (was: {prev})")
+        return {"success": True, "deactivated": prev or "layout"}
+
     register_builtin_commands(
         fetch_monitors_fn=fetch_monitors_with_dpi,
         fetch_layouts_fn=fetch_layouts,
         fetch_screen_config_fn=fetch_screen_config,
-        activate_layout_fn=activate_layout,
-        deactivate_layout_fn=deactivate_layout,
-        get_active_layout_fn=get_active_layout,
+        activate_layout_fn=activate_layout_tracked,
+        deactivate_layout_fn=deactivate_layout_tracked,
+        get_active_layout_name_fn=lambda: active_layout,
         fetch_windows_fn=fetch_windows,
         fetch_settings_fn=fetch_settings,
         update_settings_fn=update_settings,
+        fetch_layout_data_fn=fetch_layout_data,
     )
     logger.info("Built-in commands registered")
 
-    # Auto-activate default layout if set
+    # Set default layout locally (no HTTP activation call — backend is stateless)
     try:
         settings = fetch_settings()
         default_layout = settings.get("default_layout")
         if default_layout:
-            logger.info(f"Auto-activating default layout: {default_layout}")
-            result = activate_layout(default_layout)
-            if result.get("success"):
-                logger.info(f"Default layout activated successfully: {default_layout}")
-            else:
-                logger.warning(
-                    f"Failed to activate default layout: {result.get('error', 'Unknown')}"
-                )
+            active_layout = default_layout
+            logger.info(f"Default layout set locally: {default_layout}")
     except Exception as e:
-        logger.warning(f"Could not auto-activate default layout: {e}")
+        logger.warning(f"Could not read default layout from settings: {e}")
 
     try:
         from raylib import rl
@@ -810,6 +838,53 @@ def main() -> None:
 
         keep_alive_thread = threading.Thread(target=keep_connection_alive, daemon=True)
         keep_alive_thread.start()
+
+        # Rules apply timer — owned by the frontend so we can suppress it while
+        # the overlay is open (prevents focus theft from fullscreen rule application)
+        RULES_APPLY_INTERVAL = 5  # seconds between apply_rules calls
+
+        def rules_apply_loop():
+            """Periodically call POST /apply-rules on the backend.
+
+            Skips a tick if the switcher overlay is currently visible to avoid
+            SetForegroundWindow calls (from fullscreen rules) stealing focus
+            away from the user mid-interaction.
+            Also skips if no layout is active (active_layout is None).
+            """
+            last_apply = 0.0
+            while True:
+                time.sleep(1)
+                if active_layout is None:
+                    # No layout active — nothing to apply
+                    continue
+                if window_visible:
+                    # Overlay is open — skip this tick, don't steal focus
+                    continue
+                now = time.time()
+                if now - last_apply < RULES_APPLY_INTERVAL:
+                    continue
+                last_apply = now
+                # Capture layout_name at tick time
+                layout_name_now = active_layout
+                try:
+                    response = _http_session.post(
+                        f"{TABS_API_URL}/apply-rules",
+                        json={"layout_name": layout_name_now},
+                        timeout=15.0,  # rules can be slow (F11 + waits)
+                    )
+                    if response.ok:
+                        result = response.json()
+                        logger.debug(
+                            f"apply-rules tick: applied={result.get('applied')}, "
+                            f"failed={result.get('failed')}"
+                        )
+                    else:
+                        logger.warning(f"apply-rules tick returned {response.status_code}")
+                except Exception as e:
+                    logger.debug(f"apply-rules tick failed (backend may be busy): {e}")
+
+        rules_timer_thread = threading.Thread(target=rules_apply_loop, daemon=True)
+        rules_timer_thread.start()
 
         def request_toggle() -> None:
             # Capture mouse position immediately when hotkey is pressed
@@ -1425,9 +1500,7 @@ def main() -> None:
                                                 f"✓ Created: {layout_name}"
                                             )
                                             current_view.layouts = fetch_layouts()
-                                            current_view.active_layout = (
-                                                get_active_layout()
-                                            )
+                                            current_view.active_layout = active_layout
                                     else:
                                         error_msg = (
                                             response.json().get(
@@ -1504,7 +1577,7 @@ def main() -> None:
                                     # Refresh the view data
                                     if isinstance(current_view, LayoutManagementView):
                                         current_view.layouts = fetch_layouts()
-                                        current_view.active_layout = get_active_layout()
+                                        current_view.active_layout = active_layout
                                     elif isinstance(
                                         current_view, MonitorManagementView
                                     ):
@@ -1535,9 +1608,7 @@ def main() -> None:
                                                 )
                                                 # Refresh the layouts list
                                                 current_view.layouts = fetch_layouts()
-                                                current_view.active_layout = (
-                                                    get_active_layout()
-                                                )
+                                                current_view.active_layout = active_layout
                                                 # Reset selection if needed
                                                 if current_view.selected >= len(
                                                     current_view.layouts
@@ -1664,9 +1735,13 @@ def main() -> None:
                                                 logger.info("Rule deleted successfully")
                                                 # Return to windows view with refreshed data
                                                 windows = fetch_windows()
-                                                active_layout = get_active_layout()
+                                                full_layout = (
+                                                    fetch_layout_data(active_layout)
+                                                    if active_layout
+                                                    else None
+                                                )
                                                 current_view = WindowsView(
-                                                    windows, active_layout
+                                                    windows, full_layout
                                                 )
                                                 current_view.error_message = (
                                                     "✓ Rule deleted"
@@ -1819,6 +1894,9 @@ def main() -> None:
                                         print(
                                             f"Focus requested for hwnd={hwnd} (async)"
                                         )
+
+                                        # Apply layout rule for this window immediately after switching
+                                        apply_rule_for_window_async(hwnd, active_layout)
 
                                         # Center mouse on window's monitor if enabled
                                         try:

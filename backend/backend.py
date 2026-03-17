@@ -127,8 +127,12 @@ def restart_service():
 @screenassign_api.route("/apply-rules", methods=["POST"])
 def apply_rules():
     """Apply all rules immediately."""
+    data = request.json or {}
+    layout_name = data.get("layout_name")
+    if not layout_name:
+        return jsonify({"error": "layout_name is required"}), 400
     svc = _require_service()
-    results = svc.apply_rules_now()
+    results = svc.apply_rules_now(layout_name)
     return jsonify(results)
 
 
@@ -588,13 +592,18 @@ def focus_window():
     Payload:
       - hwnd: number|string (required)
       - apply_rules: bool (optional, default true)
+      - layout_name: string (required if apply_rules is true)
     """
     data = request.json or {}
     hwnd_raw = data.get("hwnd")
     apply_rules = data.get("apply_rules", True)
+    layout_name = data.get("layout_name")
 
     if hwnd_raw is None:
         return jsonify({"error": "hwnd is required"}), 400
+
+    if apply_rules and not layout_name:
+        return jsonify({"error": "layout_name is required when apply_rules is true"}), 400
 
     try:
         hwnd = int(hwnd_raw)
@@ -604,9 +613,50 @@ def focus_window():
     try:
         _focus_window(hwnd)
         if apply_rules:
-            results = _require_service().apply_rules_now()
+            results = _require_service().apply_rules_now(layout_name)
             return jsonify({"success": True, "rules": results})
         return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@screenassign_api.route("/apply-rule-for-window", methods=["POST"])
+def apply_rule_for_window():
+    """Apply the matching layout rule to a single window.
+
+    Only applies the rule that matches the given window — much faster than
+    applying all rules globally. Intended for immediate post-switch rule
+    enforcement.
+
+    Payload:
+      - hwnd: number|string (required) — window handle to apply rules to
+      - layout_name: string (required) — layout whose rules to apply
+
+    Response:
+      - matched (bool): whether a rule was found for this window
+      - changed (bool): whether any operations were performed
+      - operations (list): operations performed (e.g. ["move", "fullscreen"])
+      - rule_id (str|null): the matched rule id
+      - message (str): human-readable summary
+    """
+    data = request.json or {}
+    hwnd_raw = data.get("hwnd")
+    layout_name = data.get("layout_name")
+
+    if hwnd_raw is None:
+        return jsonify({"error": "hwnd is required"}), 400
+
+    if not layout_name:
+        return jsonify({"error": "layout_name is required"}), 400
+
+    try:
+        hwnd = int(hwnd_raw)
+    except Exception:
+        return jsonify({"error": "hwnd must be an integer"}), 400
+
+    try:
+        result = _require_service().apply_rules_for_window(hwnd, layout_name)
+        return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -676,13 +726,6 @@ def delete_layout(layout_name):
         if not layout_file.exists():
             return jsonify({"error": f"Layout '{layout_name}' not found"}), 404
 
-        # Check if this layout is currently active
-        active = svc.layout_manager.get_active_layout()
-        if active and active.get("file_name") == f"{layout_name}.json":
-            return jsonify(
-                {"error": "Cannot delete active layout. Deactivate it first."}
-            ), 400
-
         # Delete the file
         layout_file.unlink()
         api_logger.info(f"Deleted layout file: {layout_file}")
@@ -733,86 +776,6 @@ def create_layout():
     except Exception as e:
         api_logger.error(f"Error creating layout: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
-
-
-@screenassign_api.route("/layouts/activate", methods=["POST"])
-def activate_layout():
-    """Activate a layout.
-
-    Payload:
-        {"layout_name": "coding"}
-
-    Response:
-        {
-            "success": true,
-            "layout": "Coding Setup",
-            "rules_applied": 2,
-            "message": "Layout 'Coding Setup' activated successfully"
-        }
-    """
-    data = request.json or {}
-    layout_name = data.get("layout_name")
-
-    if not layout_name:
-        return jsonify({"error": "layout_name is required"}), 400
-
-    try:
-        svc = _require_service()
-        result = svc.layout_manager.activate_layout(layout_name)
-
-        # Apply rules immediately after activation
-        if result.get("success"):
-            svc.apply_rules_now()
-
-        return jsonify(result)
-    except Exception as e:
-        api_logger.error(f"Error activating layout {layout_name}: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}), 400
-
-
-@screenassign_api.route("/layouts/deactivate", methods=["POST"])
-def deactivate_layout():
-    """Deactivate the currently active layout.
-
-    Response:
-        {
-            "success": true,
-            "deactivated": "Coding Setup",
-            "message": "Layout 'Coding Setup' deactivated successfully"
-        }
-    """
-    try:
-        svc = _require_service()
-        result = svc.layout_manager.deactivate_layout()
-        return jsonify(result)
-    except Exception as e:
-        api_logger.error(f"Error deactivating layout: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-
-@screenassign_api.route("/layouts/active", methods=["GET"])
-def get_active_layout():
-    """Get the currently active layout.
-
-    Response:
-        {
-            "name": "Coding Setup",
-            "file_name": "coding.json",
-            "activated_at": "2026-02-02T12:00:00",
-            "rules_created": 2,
-            "display_map": {1: "monitor_123"},
-            "screen_summary": "2 screens: DISPLAY1 (vertical), DISPLAY2 (horizontal)"
-        }
-
-        Or null if no layout is active.
-    """
-    try:
-        svc = _require_service()
-        active_layout = svc.layout_manager.get_active_layout()
-        return jsonify(active_layout)
-    except Exception as e:
-        api_logger.error(f"Error getting active layout: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 
 @screenassign_api.route("/screen-config", methods=["GET"])
@@ -965,19 +928,6 @@ def add_rule_to_layout(layout_name):
 
         api_logger.info(f"Added rule {rule_id} to layout {layout_name}")
 
-        # If this layout is currently active, reload layout data and apply rules immediately
-        active_layout = svc.layout_manager.get_active_layout()
-        if active_layout and active_layout.get("file_name") == f"{layout_name}.json":
-            api_logger.info(
-                "Layout is active, reloading and applying rules immediately"
-            )
-
-            # Reload layout data in active_layout state
-            svc.layout_manager.active_layout["data"] = layout_data
-
-            # Apply rules now
-            svc.apply_rules_now()
-
         return jsonify(
             {
                 "success": True,
@@ -1028,13 +978,6 @@ def delete_rule_from_layout(layout_name, rule_id):
             json.dump(layout_data, f, indent=2, ensure_ascii=False)
 
         api_logger.info(f"Deleted rule {rule_id} from layout {layout_name}")
-
-        # If this layout is currently active, reload layout data
-        active_layout = svc.layout_manager.get_active_layout()
-        if active_layout and active_layout.get("file_name") == f"{layout_name}.json":
-            api_logger.info("Layout is active, reloading layout data")
-            # Reload layout data in active_layout state
-            svc.layout_manager.active_layout["data"] = layout_data
 
         return jsonify(
             {"success": True, "message": f"Rule deleted from layout '{layout_name}'"}

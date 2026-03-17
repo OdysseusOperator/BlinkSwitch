@@ -39,8 +39,8 @@
       "match_type": "exe",
       "match_value": "vivaldi.exe",
       "target_display": 1,
-      "fullscreen": true,
-      "maximize": false
+      "fullscreen": false,
+      "maximize": true
     },
     {
       "rule_id": "rule_4e389e3e",
@@ -79,8 +79,16 @@
       "match_type": "exe",
       "match_value": "WindowsTerminal.exe",
       "target_display": 2,
-      "fullscreen": true,
-      "maximize": false
+      "fullscreen": false,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_61a71bfa",
+      "match_type": "exe",
+      "match_value": "rio.exe",
+      "target_display": 2,
+      "fullscreen": false,
+      "maximize": true
     }
   ],
   "metadata": {

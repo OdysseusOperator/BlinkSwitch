@@ -5,18 +5,18 @@ cd %~dp0
 echo Screeny - Window Switcher
 echo ==========================
 
-REM Check if virtual environment exists
-if not exist .venv (
-    echo Creating virtual environment...
-    python -m venv .venv
+REM Check if frontend virtual environment exists
+if not exist frontend\.venv (
+    echo Creating frontend virtual environment...
+    python -m venv frontend\.venv
 )
 
-REM Activate virtual environment
-call .venv\Scripts\activate.bat
+REM Activate frontend virtual environment
+call frontend\.venv\Scripts\activate.bat
 
 REM Check if requirements are installed
-echo Checking/installing requirements...
-pip install -q -r requirements.txt
+echo Checking/installing frontend requirements...
+pip install -q -r frontend\requirements.txt
 
 REM Wait for ScreenAssign backend to be ready
 echo Waiting for ScreenAssign backend (127.0.0.1:5555) to be ready...

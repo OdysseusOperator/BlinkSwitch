@@ -290,7 +290,7 @@ class LayoutManagementView:
     def __init__(
         self,
         layouts_data: List[Dict[str, Any]],
-        active_layout: Optional[Dict[str, Any]],
+        active_layout: Optional[str],
         activate_fn: Optional[Callable],
         deactivate_fn: Optional[Callable],
         fetch_screen_config_fn: Optional[Callable],
@@ -300,7 +300,7 @@ class LayoutManagementView:
 
         Args:
             layouts_data: List of layout dictionaries from API
-            active_layout: Currently active layout info or None
+            active_layout: Currently active layout name (stem only, e.g. "coding") or None
             activate_fn: Function to activate a layout
             deactivate_fn: Function to deactivate current layout
             fetch_screen_config_fn: Function to fetch current screen config
@@ -373,7 +373,7 @@ class LayoutManagementView:
 
             # Check if this layout is currently active
             active_file_name = (
-                self.active_layout.get("file_name", "") if self.active_layout else ""
+                f"{self.active_layout}.json" if self.active_layout else ""
             )
             is_active = layout["file_name"] == active_file_name
 
@@ -436,7 +436,7 @@ class LayoutManagementView:
 
         # Get current active layout name
         active_name = (
-            self.active_layout.get("file_name", "") if self.active_layout else ""
+            f"{self.active_layout}.json" if self.active_layout else ""
         )
 
         items = []
@@ -1199,10 +1199,11 @@ def register_builtin_commands(
     fetch_screen_config_fn: Optional[Callable] = None,
     activate_layout_fn: Optional[Callable] = None,
     deactivate_layout_fn: Optional[Callable] = None,
-    get_active_layout_fn: Optional[Callable] = None,
+    get_active_layout_name_fn: Optional[Callable] = None,
     fetch_windows_fn: Optional[Callable] = None,
     fetch_settings_fn: Optional[Callable] = None,
     update_settings_fn: Optional[Callable] = None,
+    fetch_layout_data_fn: Optional[Callable] = None,
 ) -> None:
     """
     Register built-in commands.
@@ -1213,10 +1214,11 @@ def register_builtin_commands(
         fetch_screen_config_fn: Function to fetch current screen configuration
         activate_layout_fn: Function to activate a layout
         deactivate_layout_fn: Function to deactivate current layout
-        get_active_layout_fn: Function to get active layout info
+        get_active_layout_name_fn: Function to get active layout name (str | None)
         fetch_windows_fn: Function to fetch all windows
         fetch_settings_fn: Function to fetch application settings
         update_settings_fn: Function to update application settings
+        fetch_layout_data_fn: Function to fetch full layout data dict by name
     """
     registry = get_registry()
 
@@ -1240,7 +1242,7 @@ def register_builtin_commands(
             """Handle /layouts command - show available layouts."""
             logger.info("Executing /layouts command")
             layouts = fetch_layouts_fn()
-            active_layout = get_active_layout_fn() if get_active_layout_fn else None
+            active_layout = get_active_layout_name_fn() if get_active_layout_name_fn else None
             return LayoutManagementView(
                 layouts,
                 active_layout,
@@ -1277,7 +1279,12 @@ def register_builtin_commands(
             """Handle /windows command - show all windows."""
             logger.info("Executing /windows command")
             windows = fetch_windows_fn()
-            active_layout = get_active_layout_fn() if get_active_layout_fn else None
+            active_layout_name = get_active_layout_name_fn() if get_active_layout_name_fn else None
+            active_layout = (
+                fetch_layout_data_fn(active_layout_name)
+                if fetch_layout_data_fn and active_layout_name
+                else None
+            )
             return WindowsView(windows, active_layout)
 
         registry.register(

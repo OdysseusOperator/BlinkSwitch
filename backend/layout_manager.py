@@ -79,7 +79,12 @@ class LayoutError(Exception):
 
 
 class LayoutManager:
-    """Manages layout lifecycle: loading, validation, activation, deactivation."""
+    """Manages layout lifecycle: loading and validation of named layout presets.
+
+    The backend is stateless with respect to layout activation — the frontend
+    tracks which layout is active and passes the layout name explicitly on every
+    /apply-rules and /apply-rule-for-window call.
+    """
 
     def __init__(self, config_manager, monitor_manager, layouts_dir="layouts"):
         """Initialize the layout manager.
@@ -94,9 +99,6 @@ class LayoutManager:
         self.monitor_manager = monitor_manager
         self.layouts_dir = Path(layouts_dir)
         self.matcher = LayoutMatcher(monitor_manager)
-
-        # Active layout state
-        self.active_layout = None  # Dict with name, data, display_map, activated_at
 
         # Ensure layouts directory exists
         if not self.layouts_dir.exists():
@@ -282,185 +284,21 @@ class LayoutManager:
 
         return matches, reason
 
-    def activate_layout(self, layout_name: str) -> Dict:
-        """Activate a layout if screen configuration matches.
+    def get_rules_for_layout(self, layout_name: str) -> List[Dict]:
+        """Load a layout by name and return its rules resolved to current monitors.
 
-        Process:
-        1. Load layout file
-        2. Validate screen requirements match current setup
-        3. Build display map
-        4. Mark layout as active
+        Resolves logical display numbers to physical monitor IDs fresh on every
+        call — the backend is stateless; no active-layout state is stored.
 
         Args:
-            layout_name: Name of the layout to activate
-
-        Returns:
-            Dictionary with activation result:
-            {
-                "success": bool,
-                "layout": str,
-                "rules_applied": int,
-                "message": str
-            }
-
-        Raises:
-            LayoutError: If layout cannot be activated
-        """
-        # Check if a layout is already active
-        if self.active_layout:
-            return {
-                "success": False,
-                "message": f"Layout '{self.active_layout['name']}' is already active. "
-                "Deactivate it first before activating another.",
-            }
-
-        # Load layout
-        try:
-            layout_data = self.load_layout(layout_name)
-        except LayoutError as e:
-            raise LayoutError(f"Cannot load layout: {e}")
-
-        # Check if screen configuration matches
-        can_apply, reason = self.can_apply_layout(layout_data)
-        if not can_apply:
-            raise LayoutError(
-                f"Screen configuration doesn't match layout requirements: {reason}"
-            )
-
-        # Get current screen configuration and build display map
-        screen_config = self.matcher.get_screen_configuration()
-        display_map = self.matcher.build_display_map(screen_config)
-
-        self.logger.info(
-            f"Activating layout '{layout_data['name']}' with display mapping: {display_map}"
-        )
-
-        # Mark layout as active (rules will be read from layout via get_active_rules())
-        self.active_layout = {
-            "name": layout_data["name"],
-            "file_name": layout_name
-            if layout_name.endswith(".json")
-            else f"{layout_name}.json",
-            "data": layout_data,
-            "display_map": display_map,
-            "activated_at": datetime.now().isoformat(),
-        }
-
-        rules_count = len(layout_data.get("rules", []))
-        self.logger.info(
-            f"Successfully activated layout '{layout_data['name']}' with {rules_count} rule(s)"
-        )
-
-        return {
-            "success": True,
-            "layout": layout_data["name"],
-            "rules_applied": rules_count,
-            "message": f"Layout '{layout_data['name']}' activated successfully",
-        }
-
-    def deactivate_layout(self) -> Dict:
-        """Deactivate the currently active layout.
-
-        Process:
-        1. Clear active layout state (rules stop being applied)
-
-        Returns:
-            Dictionary with deactivation result:
-            {
-                "success": bool,
-                "deactivated": str,
-                "message": str
-            }
-        """
-        if not self.active_layout:
-            return {
-                "success": False,
-                "message": "No active layout to deactivate",
-            }
-
-        layout_name = self.active_layout["name"]
-        self.logger.info(f"Deactivating layout '{layout_name}'")
-
-        # Clear state (rules will no longer be applied)
-        self.active_layout = None
-
-        self.logger.info(f"Layout '{layout_name}' deactivated")
-
-        return {
-            "success": True,
-            "deactivated": layout_name,
-            "message": f"Layout '{layout_name}' deactivated successfully",
-        }
-
-    def check_active_layout_validity(self) -> bool:
-        """Check if active layout still matches screen configuration.
-
-        Auto-deactivates if screens have changed (wrong count, orientation, etc.)
-        Should be called periodically by service loop.
-
-        Returns:
-            True if no active layout or layout is still valid
-            False if layout was auto-deactivated due to screen changes
-        """
-        if not self.active_layout:
-            return True  # No active layout, nothing to check
-
-        layout_name = self.active_layout["name"]
-        layout_data = self.active_layout["data"]
-
-        # Check if current screen config still matches
-        can_apply, reason = self.can_apply_layout(layout_data)
-
-        if not can_apply:
-            self.logger.warning(
-                f"Active layout '{layout_name}' no longer valid: {reason}. Auto-deactivating."
-            )
-            self.deactivate_layout()
-            return False
-
-        self.logger.debug(f"Active layout '{layout_name}' still valid")
-        return True
-
-    def get_active_layout(self) -> Optional[Dict]:
-        """Get information about the currently active layout.
-
-        Returns:
-            Dictionary with active layout info, or None if no layout active
-            {
-                "name": str,
-                "file_name": str,
-                "activated_at": str,
-                "rules_created": int,
-                "display_map": dict,
-                "screen_summary": str
-            }
-        """
-        if not self.active_layout:
-            return None
-
-        # Get current screen config for summary
-        screen_config = self.matcher.get_screen_configuration()
-        screen_summary = self.matcher.get_screen_summary(screen_config)
-
-        return {
-            "name": self.active_layout["name"],
-            "file_name": self.active_layout["file_name"],
-            "activated_at": self.active_layout["activated_at"],
-            "rules_count": len(self.active_layout["data"].get("rules", [])),
-            "display_map": self.active_layout["display_map"],
-            "screen_summary": screen_summary,
-            "data": self.active_layout["data"],  # Include full data for UI
-        }
-
-    def get_active_rules(self) -> List[Dict]:
-        """Get rules from the active layout, resolved to current monitors.
-
-        Reads rules directly from the active layout file and maps logical
-        display numbers to physical monitor IDs using the display_map.
+            layout_name: Name of the layout file (with or without .json extension).
+                         Must be non-empty.
 
         Returns:
             List of runtime rules with target_monitor_id resolved.
-            Empty list if no layout is active.
+
+        Raises:
+            LayoutError: If layout_name is empty, file not found, or invalid.
 
         Example return:
             [
@@ -474,14 +312,21 @@ class LayoutManager:
                 }
             ]
         """
-        if not self.active_layout:
-            self.logger.debug("No active layout - returning empty rules list")
-            return []
+        if not layout_name or not layout_name.strip():
+            raise LayoutError("layout_name must be a non-empty string")
 
-        layout_data = self.active_layout["data"]
-        display_map = self.active_layout["display_map"]
+        # Load and validate the layout file (raises LayoutError on failure)
+        layout_data = self.load_layout(layout_name)
+
+        # Build display map fresh from current screen configuration
+        screen_config = self.matcher.get_screen_configuration()
+        display_map = self.matcher.build_display_map(screen_config)
+
+        self.logger.debug(
+            f"Resolving rules for layout '{layout_data['name']}' with display_map={display_map}"
+        )
+
         rules = []
-
         for layout_rule in layout_data.get("rules", []):
             target_display = layout_rule.get("target_display")
 
@@ -500,19 +345,18 @@ class LayoutManager:
 
             target_monitor_id = display_map[target_display]
 
-            # Create runtime rule
             rule = {
                 "rule_id": layout_rule.get("rule_id", f"rule_{uuid.uuid4().hex[:8]}"),
                 "match_type": layout_rule["match_type"],
                 "match_value": layout_rule["match_value"],
-                "target_monitor_id": target_monitor_id,  # Resolved at runtime
+                "target_monitor_id": target_monitor_id,
                 "fullscreen": layout_rule.get("fullscreen", False),
                 "maximize": layout_rule.get("maximize", False),
             }
             rules.append(rule)
 
         self.logger.debug(
-            f"Resolved {len(rules)} rule(s) from active layout '{self.active_layout['name']}'"
+            f"Resolved {len(rules)} rule(s) from layout '{layout_data['name']}'"
         )
         return rules
 
@@ -550,6 +394,7 @@ class LayoutManager:
             "screen_requirements": layout_data.get("screen_requirements", {}),
             "current_screen_config": current_config,
             "rules_count": len(layout_data.get("rules", [])),
+            "data": layout_data,
         }
 
     def create_layout_from_current_config(

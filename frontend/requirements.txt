@@ -1,0 +1,6 @@
+raylib>=5.5.0
+requests
+rapidfuzz
+pynput
+keyboard
+mouse
