@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import sys
@@ -22,10 +23,11 @@ def setup_logging(log_file=None):
 
     # Configure logging
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    _stdout_utf8 = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
     logging.basicConfig(
         level=logging.INFO,
         format=log_format,
-        handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
+        handlers=[logging.FileHandler(log_file, encoding="utf-8"), logging.StreamHandler(_stdout_utf8)],
     )
 
     # Create a logger for this module

@@ -1,6 +1,8 @@
+import io
 import os
 import json
 import logging
+import sys
 import time
 import threading
 from datetime import datetime
@@ -20,10 +22,11 @@ LOG_FILE = os.path.join(
 )
 
 # Configure logging
+_stderr_utf8 = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace", line_buffering=True)
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s [%(name)s] [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()],
+    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler(_stderr_utf8)],
 )
 api_logger = logging.getLogger("ScreenAssign.API")
 
@@ -1783,10 +1786,11 @@ if __name__ == "__main__" or __name__ == "backend.backend":
     import sys
 
     # Set up logging
+    _stdout_utf8 = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[logging.StreamHandler(sys.stdout)],
+        handlers=[logging.StreamHandler(_stdout_utf8)],
     )
 
     # Create Flask app
