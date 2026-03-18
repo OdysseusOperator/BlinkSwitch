@@ -789,7 +789,7 @@ def main() -> None:
             | rl.FLAG_MSAA_4X_HINT
             | rl.FLAG_WINDOW_HIGHDPI  # Handle Windows DPI scaling correctly
         )
-        rl.InitWindow(720, 420, b"__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__")
+        rl.InitWindow(720, 500, b"__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__")
 
         rl.SetTargetFPS(60)
 
@@ -1016,7 +1016,7 @@ def main() -> None:
         query = ""
         selected = 0
         scroll_offset = 0
-        max_visible_rows = 8
+        max_visible_rows = 12
         is_loading = False  # Track if data is being fetched
 
         # Usage ordering (most-recently used apps first)
@@ -2061,7 +2061,7 @@ def main() -> None:
                                     "utf-8", errors="ignore"
                                 ),
                                 20,
-                                360,
+                                442,
                                 FONT_SIZE - 4,
                                 (200, 200, 200, 255),
                             )
@@ -2235,7 +2235,7 @@ def main() -> None:
                                 else len(filtered)
                             )
                             if items_count > max_visible_rows:
-                                scrollbar_y = 120
+                                scrollbar_y = base_y
                                 scrollbar_height = max_visible_rows * 28
                                 scroll_ratio = scroll_offset / items_count
                                 handle_height = (
@@ -2268,7 +2268,7 @@ def main() -> None:
                             draw_text(
                                 help_text,
                                 20,
-                                360,
+                                442,
                                 FONT_SIZE - 4,
                                 (200, 200, 200, 255),
                             )
