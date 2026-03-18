@@ -23,7 +23,7 @@
       "match_type": "exe",
       "match_value": "wezterm-gui.exe",
       "target_display": 2,
-      "fullscreen": true,
+      "fullscreen": false,
       "maximize": true
     },
     {
@@ -63,16 +63,15 @@
       "match_type": "exe",
       "match_value": "OUTLOOK.EXE",
       "target_display": 2,
-      "fullscreen": true,
-      "maximize": false
+      "maximize": true
     },
     {
       "rule_id": "rule_6f9442ad",
       "match_type": "exe",
       "match_value": "msedge.exe",
       "target_display": 2,
-      "fullscreen": true,
-      "maximize": false
+      "fullscreen": false,
+      "maximize": true
     },
     {
       "rule_id": "rule_5b16e291",
@@ -88,6 +87,35 @@
       "match_value": "rio.exe",
       "target_display": 2,
       "fullscreen": false,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_0f2a143a",
+      "match_type": "exe",
+      "match_value": "dbeaver.exe",
+      "target_display": 2,
+      "fullscreen": false,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_f6111ad5",
+      "match_type": "exe",
+      "match_value": "ms-teams.exe",
+      "target_display": 2,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_97557e46",
+      "match_type": "exe",
+      "match_value": "ApplicationFrameHost.exe",
+      "target_display": 2,
+      "maximize": true
+    },
+    {
+      "rule_id": "rule_411e73a0",
+      "match_type": "exe",
+      "match_value": "msrdc.exe",
+      "target_display": 2,
       "maximize": true
     }
   ],

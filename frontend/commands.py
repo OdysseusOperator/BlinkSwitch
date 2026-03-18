@@ -177,7 +177,7 @@ class MonitorManagementView:
         self.monitors = monitors_data
         self.selected = 0
         self.scroll_offset = 0
-        self.max_visible_rows = 8
+        self.max_visible_rows = 12
         logger.info(
             f"MonitorManagementView initialized with {len(monitors_data)} monitors"
         )
@@ -312,7 +312,7 @@ class LayoutManagementView:
         self.fetch_screen_config_fn = fetch_screen_config_fn
         self.selected = 0
         self.scroll_offset = 0
-        self.max_visible_rows = 8
+        self.max_visible_rows = 12
         self.error_message = None
         logger.info(
             f"LayoutManagementView initialized with {len(layouts_data)} layouts"
@@ -495,6 +495,7 @@ class ScreenConfigView:
         """
         self.screens = screen_config_data.get("screens", [])
         self.summary = screen_config_data.get("summary", "")
+        self.max_visible_rows = 12
         logger.info(f"ScreenConfigView initialized with {len(self.screens)} screens")
 
     def handle_input(
@@ -591,7 +592,7 @@ class WindowsView:
         self.active_layout = active_layout
         self.selected = 0
         self.scroll_offset = 0
-        self.max_visible_rows = 8
+        self.max_visible_rows = 12
         self.error_message = None
 
         # Identify which windows have rules (for visual feedback)
@@ -757,7 +758,7 @@ class WindowDetailsView:
     """
     UI View for configuring a specific window to be added to a layout.
 
-    Allows selecting target display, fullscreen/maximize options, then saves rule.
+    Allows selecting target display and maximize options, then saves rule.
     """
 
     def __init__(
@@ -783,10 +784,10 @@ class WindowDetailsView:
 
         self.selected = 0
         self.scroll_offset = 0
+        self.max_visible_rows = 12
 
         # Configuration options
         self.selected_display = 1  # Default to Display 1 (logical display number)
-        self.fullscreen = False
         self.maximize = False
 
         # Check for existing rule (for edit mode)
@@ -802,7 +803,6 @@ class WindowDetailsView:
                 self.is_edit_mode = True
                 # Pre-populate values from existing rule
                 self.selected_display = self.existing_rule.get("target_display", 1)
-                self.fullscreen = self.existing_rule.get("fullscreen", False)
                 self.maximize = self.existing_rule.get("maximize", False)
                 logger.info(
                     f"Edit mode: Loading existing rule {self.existing_rule.get('rule_id')} for {window_data.get('title', 'Unknown')}"
@@ -830,7 +830,6 @@ class WindowDetailsView:
         Navigation:
         - Up/Down: Select option
         - Enter: Toggle option or save
-        - f: Toggle fullscreen
         - m: Toggle maximize
         - s: Save rule and close
         - Esc/Backspace: Go back
@@ -852,8 +851,8 @@ class WindowDetailsView:
         if key_escape or key_backspace:
             return "close"
 
-        # Get total items count (screens + 2 options + 1 save button)
-        total_items = len(self.screens) + 3
+        # Get total items count (screens + maximize option + save button)
+        total_items = len(self.screens) + 2
 
         # Navigation
         if key_down:
@@ -870,22 +869,15 @@ class WindowDetailsView:
                 self.selected_display = self.screens[self.selected]["display_number"]
                 logger.info(f"Selected display: {self.selected_display}")
             elif self.selected == len(self.screens):
-                # Toggle fullscreen
-                self.fullscreen = not self.fullscreen
-                logger.info(f"Fullscreen toggled to: {self.fullscreen}")
-            elif self.selected == len(self.screens) + 1:
                 # Toggle maximize
                 self.maximize = not self.maximize
                 logger.info(f"Maximize toggled to: {self.maximize}")
-            elif self.selected == len(self.screens) + 2:
+            elif self.selected == len(self.screens) + 1:
                 # Save button
                 return "save"
 
         # Keyboard shortcuts
-        if ch == ord("f") or ch == ord("F"):
-            self.fullscreen = not self.fullscreen
-            logger.info(f"Fullscreen toggled to: {self.fullscreen}")
-        elif ch == ord("m") or ch == ord("M"):
+        if ch == ord("m") or ch == ord("M"):
             self.maximize = not self.maximize
             logger.info(f"Maximize toggled to: {self.maximize}")
         elif ch == ord("s") or ch == ord("S"):
@@ -927,10 +919,6 @@ class WindowDetailsView:
                 }
             )
 
-        # Add fullscreen option
-        fullscreen_marker = "[X]" if self.fullscreen else "[ ]"
-        items.append({"label": f"{fullscreen_marker} Fullscreen", "connected": True})
-
         # Add maximize option
         maximize_marker = "[X]" if self.maximize else "[ ]"
         items.append({"label": f"{maximize_marker} Maximize", "connected": True})
@@ -941,7 +929,7 @@ class WindowDetailsView:
 
         # Build help text
         help_parts = [f"Window: {exe_name}"]
-        help_parts.append("F=fullscreen M=maximize S=save")
+        help_parts.append("M=maximize S=save")
         if self.is_edit_mode:
             help_parts.append("D=delete")
         help_parts.append("Esc=cancel")
@@ -977,7 +965,6 @@ class WindowDetailsView:
             "match_type": "exe",
             "match_value": exe_name,
             "target_display": self.selected_display,  # Logical display number (1, 2, 3...)
-            "fullscreen": self.fullscreen,
             "maximize": self.maximize,
         }
 
@@ -1015,6 +1002,7 @@ class SettingsView:
             "center_mouse_on_switch",
         ]
         self.selected = 0
+        self.max_visible_rows = 12
         self.error_message = None
 
         logger.info("SettingsView initialized")

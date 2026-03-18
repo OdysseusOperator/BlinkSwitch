@@ -21,6 +21,19 @@ from .commands import (
     WindowDetailsView,
     SettingsView,
 )
+from .colors import (
+    ACCENT_HIGHLIGHT,
+    ACCENT_SELECTION,
+    BACKGROUND,
+    DIVIDER,
+    INPUT_BACKGROUND,
+    INPUT_BORDER,
+    SCROLLBAR_HANDLE,
+    SCROLLBAR_TRACK,
+    TEXT_MUTED,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+)
 
 # Tab API configuration
 TABS_API_URL = "http://127.0.0.1:5555/screenassign"  # Use IP instead of localhost for faster connection
@@ -353,8 +366,8 @@ def focus_window_async(hwnd: int) -> None:
 def apply_rule_for_window_async(hwnd: int, layout_name: Optional[str]) -> None:
     """Fire-and-forget: ask the backend to apply the matching layout rule for a window.
 
-    Called after focusing a window so that layout rules (e.g. fullscreen on a
-    specific monitor) are enforced immediately on switch, rather than waiting
+    Called after focusing a window so that layout rules are enforced
+    immediately on switch, rather than waiting
     for the background timer.
     """
     if layout_name is None:
@@ -384,10 +397,54 @@ def apply_rule_for_window_async(hwnd: int, layout_name: Optional[str]) -> None:
                 )
         except Exception as e:
             logger.warning(f"apply-rule-for-window failed for hwnd={hwnd}: {e}")
+
+    thread = threading.Thread(target=_apply_in_background, daemon=True)
+    thread.start()
+
+
+def switch_to_window_async(
+    hwnd: int,
+    layout_name: Optional[str],
+    center_mouse: bool,
+) -> None:
+    """Focus a window, apply its layout rule, then optionally center the mouse."""
+
+    def _switch_in_background():
+        try:
+            focus_window_with_retry(hwnd)
+        except Exception as e:
+            logger.warning(f"Focus failed for hwnd={hwnd}: {e}")
+
+        try:
+            if layout_name is not None:
+                response = _http_session.post(
+                    f"{TABS_API_URL}/apply-rule-for-window",
+                    json={"hwnd": hwnd, "layout_name": layout_name},
+                    timeout=10.0,
+                )
+                if response.ok:
+                    result = response.json()
+                    logger.info(
+                        f"Rule applied for hwnd={hwnd}: matched={result.get('matched')}, "
+                        f"changed={result.get('changed')}, ops={result.get('operations')}, "
+                        f"msg={result.get('message')}"
+                    )
+                else:
+                    logger.warning(
+                        f"apply-rule-for-window returned {response.status_code} for hwnd={hwnd}"
+                    )
+            else:
+                logger.debug(
+                    f"switch_to_window_async: no active layout, skipping rule apply for hwnd={hwnd}"
+                )
         except Exception as e:
             logger.warning(f"apply-rule-for-window failed for hwnd={hwnd}: {e}")
 
-    thread = threading.Thread(target=_apply_in_background, daemon=True)
+        if center_mouse:
+            time.sleep(0.15)
+            center_mouse_on_window(hwnd)
+
+    thread = threading.Thread(target=_switch_in_background, daemon=True)
     thread.start()
 
 
@@ -789,7 +846,15 @@ def main() -> None:
             | rl.FLAG_MSAA_4X_HINT
             | rl.FLAG_WINDOW_HIGHDPI  # Handle Windows DPI scaling correctly
         )
-        rl.InitWindow(720, 500, b"__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__")
+        window_width = 720
+        window_height = 430
+        help_text_y = 404
+
+        rl.InitWindow(
+            window_width,
+            window_height,
+            b"__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__",
+        )
 
         rl.SetTargetFPS(60)
 
@@ -980,9 +1045,14 @@ def main() -> None:
                 except Exception as e:
                     print(f"DrawTextEx error: {e}")
                     # Fallback to default font with default color
-                    rl.DrawText(text, x, y, int(size), (255, 255, 255, 255))
+                    rl.DrawText(text, x, y, int(size), TEXT_PRIMARY)
             else:
-                rl.DrawText(text, x, y, int(size), (255, 255, 255, 255))
+                rl.DrawText(text, x, y, int(size), TEXT_PRIMARY)
+
+        def draw_horizontal_rule(y, x=20, width=680):
+            """Draw a subtle horizontal divider line."""
+
+            rl.DrawRectangle(x, int(y), width, 1, DIVIDER)
 
         # Hide window initially
         try:
@@ -1016,6 +1086,7 @@ def main() -> None:
         query = ""
         selected = 0
         scroll_offset = 0
+        list_visible_rows = 12
         max_visible_rows = 12
         is_loading = False  # Track if data is being fetched
 
@@ -1889,26 +1960,26 @@ def main() -> None:
                                         )
                                         _save_last_used()
 
-                                        # Start async focus in background (fire and forget)
-                                        focus_window_async(hwnd)
-                                        print(
-                                            f"Focus requested for hwnd={hwnd} (async)"
-                                        )
-
-                                        # Apply layout rule for this window immediately after switching
-                                        apply_rule_for_window_async(hwnd, active_layout)
-
-                                        # Center mouse on window's monitor if enabled
+                                        # Capture switch behavior before closing UI.
                                         try:
                                             settings = fetch_settings()
-                                            if settings.get(
+                                            center_mouse_on_switch = settings.get(
                                                 "center_mouse_on_switch", False
-                                            ):
-                                                center_mouse_on_window(hwnd)
+                                            )
                                         except Exception as e:
+                                            center_mouse_on_switch = False
                                             logger.warning(
                                                 f"Failed to check mouse centering setting: {e}"
                                             )
+
+                                        switch_to_window_async(
+                                            hwnd,
+                                            active_layout,
+                                            center_mouse_on_switch,
+                                        )
+                                        print(
+                                            f"Switch requested for hwnd={hwnd} (async)"
+                                        )
 
                                         # Close window immediately without waiting
                                         window_visible = False
@@ -1918,7 +1989,7 @@ def main() -> None:
 
                         # Draw
                         rl.BeginDrawing()
-                        rl.ClearBackground((50, 50, 50, 255))  # Light grey background
+                        rl.ClearBackground(BACKGROUND)
 
                         # Draw based on current mode
                         if text_input_mode:
@@ -1929,7 +2000,7 @@ def main() -> None:
                                 20,
                                 16,
                                 FONT_SIZE,
-                                (200, 200, 200, 255),
+                                TEXT_SECONDARY,
                             )
 
                             # Prompt
@@ -1938,12 +2009,12 @@ def main() -> None:
                                 20,
                                 60,
                                 FONT_SIZE - 4,
-                                (180, 180, 180, 255),
+                                TEXT_SECONDARY,
                             )
 
                             # Input box background
-                            rl.DrawRectangle(20, 90, 680, 40, (70, 70, 70, 255))
-                            rl.DrawRectangleLines(20, 90, 680, 40, (100, 100, 100, 255))
+                            rl.DrawRectangle(20, 90, 680, 40, INPUT_BACKGROUND)
+                            rl.DrawRectangleLines(20, 90, 680, 40, INPUT_BORDER)
 
                             # Input text with cursor
                             input_display = text_input_value + "_"
@@ -1952,16 +2023,16 @@ def main() -> None:
                                 30,
                                 100,
                                 FONT_SIZE,
-                                (255, 255, 255, 255),
+                                TEXT_PRIMARY,
                             )
 
                             # Help text
                             draw_text(
                                 b"Enter to create | Esc to cancel",
                                 20,
-                                380,
+                                help_text_y,
                                 FONT_SIZE - 8,
-                                (150, 150, 150, 255),
+                                TEXT_MUTED,
                             )
 
                         elif current_view is not None:
@@ -1988,7 +2059,7 @@ def main() -> None:
                                 20,
                                 16,
                                 FONT_SIZE,
-                                (200, 200, 200, 255),
+                                TEXT_SECONDARY,
                             )
 
                             # Draw count
@@ -2016,10 +2087,15 @@ def main() -> None:
                                 520,
                                 16,
                                 FONT_SIZE - 8,
-                                (150, 150, 150, 255),
+                                TEXT_MUTED,
                             )
 
                             base_y = 55
+                            list_top_y = base_y - 10
+                            list_rows = list_visible_rows
+                            list_bottom_y = base_y + list_rows * 28 - 6
+
+                            draw_horizontal_rule(list_top_y)
 
                             # Draw monitor items
                             for idx, item in enumerate(render_data["items"]):
@@ -2028,14 +2104,14 @@ def main() -> None:
 
                                 if is_sel:
                                     draw_text(
-                                        b">", 20, y, FONT_SIZE, (135, 206, 235, 255)
+                                        b">", 20, y, FONT_SIZE, ACCENT_SELECTION
                                     )
 
                                 # Color: yellow for has rule, white for no rule
                                 color = (
-                                    (255, 255, 0, 255)  # Yellow if has rule
+                                    ACCENT_HIGHLIGHT
                                     if item["connected"]
-                                    else (255, 255, 255, 255)  # White if no rule
+                                    else TEXT_PRIMARY
                                 )
 
                                 label_x = 40 if is_sel else 38
@@ -2055,28 +2131,30 @@ def main() -> None:
                                     color,
                                 )
 
+                            draw_horizontal_rule(list_bottom_y)
+
                             # Draw help text
                             draw_text(
                                 render_data["help_text"].encode(
                                     "utf-8", errors="ignore"
                                 ),
                                 20,
-                                442,
+                                help_text_y,
                                 FONT_SIZE - 4,
-                                (200, 200, 200, 255),
+                                TEXT_SECONDARY,
                             )
 
                         else:
                             # Normal window/command list mode
                             draw_text(
-                                b"query:", 20, 16, FONT_SIZE, (200, 200, 200, 255)
+                                b"query:", 20, 16, FONT_SIZE, TEXT_SECONDARY
                             )
                             draw_text(
                                 query.encode("utf-8", errors="ignore"),
                                 100,
                                 16,
                                 FONT_SIZE,
-                                (150, 150, 150, 255),
+                                TEXT_MUTED,
                             )
 
                             # Draw count or loading indicator in top right
@@ -2098,11 +2176,20 @@ def main() -> None:
                                 int(700 - count_width),
                                 16,
                                 FONT_SIZE - 8,
-                                (150, 150, 150, 255),
+                                TEXT_MUTED,
                             )
 
                             # Draw items (commands or windows) with scrolling
                             base_y = 55
+                            list_top_y = base_y - 10
+                            items_count = (
+                                len(filtered_commands)
+                                if in_command_mode
+                                else len(filtered)
+                            )
+                            list_bottom_y = base_y + max_visible_rows * 28 - 6
+
+                            draw_horizontal_rule(list_top_y)
 
                             if in_command_mode:
                                 # Draw commands
@@ -2115,7 +2202,7 @@ def main() -> None:
                                     is_sel = actual_idx == selected
                                     if is_sel:
                                         draw_text(
-                                            b">", 20, y, FONT_SIZE, (135, 206, 235, 255)
+                                            b">", 20, y, FONT_SIZE, ACCENT_SELECTION
                                         )
 
                                     label_x = 40 if is_sel else 38
@@ -2133,7 +2220,7 @@ def main() -> None:
                                         label_x,
                                         y,
                                         FONT_SIZE,
-                                        (255, 255, 255, 255),
+                                        TEXT_PRIMARY,
                                     )
                             else:
                                 # Draw windows
@@ -2146,7 +2233,7 @@ def main() -> None:
                                     is_sel = actual_idx == selected
                                     if is_sel:
                                         draw_text(
-                                            b">", 20, y, FONT_SIZE, (135, 206, 235, 255)
+                                            b">", 20, y, FONT_SIZE, ACCENT_SELECTION
                                         )
 
                                     # Trim long labels so they don't overlap the scrollbar.
@@ -2181,7 +2268,7 @@ def main() -> None:
                                                 current_x,
                                                 y,
                                                 FONT_SIZE,
-                                                (255, 255, 255, 255),
+                                                TEXT_PRIMARY,
                                             )
                                             current_x += (
                                                 len(label_text[:match_start]) * char_px
@@ -2196,7 +2283,7 @@ def main() -> None:
                                             current_x,
                                             y,
                                             FONT_SIZE,
-                                            (255, 255, 0, 255),
+                                            ACCENT_HIGHLIGHT,
                                         )
                                         current_x += (
                                             len(label_text[match_start:match_end])
@@ -2213,7 +2300,7 @@ def main() -> None:
                                                 current_x,
                                                 y,
                                                 FONT_SIZE,
-                                                (255, 255, 255, 255),
+                                                TEXT_PRIMARY,
                                             )
                                     else:
                                         # No match or no query - draw normally
@@ -2225,38 +2312,43 @@ def main() -> None:
                                             label_x,
                                             y,
                                             FONT_SIZE,
-                                            (255, 255, 255, 255),
+                                            TEXT_PRIMARY,
                                         )
 
+                            draw_horizontal_rule(list_bottom_y)
+
                             # Draw scrollbar indicator
-                            items_count = (
-                                len(filtered_commands)
-                                if in_command_mode
-                                else len(filtered)
-                            )
                             if items_count > max_visible_rows:
-                                scrollbar_y = base_y
-                                scrollbar_height = max_visible_rows * 28
-                                scroll_ratio = scroll_offset / items_count
-                                handle_height = (
-                                    max_visible_rows / items_count
-                                ) * scrollbar_height
+                                scrollbar_y = list_top_y
+                                scrollbar_height = list_bottom_y - list_top_y + 1
+                                max_scroll_offset = items_count - max_visible_rows
+                                scroll_ratio = (
+                                    scroll_offset / max_scroll_offset
+                                    if max_scroll_offset > 0
+                                    else 0
+                                )
+                                handle_height = max(
+                                    18,
+                                    (max_visible_rows / items_count)
+                                    * scrollbar_height,
+                                )
                                 handle_y = scrollbar_y + (
-                                    scroll_ratio * scrollbar_height
+                                    scroll_ratio
+                                    * max(0, scrollbar_height - handle_height)
                                 )
                                 rl.DrawRectangle(
                                     700,
                                     int(scrollbar_y),
                                     8,
                                     int(scrollbar_height),
-                                    (100, 100, 100, 255),
+                                    SCROLLBAR_TRACK,
                                 )
                                 rl.DrawRectangle(
                                     700,
                                     int(handle_y),
                                     8,
                                     int(handle_height),
-                                    (150, 150, 150, 255),
+                                    SCROLLBAR_HANDLE,
                                 )
 
                             # Draw help text
@@ -2268,9 +2360,9 @@ def main() -> None:
                             draw_text(
                                 help_text,
                                 20,
-                                442,
+                                help_text_y,
                                 FONT_SIZE - 4,
-                                (200, 200, 200, 255),
+                                TEXT_SECONDARY,
                             )
                         rl.EndDrawing()
                     except Exception as e:

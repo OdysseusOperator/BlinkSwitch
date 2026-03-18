@@ -897,10 +897,10 @@ def add_rule_to_layout(layout_name):
                     layout_data["rules"][i].update(
                         {
                             "target_display": target_display,
-                            "fullscreen": data.get("fullscreen", False),
                             "maximize": data.get("maximize", False),
                         }
                     )
+                    layout_data["rules"][i].pop("fullscreen", None)
                     api_logger.info(
                         f"Updated existing rule {rule_id} in layout {layout_name}"
                     )
@@ -917,7 +917,6 @@ def add_rule_to_layout(layout_name):
                 "match_type": data.get("match_type"),
                 "match_value": data.get("match_value"),
                 "target_display": target_display,
-                "fullscreen": data.get("fullscreen", False),
                 "maximize": data.get("maximize", False),
             }
 
