@@ -604,15 +604,16 @@ class WindowManager:
 
         return {"changed": True, "operations": operations}
 
-    def apply_rules_for_window(self, hwnd: int, layout_name: str) -> dict:
+    def apply_rules_for_window(self, hwnd: int, layout_name: str, assignment: dict) -> dict:
         """Apply rules to a single window identified by hwnd.
 
         Finds a matching rule for the given window and applies it.
-        Much faster than apply_rules() — only processes one window.
+        Much faster than apply_rules() -- only processes one window.
 
         Args:
             hwnd: Window handle to apply rules to
             layout_name: Name of the layout whose rules to apply
+            assignment:  Slot->identity_key mapping from the frontend
 
         Returns:
             dict with keys:
@@ -632,7 +633,7 @@ class WindowManager:
             }
 
         try:
-            rules = self.layout_manager.get_rules_for_layout(layout_name)
+            rules = self.layout_manager.get_rules_for_layout(layout_name, assignment)
         except Exception as e:
             return {
                 "matched": False,
@@ -741,11 +742,12 @@ class WindowManager:
             ),
         }
 
-    def apply_rules(self, layout_name: str):
+    def apply_rules(self, layout_name: str, assignment: dict):
         """Apply window placement rules from the specified layout.
 
         Args:
             layout_name: Name of the layout whose rules to apply
+            assignment:  Slot->identity_key mapping from the frontend
 
         Returns:
             dict: Summary of applied rules
@@ -764,7 +766,7 @@ class WindowManager:
             }
 
         try:
-            rules = self.layout_manager.get_rules_for_layout(layout_name)
+            rules = self.layout_manager.get_rules_for_layout(layout_name, assignment)
         except Exception as e:
             self.logger.error(f"Could not load rules for layout '{layout_name}': {e}")
             return {

@@ -192,8 +192,11 @@ class MonitorManager:
         """Get all connected monitors with runtime DPI information.
 
         Returns:
-            list: List of monitor dicts with added dpi_scale field
+            list: List of monitor dicts with added dpi_scale and identity_key fields.
+                  identity_key is formatted as  x_y_W_H  (e.g. "-1920_0_1080_1920")
+                  and is used by the frontend to build the slot→monitor assignment.
         """
+        self.detect_monitors()
         monitors_with_dpi = []
 
         for monitor_id, monitor in self.connected_monitors.items():
@@ -204,6 +207,10 @@ class MonitorManager:
                 dpi_scale = self._detect_monitor_dpi_scale(monitor)
                 monitor_info = monitor_config.copy()
                 monitor_info["dpi_scale"] = dpi_scale
+                # Add identity key used for slot assignment
+                monitor_info["identity_key"] = (
+                    f"{monitor.x}_{monitor.y}_{monitor_config['width']}_{monitor_config['height']}"
+                )
                 monitors_with_dpi.append(monitor_info)
 
         return monitors_with_dpi

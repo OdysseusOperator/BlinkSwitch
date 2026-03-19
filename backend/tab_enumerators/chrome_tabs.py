@@ -169,3 +169,35 @@ class ChromeTabManager(TabEnumerator):
             if tab["id"] == tab_id:
                 return tab
         return None
+
+    def get_chrome_window_index(self, chrome_window_id: int, exe_name: str) -> int:
+        """Return the 0-based creation-order index of a Chrome window among all windows
+        belonging to the same browser executable.
+
+        Chrome assigns window IDs sequentially; sorting them ascending gives a reasonable
+        proxy for creation order, which correlates with Win32 HWND ordering.
+
+        Args:
+            chrome_window_id: The chrome windowId from the tab data.
+            exe_name: Executable name used to scope to the right browser
+                      (e.g. "msedge.exe").
+
+        Returns:
+            0-based index, or 0 if the window id is not found.
+        """
+        with self._lock:
+            window_ids: set[int] = set()
+            for data in self._tabs_data.values():
+                browser_name = data.get("browser_name", "Chrome")
+                if self._get_exe_name(browser_name) != exe_name:
+                    continue
+                for tab in data.get("tabs", []):
+                    wid = tab.get("windowId")
+                    if wid is not None:
+                        window_ids.add(int(wid))
+
+            sorted_ids = sorted(window_ids)
+            try:
+                return sorted_ids.index(int(chrome_window_id))
+            except ValueError:
+                return 0

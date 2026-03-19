@@ -151,23 +151,33 @@ async function checkForActivationCommands() {
       
       for (const cmd of commands) {
         if (cmd.action === 'activateTab' && cmd.tabId) {
-          console.log(`Activating tab ${cmd.tabId}`);
+          console.log(`Activating tab ${cmd.tabId} in window ${cmd.windowId}`);
           
-          // Activate the tab
-          chrome.tabs.update(cmd.tabId, { active: true }, (tab) => {
-            if (chrome.runtime.lastError) {
-              console.error('Tab activation failed:', chrome.runtime.lastError);
-            } else if (tab) {
-              // Also focus the window
-              chrome.windows.update(tab.windowId, { focused: true });
-              console.log(`Tab ${cmd.tabId} activated successfully`);
+          try {
+            // Step 1: make the tab active within its window
+            const tab = await chrome.tabs.update(cmd.tabId, { active: true });
+
+            if (tab) {
+              // Step 2: bring the browser window to the foreground.
+              // focused:true is sufficient when Edge is already the foreground
+              // Win32 window (which the backend ensures via SetForegroundWindow).
+              // drawAttention covers cases where Windows blocks the focus change.
+              await chrome.windows.update(tab.windowId, {
+                focused: true,
+                drawAttention: true,
+              });
+              console.log(`Tab ${cmd.tabId} activated successfully in window ${tab.windowId}`);
+            } else {
+              console.warn(`Tab ${cmd.tabId} not found or could not be activated`);
             }
-            
-            // Acknowledge command (always, even on failure)
-            fetch(`${API_BASE_URL}/chrome-commands/${cmd.id}`, {
-              method: 'DELETE'
-            }).catch(err => console.error('Failed to acknowledge command:', err));
-          });
+          } catch (err) {
+            console.error(`Tab activation error for tab ${cmd.tabId}:`, err);
+          }
+
+          // Acknowledge command (always, even on failure)
+          fetch(`${API_BASE_URL}/chrome-commands/${cmd.id}`, {
+            method: 'DELETE'
+          }).catch(err => console.error('Failed to acknowledge command:', err));
         }
       }
     }

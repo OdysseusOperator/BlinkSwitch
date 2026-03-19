@@ -481,22 +481,60 @@ class LayoutManagementView:
         }
 
 
-class ScreenConfigView:
+class AssignView:
     """
-    UI View for displaying current screen configuration.
+    UI View for assigning layout slots to physical monitors.
+
+    Shows one row per slot from screen_requirements.screens.
+    Monitor legend is shown below the slot list, numbered 1-N.
+    Digit keys 1-9 assign the Nth connected monitor to the current slot.
+    Up/Down moves between slots, S saves, Esc closes without saving.
     """
 
-    def __init__(self, screen_config_data: Dict[str, Any]):
+    def __init__(
+        self,
+        active_layout: Dict[str, Any],
+        monitors: List[Dict[str, Any]],
+        current_assignment: Dict[str, str],
+        layout_name: str = "",
+    ):
         """
-        Initialize the screen config view.
+        Initialize the assign view.
 
         Args:
-            screen_config_data: Screen config data from API
+            active_layout: Layout info dict (must have 'data' with screen_requirements)
+            monitors: List of monitor dicts from /screen-config (identity_key, orientation, etc.)
+            current_assignment: Current slot→identity_key mapping for this layout
+                                e.g. {"1": "-1920_0_1080_1920", "2": "0_0_1920_1080"}
+            layout_name: Stem name of the layout being assigned (e.g. "dual-screen-home").
+                         Used by the save handler; does NOT need to be the active layout.
         """
-        self.screens = screen_config_data.get("screens", [])
-        self.summary = screen_config_data.get("summary", "")
-        self.max_visible_rows = 12
-        logger.info(f"ScreenConfigView initialized with {len(self.screens)} screens")
+        self.monitors = monitors  # connected monitors, each with identity_key
+        self.layout_name = layout_name  # which layout this assignment is for
+
+        # Extract slots from layout screen_requirements
+        self.slots: List[Dict[str, Any]] = []
+        if active_layout and "data" in active_layout:
+            sr = active_layout["data"].get("screen_requirements", {})
+            self.slots = sr.get("screens", [])
+
+        # Working copy of the assignment (slot str → identity_key str)
+        self.assignment: Dict[str, str] = dict(current_assignment)
+
+        self.selected = 0  # index into self.slots
+        self.error_message: Optional[str] = None
+
+        logger.info(
+            f"AssignView initialized: layout='{layout_name}', {len(self.slots)} slots, {len(monitors)} monitors"
+        )
+
+    def set_error(self, msg: str) -> None:
+        """Set an error message to display."""
+        self.error_message = msg
+
+    def get_assignment(self) -> Dict[str, str]:
+        """Return the current (possibly edited) slot→identity_key mapping."""
+        return dict(self.assignment)
 
     def handle_input(
         self,
@@ -513,59 +551,90 @@ class ScreenConfigView:
         """
         Handle keyboard input.
 
-        Args:
-            ch: Character code (0 if none)
-            key_down: True if down arrow pressed
-            key_up: True if up arrow pressed
-            key_escape: True if escape pressed
-            key_backspace: True if backspace pressed
-            key_d: True if 'd' key pressed (not used in this view)
-            key_a: True if 'a' key pressed (not used in this view)
-            key_enter: True if enter pressed (not used in this view)
-            key_n: True if 'n' key pressed (not used in this view)
+        - Up/Down: move between slots
+        - Digit 1-9: assign Nth connected monitor to current slot
+        - S: save and return "save"
+        - Esc: close without saving, return "close"
 
         Returns:
-            Action to take: 'close' or None
+            "save", "close", or None
         """
         if key_escape:
             return "close"
+
+        if self.slots:
+            if key_down:
+                self.selected = min(self.selected + 1, len(self.slots) - 1)
+            if key_up:
+                self.selected = max(self.selected - 1, 0)
+
+        # Digit keys 1-9
+        if ch and ord("1") <= ch <= ord("9"):
+            digit = ch - ord("0")  # 1-based index
+            monitor_idx = digit - 1
+            if monitor_idx < len(self.monitors):
+                monitor = self.monitors[monitor_idx]
+                identity_key = monitor.get("identity_key", "")
+                if self.slots:
+                    slot_num = str(self.slots[self.selected]["slot"])
+                    self.assignment[slot_num] = identity_key
+                    logger.info(
+                        f"AssignView: slot {slot_num} → {identity_key} (monitor {digit})"
+                    )
+            else:
+                self.error_message = f"No monitor #{digit}"
+
+        # S to save
+        if ch == ord("s") or ch == ord("S"):
+            return "save"
+
         return None
 
     def get_render_data(self) -> Dict[str, Any]:
         """
         Get data needed for rendering.
 
-        Returns:
-            Dict with:
-                - title: View title
-                - items: List of screen items
-                - selected: Always 0 (no selection)
-                - scroll_offset: Always 0
-                - total_count: Number of screens
-                - help_text: Help text to display
-                - show_screen_overlays: Flag to trigger physical screen overlays
-                - screens: Screen configuration data for overlay rendering
-        """
-        items = []
-        for screen in self.screens:
-            display_num = screen.get("display_number", 0)
-            orientation = screen.get("orientation", "unknown")
-            width = screen.get("width", 0)
-            height = screen.get("height", 0)
-            name = screen.get("name", "Unknown")
+        Returns items list with:
+          - Slot rows: "[*] Slot 1 (vertical) → -1920_0_1080_1920"
+          - Blank separator row
+          - Monitor legend rows: "1: -1920_0_1080_1920 (vertical, 1080×1920)"
 
-            label = f"DISPLAY{display_num}: {orientation} ({width}×{height}) - {name}"
-            items.append({"label": label, "connected": True})
+        Help text: "1-9 assign monitor | Up/Down navigate | S save | Esc cancel"
+        Plus error_message prepended if set.
+        """
+        items: List[Dict[str, Any]] = []
+
+        for idx, screen in enumerate(self.slots):
+            slot_num = screen.get("slot", idx + 1)
+            orientation = screen.get("orientation", "?")
+            assigned_key = self.assignment.get(str(slot_num), "(unassigned)")
+            marker = "[*]" if idx == self.selected else "[ ]"
+            label = f"{marker} Slot {slot_num} ({orientation}) → {assigned_key}"
+            items.append({"label": label, "connected": idx == self.selected})
+
+        # Blank separator
+        items.append({"label": "", "connected": False})
+
+        # Monitor legend
+        for i, monitor in enumerate(self.monitors):
+            identity_key = monitor.get("identity_key", "?")
+            orientation = monitor.get("orientation", "?")
+            width = monitor.get("width", 0)
+            height = monitor.get("height", 0)
+            label = f"{i + 1}: {identity_key} ({orientation}, {width}×{height})"
+            items.append({"label": label, "connected": False})
+
+        help_parts = ["1-9 assign monitor", "Up/Down navigate", "S save", "Esc cancel"]
+        if self.error_message:
+            help_parts.insert(0, self.error_message)
 
         return {
-            "title": f"Screen Configuration - {self.summary}",
+            "title": "Assign Monitors to Slots",
             "items": items,
-            "selected": -1,  # No selection
+            "selected": self.selected,
             "scroll_offset": 0,
-            "total_count": len(items),
-            "help_text": "Esc to close",
-            "show_screen_overlays": True,  # Enable physical screen numbering
-            "screens": self.screens,  # Pass screen data for overlay rendering
+            "total_count": len(self.slots),
+            "help_text": " | ".join(help_parts),
         }
 
 
@@ -787,7 +856,7 @@ class WindowDetailsView:
         self.max_visible_rows = 12
 
         # Configuration options
-        self.selected_display = 1  # Default to Display 1 (logical display number)
+        self.selected_display = 1  # Default to slot 1
         self.maximize = False
 
         # Check for existing rule (for edit mode)
@@ -801,8 +870,11 @@ class WindowDetailsView:
 
             if self.existing_rule:
                 self.is_edit_mode = True
-                # Pre-populate values from existing rule
-                self.selected_display = self.existing_rule.get("target_display", 1)
+                # Pre-populate values from existing rule (v2 uses target_slot)
+                self.selected_display = self.existing_rule.get(
+                    "target_slot",
+                    self.existing_rule.get("target_display", 1),  # v1 fallback
+                )
                 self.maximize = self.existing_rule.get("maximize", False)
                 logger.info(
                     f"Edit mode: Loading existing rule {self.existing_rule.get('rule_id')} for {window_data.get('title', 'Unknown')}"
@@ -865,9 +937,9 @@ class WindowDetailsView:
         # Enter key - toggle or save
         if key_enter:
             if self.selected < len(self.screens):
-                # Selecting a display
-                self.selected_display = self.screens[self.selected]["display_number"]
-                logger.info(f"Selected display: {self.selected_display}")
+                # Selecting a slot
+                self.selected_display = self.screens[self.selected]["slot"]
+                logger.info(f"Selected slot: {self.selected_display}")
             elif self.selected == len(self.screens):
                 # Toggle maximize
                 self.maximize = not self.maximize
@@ -908,13 +980,13 @@ class WindowDetailsView:
 
         # Add display selection items
         for screen in self.screens:
-            display_num = screen["display_number"]
+            slot = screen["slot"]
             orientation = screen["orientation"]
-            description = screen.get("description", f"Display {display_num}")
-            selected_marker = "[*]" if display_num == self.selected_display else "[ ]"
+            description = screen.get("description", f"Slot {slot}")
+            selected_marker = "[*]" if slot == self.selected_display else "[ ]"
             items.append(
                 {
-                    "label": f"{selected_marker} Display {display_num}: {description} [{orientation}]",
+                    "label": f"{selected_marker} Slot {slot}: {description} [{orientation}]",
                     "connected": True,
                 }
             )
@@ -964,7 +1036,7 @@ class WindowDetailsView:
         return {
             "match_type": "exe",
             "match_value": exe_name,
-            "target_display": self.selected_display,  # Logical display number (1, 2, 3...)
+            "target_slot": self.selected_display,  # Slot number (1, 2, 3...)
             "maximize": self.maximize,
         }
 
@@ -1184,7 +1256,6 @@ def get_registry() -> CommandRegistry:
 def register_builtin_commands(
     fetch_monitors_fn: Callable,
     fetch_layouts_fn: Optional[Callable] = None,
-    fetch_screen_config_fn: Optional[Callable] = None,
     activate_layout_fn: Optional[Callable] = None,
     deactivate_layout_fn: Optional[Callable] = None,
     get_active_layout_name_fn: Optional[Callable] = None,
@@ -1192,14 +1263,15 @@ def register_builtin_commands(
     fetch_settings_fn: Optional[Callable] = None,
     update_settings_fn: Optional[Callable] = None,
     fetch_layout_data_fn: Optional[Callable] = None,
+    fetch_screen_config_fn: Optional[Callable] = None,
+    get_assignment_fn: Optional[Callable] = None,
 ) -> None:
     """
     Register built-in commands.
 
     Args:
-        fetch_monitors_fn: Function to fetch monitors from API
+        fetch_monitors_fn: Function to fetch monitors from API (legacy /monitors command)
         fetch_layouts_fn: Function to fetch available layouts
-        fetch_screen_config_fn: Function to fetch current screen configuration
         activate_layout_fn: Function to activate a layout
         deactivate_layout_fn: Function to deactivate current layout
         get_active_layout_name_fn: Function to get active layout name (str | None)
@@ -1207,6 +1279,11 @@ def register_builtin_commands(
         fetch_settings_fn: Function to fetch application settings
         update_settings_fn: Function to update application settings
         fetch_layout_data_fn: Function to fetch full layout data dict by name
+        fetch_screen_config_fn: Function to fetch /screen-config → {"monitors": [...]}
+                                Required for the /assign command.
+        get_assignment_fn: Function(layout_name) → dict[str, str] returning the
+                           current slot→identity_key assignment for that layout.
+                           Required for the /assign command.
     """
     registry = get_registry()
 
@@ -1236,7 +1313,7 @@ def register_builtin_commands(
                 active_layout,
                 activate_layout_fn,
                 deactivate_layout_fn,
-                fetch_screen_config_fn,
+                None,  # fetch_screen_config_fn no longer used by LayoutManagementView
             )
 
         registry.register(
@@ -1246,18 +1323,48 @@ def register_builtin_commands(
             category="Layouts",
         )
 
-    if fetch_screen_config_fn:
+    # /assign command — map layout slots to physical monitors
+    if fetch_screen_config_fn and get_assignment_fn and fetch_layout_data_fn and get_active_layout_name_fn:
 
-        def handle_screen_config_command(context: Dict[str, Any]) -> Any:
-            """Handle /screen-config command - show current screen configuration."""
-            logger.info("Executing /screen-config command")
+        def handle_assign_command(context: Dict[str, Any]) -> Any:
+            """Handle /assign command - assign monitors to layout slots.
+
+            Uses the active layout if one is set; otherwise falls back to the
+            first available layout so the user can set up an assignment before
+            activating anything.
+            """
+            logger.info("Executing /assign command")
+            target_layout_name = get_active_layout_name_fn()
+
+            # If no layout is active, fall back to any available layout
+            if not target_layout_name:
+                if fetch_layouts_fn:
+                    layouts = fetch_layouts_fn()
+                    if layouts:
+                        first = layouts[0]
+                        target_layout_name = first.get("file_name", "").replace(".json", "")
+                        logger.info(f"/assign: no active layout, falling back to '{target_layout_name}'")
+
+            if not target_layout_name:
+                error_view = AssignView({}, [], {}, layout_name="")
+                error_view.set_error("No layouts found. Create a layout first.")
+                return error_view
+
+            layout_data = fetch_layout_data_fn(target_layout_name)
+            if not layout_data:
+                error_view = AssignView({}, [], {}, layout_name=target_layout_name)
+                error_view.set_error(f"Could not load layout '{target_layout_name}'")
+                return error_view
+
             screen_config = fetch_screen_config_fn()
-            return ScreenConfigView(screen_config)
+            monitors = screen_config.get("monitors", [])
+            current_assignment = get_assignment_fn(target_layout_name)
+            return AssignView(layout_data, monitors, current_assignment, layout_name=target_layout_name)
 
         registry.register(
-            "screen-config",
-            "Show current screen configuration",
-            handle_screen_config_command,
+            "assign",
+            "Assign physical monitors to layout slots (digit keys 1-9, S to save)",
+            handle_assign_command,
             category="System",
         )
 

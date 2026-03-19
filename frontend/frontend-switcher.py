@@ -14,13 +14,14 @@ from datetime import datetime
 from .commands import (
     get_registry,
     register_builtin_commands,
+    AssignView,
     MonitorManagementView,
     LayoutManagementView,
-    ScreenConfigView,
     WindowsView,
     WindowDetailsView,
     SettingsView,
 )
+from .assignment import load_assignments, save_assignments
 from .colors import (
     ACCENT_HIGHLIGHT,
     ACCENT_SELECTION,
@@ -169,7 +170,7 @@ def fetch_windows_and_tabs_cached() -> dict[str, Any]:
 
 
 def activate_tab_via_api(tab_id: str) -> bool:
-    """Request tab activation via API."""
+    """Request tab activation via API (queues Chrome command only, no Win32 focus)."""
     try:
         response = requests.post(
             f"{TABS_API_URL}/activate-tab",
@@ -180,6 +181,49 @@ def activate_tab_via_api(tab_id: str) -> bool:
     except Exception as e:
         print(f"Tab activate error: {e}")
     return False
+
+
+def find_browser_hwnd(tab: dict[str, Any], all_windows: list[dict[str, Any]]) -> Optional[int]:
+    """Return the Win32 HWND for the browser window that owns *tab*.
+
+    Uses the same creation-order heuristic as the backend:
+    - Collect all Win32 window entries for the browser exe (sorted by hwnd ascending).
+    - Collect all unique chrome windowIds for that exe (sorted ascending).
+    - The index of tab's chrome_window_id in the sorted chrome list maps to the
+      same index in the sorted Win32 list.
+
+    Falls back to the first matching window if the mapping can't be resolved.
+    Returns None if no window for that exe is found at all.
+    """
+    exe_name = tab.get("exe_name", "")
+    chrome_window_id = tab.get("chrome_window_id")
+
+    # All Win32 windows for this browser, sorted by hwnd (creation-order proxy)
+    browser_wins = sorted(
+        [w for w in all_windows if w.get("type") != "tab" and w.get("exe_name") == exe_name],
+        key=lambda w: w.get("hwnd", 0),
+    )
+    if not browser_wins:
+        return None
+
+    if chrome_window_id is None or len(browser_wins) == 1:
+        return browser_wins[0].get("hwnd")
+
+    # All unique chrome windowIds for this exe across all tabs, sorted ascending
+    chrome_win_ids: list[int] = sorted({
+        int(t["chrome_window_id"])
+        for t in all_windows
+        if t.get("type") == "tab" and t.get("exe_name") == exe_name
+        and t.get("chrome_window_id") is not None
+    })
+
+    try:
+        idx = chrome_win_ids.index(chrome_window_id)
+    except ValueError:
+        idx = 0
+
+    idx = min(idx, len(browser_wins) - 1)
+    return browser_wins[idx].get("hwnd")
 
 
 def fetch_layouts() -> list[dict[str, Any]]:
@@ -207,11 +251,11 @@ def fetch_screen_config() -> dict[str, Any]:
         )
         if response.ok:
             config = response.json()
-            logger.info(f"Fetched screen config: {config.get('summary', 'unknown')}")
+            logger.info(f"Fetched screen config: {len(config.get('monitors', []))} monitors")
             return config
     except Exception as e:
         logger.warning(f"Failed to fetch screen config: {e}")
-    return {"screens": [], "summary": "No screens detected"}
+    return {"monitors": []}
 
 
 def fetch_layout_data(name: str) -> Optional[dict[str, Any]]:
@@ -406,6 +450,7 @@ def switch_to_window_async(
     hwnd: int,
     layout_name: Optional[str],
     center_mouse: bool,
+    layout_assignment: Optional[dict] = None,
 ) -> None:
     """Focus a window, apply its layout rule, then optionally center the mouse."""
 
@@ -419,7 +464,11 @@ def switch_to_window_async(
             if layout_name is not None:
                 response = _http_session.post(
                     f"{TABS_API_URL}/apply-rule-for-window",
-                    json={"hwnd": hwnd, "layout_name": layout_name},
+                    json={
+                        "hwnd": hwnd,
+                        "layout_name": layout_name,
+                        "assignment": layout_assignment or {},
+                    },
                     timeout=10.0,
                 )
                 if response.ok:
@@ -565,6 +614,10 @@ def main() -> None:
     logger.info("=== Starting Window Switcher ===")
     logger.info(f"Log file: {LOG_FILE}")
 
+    # Load slot→monitor assignments from disk
+    assignments: dict[str, dict[str, str]] = load_assignments()
+    logger.info(f"Loaded assignments: {assignments}")
+
     # Pre-warm the HTTP connection to avoid first-request delay
     # Retry multiple times with exponential backoff if backend is not ready yet
     max_retries = 10
@@ -621,31 +674,47 @@ def main() -> None:
     # Frontend-owned active_layout state (str | None — layout filename stem)
     active_layout: Optional[str] = None
 
+    # Global error surfacing state — defined here (before raylib block) so that
+    # activate_layout_tracked (also defined here) can reference it safely.
+    # Using a mutable container avoids the need for 'nonlocal' across the try boundary.
+    _error_state: dict = {"last_error": None, "error_timestamp": 0.0}
+
     def activate_layout_tracked(layout_name: str) -> dict:
         nonlocal active_layout
-        active_layout = layout_name
-        logger.info(f"Active layout set to: {layout_name}")
-
-        def _apply():
-            try:
-                response = _http_session.post(
-                    f"{TABS_API_URL}/apply-rules",
-                    json={"layout_name": layout_name},
-                    timeout=15.0,
+        try:
+            layout_assignment = assignments.get(layout_name, {})
+            response = _http_session.post(
+                f"{TABS_API_URL}/apply-rules",
+                json={"layout_name": layout_name, "assignment": layout_assignment},
+                timeout=15.0,
+            )
+            if response.ok:
+                result = response.json()
+                active_layout = layout_name
+                logger.info(f"Active layout set to: {layout_name}")
+                logger.info(
+                    f"apply-rules on activate: applied={result.get('applied')}, "
+                    f"failed={result.get('failed')}"
                 )
-                if response.ok:
-                    result = response.json()
-                    logger.info(
-                        f"apply-rules on activate: applied={result.get('applied')}, "
-                        f"failed={result.get('failed')}"
-                    )
-                else:
-                    logger.warning(f"apply-rules on activate returned {response.status_code}")
-            except Exception as e:
-                logger.warning(f"apply-rules on activate failed: {e}")
+                return {"success": True}
 
-        threading.Thread(target=_apply, daemon=True).start()
-        return {"success": True}
+            error = f"Activation failed ({response.status_code})"
+            try:
+                payload = response.json()
+                error = payload.get("error") or payload.get("message") or error
+            except Exception:
+                pass
+            logger.warning(f"apply-rules on activate returned {response.status_code}: {error}")
+            _error_state["last_error"] = error
+            _error_state["error_timestamp"] = time.time()
+            logger.warning(f"UI error surfaced: {error}")
+            return {"success": False, "error": error}
+        except Exception as e:
+            logger.warning(f"apply-rules on activate failed: {e}")
+            _error_state["last_error"] = str(e)
+            _error_state["error_timestamp"] = time.time()
+            logger.warning(f"UI error surfaced: {e}")
+            return {"success": False, "error": str(e)}
 
     def deactivate_layout_tracked() -> dict:
         nonlocal active_layout
@@ -657,7 +726,6 @@ def main() -> None:
     register_builtin_commands(
         fetch_monitors_fn=fetch_monitors_with_dpi,
         fetch_layouts_fn=fetch_layouts,
-        fetch_screen_config_fn=fetch_screen_config,
         activate_layout_fn=activate_layout_tracked,
         deactivate_layout_fn=deactivate_layout_tracked,
         get_active_layout_name_fn=lambda: active_layout,
@@ -665,6 +733,8 @@ def main() -> None:
         fetch_settings_fn=fetch_settings,
         update_settings_fn=update_settings,
         fetch_layout_data_fn=fetch_layout_data,
+        fetch_screen_config_fn=fetch_screen_config,
+        get_assignment_fn=lambda layout_name: assignments.get(layout_name, {}),
     )
     logger.info("Built-in commands registered")
 
@@ -762,83 +832,6 @@ def main() -> None:
                 except Exception as e:
                     print(f"Overlay update error: {e}")
 
-        # Screen number overlays for /screen-config command
-        screen_number_overlays = []
-
-        def create_screen_number_overlays(screens_data):
-            """Create numbered overlay boxes for each physical screen.
-
-            Args:
-                screens_data: List of screen dicts with display_number, width, height
-            """
-            nonlocal screen_number_overlays
-            # Clean up any existing overlays
-            hide_screen_number_overlays()
-
-            try:
-                for screen in screens_data:
-                    display_num = screen.get("display_number", 0)
-
-                    # Map display_number to Raylib monitor index (display_number is 1-based)
-                    monitor_idx = display_num - 1
-                    if monitor_idx < 0 or monitor_idx >= rl.GetMonitorCount():
-                        continue
-
-                    # Get monitor position
-                    monitor_pos = rl.GetMonitorPosition(monitor_idx)
-
-                    # Create a small tkinter window for the number
-                    number_window = tk.Toplevel()
-                    number_window.title(
-                        "__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__"
-                    )  # Protect from rule assignments
-                    number_window.attributes("-topmost", True)
-                    number_window.overrideredirect(True)
-                    number_window.attributes("-alpha", 0.85)  # Semi-transparent
-
-                    # Create label with number
-                    label = tk.Label(
-                        number_window,
-                        text=str(display_num),
-                        font=("Arial", 48, "bold"),
-                        bg="#2196F3",  # Material blue
-                        fg="white",
-                        padx=20,
-                        pady=15,
-                        borderwidth=2,
-                        relief="solid",
-                    )
-                    label.pack()
-
-                    # Position in top-left corner of screen (with small margin)
-                    x = int(monitor_pos.x) + 20
-                    y = int(monitor_pos.y) + 20
-                    number_window.geometry(f"+{x}+{y}")
-
-                    screen_number_overlays.append(number_window)
-
-                print(f"Created {len(screen_number_overlays)} screen number overlays")
-            except Exception as e:
-                print(f"Error creating screen number overlays: {e}")
-
-        def hide_screen_number_overlays():
-            """Hide and destroy all screen number overlays."""
-            nonlocal screen_number_overlays
-            for overlay in screen_number_overlays:
-                try:
-                    overlay.destroy()
-                except Exception as e:
-                    print(f"Error destroying screen overlay: {e}")
-            screen_number_overlays = []
-
-        def update_screen_number_overlays():
-            """Update screen number overlays (process tkinter events)."""
-            for overlay in screen_number_overlays:
-                try:
-                    overlay.update()
-                except Exception as e:
-                    print(f"Screen overlay update error: {e}")
-
         print("Initializing Raylib...")
         rl.SetConfigFlags(
             rl.FLAG_WINDOW_UNDECORATED
@@ -929,12 +922,13 @@ def main() -> None:
                 if now - last_apply < RULES_APPLY_INTERVAL:
                     continue
                 last_apply = now
-                # Capture layout_name at tick time
+                # Capture layout_name and assignment at tick time
                 layout_name_now = active_layout
+                layout_assignment_now = assignments.get(layout_name_now, {})
                 try:
                     response = _http_session.post(
                         f"{TABS_API_URL}/apply-rules",
-                        json={"layout_name": layout_name_now},
+                        json={"layout_name": layout_name_now, "assignment": layout_assignment_now},
                         timeout=15.0,  # rules can be slow (F11 + waits)
                     )
                     if response.ok:
@@ -1098,8 +1092,16 @@ def main() -> None:
         # Command system state
         command_registry = get_registry()
         current_view: Optional[Any] = (
-            None  # Can be MonitorManagementView, LayoutManagementView, or ScreenConfigView
+            None  # Can be AssignView, MonitorManagementView, LayoutManagementView, etc.
         )
+
+        def set_global_error(msg: str) -> None:
+            """Surface an error: store globally (timed) and push to current view."""
+            _error_state["last_error"] = msg
+            _error_state["error_timestamp"] = time.time()
+            if current_view is not None and hasattr(current_view, "set_error"):
+                current_view.set_error(msg)
+            logger.warning(f"UI error surfaced: {msg}")
 
         # Mode tracking:
         # - switch_mode (default): Normal window selection/switching (in_command_mode=False)
@@ -1608,8 +1610,8 @@ def main() -> None:
                             if isinstance(
                                 current_view,
                                 (
+                                    AssignView,
                                     LayoutManagementView,
-                                    ScreenConfigView,
                                     WindowsView,
                                     WindowDetailsView,
                                     SettingsView,
@@ -1641,7 +1643,6 @@ def main() -> None:
                             if action:
                                 if action == "close":
                                     current_view = None
-                                    hide_screen_number_overlays()  # Clean up screen overlays
                                     query = ""
                                     do_filter()
                                 elif action == "refresh":
@@ -1735,8 +1736,25 @@ def main() -> None:
                                             current_view.active_layout,
                                         )
                                 elif action == "save":
+                                    # Handle save for AssignView (slot→monitor assignment)
+                                    if isinstance(current_view, AssignView):
+                                        logger.info("Saving slot→monitor assignment")
+                                        try:
+                                            layout_name_now = current_view.layout_name or active_layout
+                                            if layout_name_now:
+                                                new_assignment = current_view.get_assignment()
+                                                assignments[layout_name_now] = new_assignment
+                                                save_assignments(assignments)
+                                                logger.info(
+                                                    f"Assignment saved for '{layout_name_now}': {new_assignment}"
+                                                )
+                                            current_view = None
+                                            in_command_mode = False
+                                        except Exception as e:
+                                            logger.error(f"Failed to save assignment: {e}")
+                                            current_view.set_error(f"Save failed: {e}")
                                     # Save window rule to active layout
-                                    if isinstance(current_view, WindowDetailsView):
+                                    elif isinstance(current_view, WindowDetailsView):
                                         logger.info("Saving window rule to layout")
                                         try:
                                             rule_config = current_view.get_rule_config()
@@ -1914,9 +1932,9 @@ def main() -> None:
                                     if isinstance(
                                         result,
                                         (
+                                            AssignView,
                                             MonitorManagementView,
                                             LayoutManagementView,
-                                            ScreenConfigView,
                                             WindowsView,
                                             WindowDetailsView,
                                             SettingsView,
@@ -1940,7 +1958,24 @@ def main() -> None:
                                         )
                                         _save_last_used()
 
-                                        # Activate tab via API
+                                        # Step 1: Focus the browser Win32 window from
+                                        # THIS process (which currently owns the
+                                        # foreground). SetForegroundWindow only works
+                                        # from the foreground process — the Flask
+                                        # backend can never do this reliably.
+                                        browser_hwnd = find_browser_hwnd(w, all_windows)
+                                        if browser_hwnd:
+                                            switch_to_window_async(
+                                                browser_hwnd,
+                                                active_layout,
+                                                False,  # don't center mouse for tab switches
+                                                layout_assignment=assignments.get(active_layout, {}) if active_layout else {},
+                                            )
+                                        else:
+                                            print(f"No browser window found for tab {tab_id}, exe={w.get('exe_name')}")
+
+                                        # Step 2: Queue the Chrome activateTab command
+                                        # so the extension navigates to the right tab.
                                         activate_tab_via_api(tab_id)
                                         print(f"Tab activation requested for {tab_id}")
 
@@ -1976,6 +2011,7 @@ def main() -> None:
                                             hwnd,
                                             active_layout,
                                             center_mouse_on_switch,
+                                            layout_assignment=assignments.get(active_layout, {}) if active_layout else {},
                                         )
                                         print(
                                             f"Switch requested for hwnd={hwnd} (async)"
@@ -2036,22 +2072,8 @@ def main() -> None:
                             )
 
                         elif current_view is not None:
-                            # Render MonitorManagementView
+                            # Render current view
                             render_data = current_view.get_render_data()
-
-                            # Check if we should show screen number overlays
-                            if render_data.get("show_screen_overlays", False):
-                                # Show numbered overlays on each physical screen
-                                if (
-                                    len(screen_number_overlays) == 0
-                                ):  # Only create if not already shown
-                                    create_screen_number_overlays(
-                                        render_data.get("screens", [])
-                                    )
-                            else:
-                                # Hide overlays if not in screen config view
-                                if len(screen_number_overlays) > 0:
-                                    hide_screen_number_overlays()
 
                             # Draw title
                             draw_text(
@@ -2066,8 +2088,8 @@ def main() -> None:
                             # Make count text generic based on view type
                             if isinstance(current_view, LayoutManagementView):
                                 count_label = "layouts"
-                            elif isinstance(current_view, ScreenConfigView):
-                                count_label = "screens"
+                            elif isinstance(current_view, AssignView):
+                                count_label = "slots"
                             elif isinstance(current_view, WindowsView):
                                 count_label = "windows"
                             elif isinstance(current_view, WindowDetailsView):
@@ -2133,15 +2155,22 @@ def main() -> None:
 
                             draw_horizontal_rule(list_bottom_y)
 
-                            # Draw help text
+                            # Draw help text (show timed error for up to 4 s)
+                            _err_msg = _error_state.get("last_error")
+                            _err_age = time.time() - _error_state.get("error_timestamp", 0.0)
+                            if _err_msg and _err_age < 4.0:
+                                _help_display = f"Error: {_err_msg}"
+                                _help_color = (220, 60, 60, 255)  # red-ish
+                            else:
+                                _help_display = render_data["help_text"]
+                                _help_color = TEXT_SECONDARY
                             draw_text(
-                                render_data["help_text"].encode(
-                                    "utf-8", errors="ignore"
-                                ),
+                                (_help_display if isinstance(_help_display, bytes)
+                                 else _help_display.encode("utf-8", errors="ignore")),
                                 20,
                                 help_text_y,
                                 FONT_SIZE - 4,
-                                TEXT_SECONDARY,
+                                _help_color,
                             )
 
                         else:
@@ -2351,18 +2380,25 @@ def main() -> None:
                                     SCROLLBAR_HANDLE,
                                 )
 
-                            # Draw help text
-                            if in_command_mode:
+                            # Draw help text (show timed error for up to 4 s)
+                            _err_msg = _error_state.get("last_error")
+                            _err_age = time.time() - _error_state.get("error_timestamp", 0.0)
+                            if _err_msg and _err_age < 4.0:
+                                help_text = f"Error: {_err_msg}".encode("utf-8", errors="ignore")
+                                _help_color = (220, 60, 60, 255)
+                            elif in_command_mode:
                                 help_text = b"Type command name | Enter to execute | Esc to close"
+                                _help_color = TEXT_SECONDARY
                             else:
                                 help_text = b"Alt+Space to close"
+                                _help_color = TEXT_SECONDARY
 
                             draw_text(
                                 help_text,
                                 20,
                                 help_text_y,
                                 FONT_SIZE - 4,
-                                TEXT_SECONDARY,
+                                _help_color,
                             )
                         rl.EndDrawing()
                     except Exception as e:
@@ -2373,7 +2409,6 @@ def main() -> None:
 
                 # Update overlay (process tkinter events)
                 update_overlay()
-                update_screen_number_overlays()
 
                 time.sleep(0.01)
             except Exception as e:
@@ -2388,9 +2423,6 @@ def main() -> None:
         import traceback
 
         traceback.print_exc()
-    finally:
-        # Clean up screen number overlays on exit
-        hide_screen_number_overlays()
 
 
 if __name__ == "__main__":

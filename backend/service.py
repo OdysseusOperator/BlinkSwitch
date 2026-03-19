@@ -6,9 +6,9 @@ import threading
 from datetime import datetime
 
 from .config_manager import ConfigManager
+from .layout_manager import LayoutManager
 from .monitor_manager import MonitorManager
 from .window_manager import WindowManager
-from .layout_manager import LayoutManager
 
 
 class ScreenAssignService:
@@ -105,11 +105,13 @@ class ScreenAssignService:
         """
         return self.status
 
-    def apply_rules_now(self, layout_name: str):
+    def apply_rules_now(self, layout_name: str, assignment: dict):
         """Apply all rules immediately.
 
         Args:
             layout_name: Name of the layout whose rules to apply
+            assignment:  Slot→identity_key mapping from the frontend,
+                         e.g. {"1": "-1920_0_1080_1920", "2": "0_0_1920_1080"}
 
         Returns:
             dict: Results of rule application
@@ -117,8 +119,10 @@ class ScreenAssignService:
         # Update connected monitors
         self.monitor_manager.detect_monitors()
 
+        self.layout_manager.ensure_layout_can_apply(layout_name, assignment)
+
         # Apply all rules
-        results = self.window_manager.apply_rules(layout_name)
+        results = self.window_manager.apply_rules(layout_name, assignment)
 
         # Update status
         self.status["last_run"] = datetime.now().isoformat()
@@ -128,18 +132,20 @@ class ScreenAssignService:
 
         return results
 
-    def apply_rules_for_window(self, hwnd: int, layout_name: str) -> dict:
+    def apply_rules_for_window(self, hwnd: int, layout_name: str, assignment: dict) -> dict:
         """Apply rules to a single window identified by hwnd.
 
         Args:
             hwnd: Window handle
             layout_name: Name of the layout whose rules to apply
+            assignment:  Slot→identity_key mapping from the frontend
 
         Returns:
             dict: Result of rule application for that window
         """
         self.monitor_manager.detect_monitors()
-        return self.window_manager.apply_rules_for_window(hwnd, layout_name)
+        self.layout_manager.ensure_layout_can_apply(layout_name, assignment)
+        return self.window_manager.apply_rules_for_window(hwnd, layout_name, assignment)
 
     def _service_loop(self):
         """Main service loop that runs in a separate thread.

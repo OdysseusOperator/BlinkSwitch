@@ -13,6 +13,7 @@ import ctypes
 from typing import Optional, List, Dict, Any
 
 from .service import ScreenAssignService
+from .layout_manager import LayoutError
 
 # Setup logging with file output
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
@@ -44,6 +45,8 @@ service: Optional[ScreenAssignService] = None
 
 # Tab management (initialized in setup_api function)
 chrome_tab_manager: Optional[ChromeTabManager] = None
+CHROME_COMMAND_TTL = 5.0  # seconds before a queued command is considered stale
+
 chrome_commands: List[Dict[str, Any]] = []
 chrome_command_id: List[int] = [0]
 chrome_commands_lock = threading.Lock()
@@ -129,20 +132,33 @@ def restart_service():
 
 @screenassign_api.route("/apply-rules", methods=["POST"])
 def apply_rules():
-    """Apply all rules immediately."""
+    """Apply all rules immediately.
+
+    Required body fields:
+      - layout_name (str): name of the layout to apply
+      - assignment (dict): slot->identity_key mapping,
+            e.g. {"1": "-1920_0_1080_1920", "2": "0_0_1920_1080"}
+    """
     data = request.json or {}
     layout_name = data.get("layout_name")
+    assignment = data.get("assignment")
     if not layout_name:
         return jsonify({"error": "layout_name is required"}), 400
+    if not assignment or not isinstance(assignment, dict):
+        return jsonify({"error": "assignment is required (dict mapping slot numbers to identity keys x_y_W_H)"}), 400
     svc = _require_service()
-    results = svc.apply_rules_now(layout_name)
-    return jsonify(results)
+    try:
+        results = svc.apply_rules_now(layout_name, assignment)
+        return jsonify(results)
+    except LayoutError as e:
+        return jsonify({"error": str(e)}), 409
 
 
 @screenassign_api.route("/monitors", methods=["GET"])
 def get_monitors():
     """Get all known monitors with runtime DPI information."""
     svc = _require_service()
+    svc.monitor_manager.detect_monitors()
     if request.args.get("connected_only") == "true":
         # Return connected monitors with runtime DPI scale
         return jsonify(svc.monitor_manager.get_monitors_with_runtime_info())
@@ -198,7 +214,10 @@ def _focus_window(hwnd: int) -> None:
         target_thread_id, _ = win32process.GetWindowThreadProcessId(hwnd)
         current_thread_id = win32api.GetCurrentThreadId()
 
-        user32 = ctypes.windll.user32
+        windll = getattr(ctypes, "windll", None)
+        if windll is None:
+            raise RuntimeError("ctypes.windll is not available on this platform")
+        user32 = windll.user32
 
         # Attach current thread to the target and foreground threads.
         if fg_thread_id:
@@ -411,11 +430,18 @@ def get_windows_and_tabs():
     )
 
 
-def _activate_browser_window(exe_name: str) -> bool:
+def _activate_browser_window(exe_name: str, chrome_window_id: Optional[int] = None) -> bool:
     """Activate and focus a browser window by executable name.
+
+    When *chrome_window_id* is provided the function attempts to map it to the
+    correct Win32 window by correlating Chrome window-creation order (ascending
+    chrome windowId) with Win32 HWND creation order (ascending HWND).  This
+    avoids focusing the wrong Edge/Chrome window when multiple browser windows
+    are open.
 
     Args:
         exe_name: Browser executable name (e.g., "msedge.exe", "chrome.exe")
+        chrome_window_id: Chrome extension windowId of the target window, if known.
 
     Returns:
         True if browser window was found and focused, False otherwise
@@ -424,88 +450,45 @@ def _activate_browser_window(exe_name: str) -> bool:
         svc = _require_service()
         window_manager = svc.window_manager
 
-        # Get all windows
         all_windows = window_manager.get_all_windows()
 
-        # Find first browser window matching the exe_name
-        browser_hwnd = None
-        for window in all_windows:
-            if window.get("exe_name") == exe_name:
-                browser_hwnd = window.get("hwnd")
-                break
+        # Collect all Win32 windows belonging to this browser exe, sorted by
+        # HWND ascending (a reasonable proxy for creation order).
+        browser_windows = sorted(
+            [w for w in all_windows if w.get("exe_name") == exe_name],
+            key=lambda w: w.get("hwnd", 0),
+        )
 
-        if not browser_hwnd:
+        if not browser_windows:
             api_logger.warning(f"No window found for {exe_name}")
             return False
 
+        # Default: first window
+        target_window = browser_windows[0]
+
+        if chrome_window_id is not None and chrome_tab_manager is not None:
+            # Determine the 0-based index of this chrome window among all chrome
+            # windows for this browser (sorted by chrome windowId ascending).
+            idx = chrome_tab_manager.get_chrome_window_index(chrome_window_id, exe_name)
+            if 0 <= idx < len(browser_windows):
+                target_window = browser_windows[idx]
+                api_logger.info(
+                    f"Matched chrome_window_id={chrome_window_id} to Win32 window "
+                    f"index {idx} (hwnd={target_window.get('hwnd')})"
+                )
+            else:
+                api_logger.warning(
+                    f"chrome_window_id={chrome_window_id} index {idx} out of range "
+                    f"({len(browser_windows)} Win32 windows); falling back to first"
+                )
+
+        browser_hwnd = target_window.get("hwnd")
+        if not browser_hwnd:
+            api_logger.warning(f"No hwnd on matched window for {exe_name}")
+            return False
         api_logger.info(f"Activating browser window: {exe_name} (hwnd={browser_hwnd})")
-
-        # Use existing focus function
-        _focus_window(browser_hwnd)
-
+        _focus_window(int(browser_hwnd))
         return True
-
-    except Exception as e:
-        api_logger.error(f"Error activating browser window: {e}")
-        return False
-
-        api_logger.info(f"Activating browser window: {exe_name} (hwnd={browser_hwnd})")
-
-        # Step 1: Activate the window (restore if minimized)
-        try:
-            import win32gui
-            import win32con
-
-            # Restore window if minimized
-            placement = win32gui.GetWindowPlacement(browser_hwnd)
-            if placement[1] == win32con.SW_SHOWMINIMIZED:
-                win32gui.ShowWindow(browser_hwnd, win32con.SW_RESTORE)
-
-            # Bring window to top
-            win32gui.BringWindowToTop(browser_hwnd)
-
-        except Exception as e:
-            api_logger.error(f"Failed to activate window: {e}")
-            return False
-
-        # Step 2: Focus the window
-        try:
-            user32 = ctypes.windll.user32
-            kernel32 = ctypes.windll.kernel32
-
-            # Get current foreground window
-            fg_hwnd = user32.GetForegroundWindow()
-
-            # Attach thread input to bypass foreground restrictions
-            fg_pid = ctypes.c_uint(0)
-            target_pid = ctypes.c_uint(0)
-            fg_thread = user32.GetWindowThreadProcessId(fg_hwnd, ctypes.byref(fg_pid))
-            target_thread = user32.GetWindowThreadProcessId(
-                browser_hwnd, ctypes.byref(target_pid)
-            )
-            current_thread = kernel32.GetCurrentThreadId()
-
-            if fg_thread:
-                user32.AttachThreadInput(current_thread, fg_thread, True)
-            if target_thread:
-                user32.AttachThreadInput(current_thread, target_thread, True)
-
-            # Set foreground and active
-            user32.SetForegroundWindow(browser_hwnd)
-            user32.SetActiveWindow(browser_hwnd)
-
-            # Detach threads
-            if target_thread:
-                user32.AttachThreadInput(current_thread, target_thread, False)
-            if fg_thread:
-                user32.AttachThreadInput(current_thread, fg_thread, False)
-
-            api_logger.info(f"Successfully activated and focused {exe_name}")
-            return True
-
-        except Exception as e:
-            api_logger.error(f"Failed to focus window: {e}")
-            return False
 
     except Exception as e:
         api_logger.error(f"Error activating browser window: {e}")
@@ -536,15 +519,10 @@ def activate_tab():
     if not tab:
         return jsonify({"error": "Tab not found"}), 404
 
-    # Step 1 & 2: Activate and focus the browser window FIRST
-    exe_name = tab.get("exe_name", "chrome.exe")
-    browser_activated = _activate_browser_window(exe_name)
-
-    if not browser_activated:
-        api_logger.warning(f"Failed to activate browser window for {exe_name}")
-        # Continue anyway - extension will try to activate the tab
-
-    # Step 3: Add command to queue for extension to navigate to tab
+    # Queue the activateTab command for the extension to pick up.
+    # Win32 window focus is handled by the frontend process (which owns the
+    # foreground) — doing it here from Flask would always fail silently because
+    # SetForegroundWindow requires the calling process to be the foreground owner.
     with chrome_commands_lock:
         chrome_command_id[0] += 1
         chrome_commands.append(
@@ -557,20 +535,27 @@ def activate_tab():
             }
         )
 
-    return jsonify(
-        {"success": True, "queued": True, "browser_activated": browser_activated}
-    )
+    return jsonify({"success": True, "queued": True})
 
 
 @screenassign_api.route("/chrome-commands", methods=["GET"])
 def get_chrome_commands():
     """Get pending commands for Chrome extension (polled every 500ms).
 
+    Stale commands (older than CHROME_COMMAND_TTL seconds) are discarded here
+    so a temporarily-offline extension never fires ghost activations on reconnect.
+
     Response:
         {"commands": [{id, action, tabId, windowId, timestamp}]}
     """
+    now = time.time()
     with chrome_commands_lock:
-        # Return a copy to avoid modification during iteration
+        global chrome_commands
+        # Drop commands that are too old
+        chrome_commands = [
+            c for c in chrome_commands
+            if now - c.get("timestamp", 0) < CHROME_COMMAND_TTL
+        ]
         return jsonify({"commands": list(chrome_commands)})
 
 
@@ -596,17 +581,23 @@ def focus_window():
       - hwnd: number|string (required)
       - apply_rules: bool (optional, default true)
       - layout_name: string (required if apply_rules is true)
+      - assignment: dict (required if apply_rules is true)
+            e.g. {"1": "-1920_0_1080_1920", "2": "0_0_1920_1080"}
     """
     data = request.json or {}
     hwnd_raw = data.get("hwnd")
-    apply_rules = data.get("apply_rules", True)
+    apply_rules_flag = data.get("apply_rules", True)
     layout_name = data.get("layout_name")
+    assignment = data.get("assignment")
 
     if hwnd_raw is None:
         return jsonify({"error": "hwnd is required"}), 400
 
-    if apply_rules and not layout_name:
+    if apply_rules_flag and not layout_name:
         return jsonify({"error": "layout_name is required when apply_rules is true"}), 400
+
+    if apply_rules_flag and (not assignment or not isinstance(assignment, dict)):
+        return jsonify({"error": "assignment is required when apply_rules is true (dict mapping slot numbers to identity keys x_y_W_H)"}), 400
 
     try:
         hwnd = int(hwnd_raw)
@@ -615,10 +606,13 @@ def focus_window():
 
     try:
         _focus_window(hwnd)
-        if apply_rules:
-            results = _require_service().apply_rules_now(layout_name)
+        if apply_rules_flag:
+            checked_layout_name = str(layout_name)
+            results = _require_service().apply_rules_now(checked_layout_name, assignment)  # type: ignore[arg-type]
             return jsonify({"success": True, "rules": results})
         return jsonify({"success": True})
+    except LayoutError as e:
+        return jsonify({"error": str(e)}), 409
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -645,6 +639,7 @@ def apply_rule_for_window():
     data = request.json or {}
     hwnd_raw = data.get("hwnd")
     layout_name = data.get("layout_name")
+    assignment = data.get("assignment")
 
     if hwnd_raw is None:
         return jsonify({"error": "hwnd is required"}), 400
@@ -652,14 +647,27 @@ def apply_rule_for_window():
     if not layout_name:
         return jsonify({"error": "layout_name is required"}), 400
 
+    if not assignment:
+        return jsonify(
+            {
+                "error": (
+                    "assignment is required: provide a dict mapping slot numbers to "
+                    "monitor identity keys (x_y_W_H), "
+                    "e.g. {\"1\": \"-1920_0_1080_1920\", \"2\": \"0_0_1920_1080\"}"
+                )
+            }
+        ), 400
+
     try:
         hwnd = int(hwnd_raw)
     except Exception:
         return jsonify({"error": "hwnd must be an integer"}), 400
 
     try:
-        result = _require_service().apply_rules_for_window(hwnd, layout_name)
+        result = _require_service().apply_rules_for_window(hwnd, layout_name, assignment)
         return jsonify(result)
+    except LayoutError as e:
+        return jsonify({"error": str(e)}), 409
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -785,26 +793,31 @@ def create_layout():
 def get_screen_config():
     """Get current screen configuration.
 
+    Returns connected monitors with identity_key fields for use in slot assignment.
+
     Response:
         {
-            "screens": [
+            "monitors": [
                 {
-                    "display_number": 1,
-                    "orientation": "vertical",
-                    "monitor_id": "monitor_77150378",
+                    "id": "monitor_77150378",
+                    "x": -1920,
+                    "y": 0,
                     "width": 1080,
                     "height": 1920,
-                    "name": "\\\\.\\DISPLAY1 (1080×1920)"
+                    "identity_key": "-1920_0_1080_1920",
+                    "orientation": "vertical",
+                    "dpi_scale": 1.0
                 }
-            ],
-            "summary": "2 screens: DISPLAY1 (vertical, 1080x1920), DISPLAY2 (horizontal, 1920x1080)"
+            ]
         }
     """
     try:
         svc = _require_service()
-        screen_config = svc.layout_manager.matcher.get_screen_configuration()
-        summary = svc.layout_manager.matcher.get_screen_summary(screen_config)
-        return jsonify({"screens": screen_config, "summary": summary})
+        monitors = svc.monitor_manager.get_monitors_with_runtime_info()
+        matcher = svc.layout_manager.matcher
+        for m in monitors:
+            m["orientation"] = matcher.get_orientation(m["width"], m["height"])
+        return jsonify({"monitors": monitors})
     except Exception as e:
         api_logger.error(f"Error getting screen config: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -818,7 +831,7 @@ def add_rule_to_layout(layout_name):
         {
             "match_type": "exe",
             "match_value": "chrome.exe",
-            "target_display": 2,
+            "target_slot": 2,
             "fullscreen": false,
             "maximize": true
         }
@@ -836,12 +849,12 @@ def add_rule_to_layout(layout_name):
     if not data.get("match_type") or not data.get("match_value"):
         return jsonify({"error": "match_type and match_value are required"}), 400
 
-    target_display = data.get("target_display")
-    if not target_display:
-        return jsonify({"error": "target_display is required"}), 400
+    target_slot = data.get("target_slot")
+    if not target_slot:
+        return jsonify({"error": "target_slot is required"}), 400
 
-    if not isinstance(target_display, int) or target_display < 1:
-        return jsonify({"error": "target_display must be a positive integer"}), 400
+    if not isinstance(target_slot, int) or target_slot < 1:
+        return jsonify({"error": "target_slot must be a positive integer"}), 400
 
     try:
         svc = _require_service()
@@ -854,16 +867,16 @@ def add_rule_to_layout(layout_name):
         with open(layout_file, "r", encoding="utf-8") as f:
             layout_data = json.load(f)
 
-        # Validate target_display exists in screen_requirements
-        required_displays = [
-            s["display_number"]
+        # Validate target_slot exists in screen_requirements
+        required_slots = [
+            s["slot"]
             for s in layout_data.get("screen_requirements", {}).get("screens", [])
         ]
-        if target_display not in required_displays:
+        if target_slot not in required_slots:
             return jsonify(
                 {
-                    "error": f"Display {target_display} not in layout requirements. "
-                    f"Available displays: {required_displays}"
+                    "error": f"Slot {target_slot} not in layout requirements. "
+                    f"Available slots: {required_slots}"
                 }
             ), 400
 
@@ -896,11 +909,12 @@ def add_rule_to_layout(layout_name):
                 if rule.get("rule_id") == rule_id:
                     layout_data["rules"][i].update(
                         {
-                            "target_display": target_display,
+                            "target_slot": target_slot,
                             "maximize": data.get("maximize", False),
                         }
                     )
                     layout_data["rules"][i].pop("fullscreen", None)
+                    layout_data["rules"][i].pop("target_display", None)  # remove v1 key if present
                     api_logger.info(
                         f"Updated existing rule {rule_id} in layout {layout_name}"
                     )
@@ -916,7 +930,7 @@ def add_rule_to_layout(layout_name):
                 "rule_id": rule_id,
                 "match_type": data.get("match_type"),
                 "match_value": data.get("match_value"),
-                "target_display": target_display,
+                "target_slot": target_slot,
                 "maximize": data.get("maximize", False),
             }
 

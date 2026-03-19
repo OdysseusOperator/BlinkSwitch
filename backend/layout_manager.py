@@ -1,7 +1,15 @@
-"""Layout management system for Screeny.
+"""Layout management system for BlinkSwitch.
 
-Handles loading, validating, activating, and deactivating named layout presets
-based on screen configuration (DISPLAY# and orientation).
+Handles loading, validating, and applying named layout presets.
+
+Schema versions
+---------------
+v1 (legacy)  uses  display_number / target_display  (DISPLAY# connector IDs)
+v2 (current) uses  slot / target_slot               (user-assigned 1-based integers)
+
+When a v1 layout is loaded it is migrated in-memory to v2 automatically.
+The on-disk file is NOT rewritten by this module; use the migrate_layouts script
+for a permanent migration.
 """
 
 import json
@@ -11,18 +19,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from .layout_matcher import LayoutMatcher
+from .layout_matcher import LayoutMatcher, LayoutError  # noqa: F401  (re-export)
 
 
 def normalize_exe_name(exe_name: str) -> str:
-    """Normalize exe name for comparison (lowercase, ensure .exe suffix).
-
-    Args:
-        exe_name: The executable name to normalize
-
-    Returns:
-        Normalized exe name (lowercase with .exe suffix)
-    """
+    """Normalize exe name for comparison (lowercase, ensure .exe suffix)."""
     s = (exe_name or "").strip().lower()
     if s.endswith(".exe"):
         return s
@@ -32,10 +33,9 @@ def normalize_exe_name(exe_name: str) -> str:
 def find_matching_rule_for_window(
     window_data: Dict, rules: List[Dict]
 ) -> Optional[Dict]:
-    """Find if any rule matches the given window.
+    """Find the first rule that matches the given window.
 
     Checks ALL match types: exe, window_title, process_path.
-    Uses the same matching logic as window_manager.py for consistency.
 
     Args:
         window_data: Window dict with exe_name, title, process_path
@@ -50,7 +50,6 @@ def find_matching_rule_for_window(
         match_value_lower = match_value.lower()
 
         if match_type == "exe":
-            # Normalize and compare exe names
             exe_name = (
                 window_data.get("exe_name") or window_data.get("app_name") or ""
             ).strip()
@@ -58,13 +57,11 @@ def find_matching_rule_for_window(
                 return rule
 
         elif match_type == "window_title":
-            # Substring match (case-insensitive)
             title = (window_data.get("title") or "").lower()
             if match_value_lower and match_value_lower in title:
                 return rule
 
         elif match_type == "process_path":
-            # Exact path match (case-insensitive)
             process_path = (window_data.get("process_path") or "").lower()
             if match_value_lower and match_value_lower == process_path:
                 return rule
@@ -72,55 +69,63 @@ def find_matching_rule_for_window(
     return None
 
 
-class LayoutError(Exception):
-    """Exception raised for layout-related errors."""
+def _migrate_v1_to_v2(layout_data: Dict) -> Dict:
+    """Return an in-memory v2 copy of a v1 layout dict.
 
-    pass
+    Renames:
+      screen_requirements.screens[*].display_number  →  slot
+      rules[*].target_display                        →  target_slot
+    Adds schema_version: 2.
+
+    The original dict is NOT modified; a shallow-copied version is returned.
+    """
+    import copy
+    data = copy.deepcopy(layout_data)
+
+    # Migrate screen requirements
+    for screen in data.get("screen_requirements", {}).get("screens", []):
+        if "display_number" in screen and "slot" not in screen:
+            screen["slot"] = screen.pop("display_number")
+
+    # Migrate rules
+    for rule in data.get("rules", []):
+        if "target_display" in rule and "target_slot" not in rule:
+            rule["target_slot"] = rule.pop("target_display")
+
+    data["schema_version"] = 2
+    return data
 
 
 class LayoutManager:
     """Manages layout lifecycle: loading and validation of named layout presets.
 
-    The backend is stateless with respect to layout activation — the frontend
-    tracks which layout is active and passes the layout name explicitly on every
-    /apply-rules and /apply-rule-for-window call.
+    The backend is stateless:
+    - The frontend tracks which layout is active.
+    - The frontend owns the slot→monitor assignment and passes it on every call.
+    - This class never persists assignment data.
     """
 
     def __init__(self, config_manager, monitor_manager, layouts_dir="layouts"):
-        """Initialize the layout manager.
-
-        Args:
-            config_manager: ConfigManager instance for rule management
-            monitor_manager: MonitorManager instance for screen detection
-            layouts_dir: Directory containing layout JSON files
-        """
         self.logger = logging.getLogger("ScreenAssign.LayoutManager")
         self.config_manager = config_manager
         self.monitor_manager = monitor_manager
         self.layouts_dir = Path(layouts_dir)
         self.matcher = LayoutMatcher(monitor_manager)
 
-        # Ensure layouts directory exists
         if not self.layouts_dir.exists():
             self.layouts_dir.mkdir(parents=True, exist_ok=True)
             self.logger.info(f"Created layouts directory: {self.layouts_dir}")
+
+    # ------------------------------------------------------------------
+    # Layout file I/O
+    # ------------------------------------------------------------------
 
     def list_layouts(self) -> List[Dict]:
         """List all available layout files.
 
         Returns:
-            List of layout info dicts with: name, file_path, description, screen_requirements
-
-        Example:
-            [
-                {
-                    "name": "Coding Setup",
-                    "file_name": "coding.json",
-                    "file_path": "/path/to/layouts/coding.json",
-                    "description": "VS Code on vertical, Vivaldi on horizontal",
-                    "total_screens": 2
-                }
-            ]
+            List of layout info dicts with: name, file_path, description,
+            total_screens, schema_version.
         """
         layouts = []
 
@@ -141,6 +146,7 @@ class LayoutManager:
                     "total_screens": layout_data.get("screen_requirements", {}).get(
                         "total_screens", 0
                     ),
+                    "schema_version": layout_data.get("schema_version", 1),
                 }
                 layouts.append(layout_info)
 
@@ -151,18 +157,17 @@ class LayoutManager:
         return layouts
 
     def load_layout(self, layout_name: str) -> Dict:
-        """Load a layout file by name.
+        """Load a layout file by name, migrating v1 → v2 in-memory if needed.
 
         Args:
             layout_name: Name of the layout file (with or without .json extension)
 
         Returns:
-            Layout data dictionary
+            Layout data dictionary (always schema_version 2)
 
         Raises:
             LayoutError: If layout file not found or invalid
         """
-        # Handle both "coding" and "coding.json"
         if not layout_name.endswith(".json"):
             layout_name = f"{layout_name}.json"
 
@@ -175,7 +180,15 @@ class LayoutManager:
             with open(layout_path, "r") as f:
                 layout_data = json.load(f)
 
-            # Validate layout structure
+            # Migrate v1 → v2 in memory
+            if layout_data.get("schema_version", 1) < 2:
+                self.logger.info(
+                    f"Migrating layout '{layout_data.get('name', layout_name)}' "
+                    "from schema v1 to v2 in-memory"
+                )
+                layout_data = _migrate_v1_to_v2(layout_data)
+
+            # Validate
             is_valid, error_msg = self.validate_layout(layout_data)
             if not is_valid:
                 raise LayoutError(f"Invalid layout file: {error_msg}")
@@ -187,19 +200,20 @@ class LayoutManager:
 
         except json.JSONDecodeError as e:
             raise LayoutError(f"Invalid JSON in layout file: {e}")
+        except LayoutError:
+            raise
         except Exception as e:
             raise LayoutError(f"Error loading layout: {e}")
 
     def validate_layout(self, layout_data: Dict) -> Tuple[bool, str]:
-        """Validate layout structure and requirements.
+        """Validate a v2 layout structure.
 
         Args:
-            layout_data: Layout dictionary to validate
+            layout_data: Layout dictionary (must already be schema_version 2)
 
         Returns:
-            Tuple of (is_valid: bool, error_message: str)
+            (is_valid, error_message)
         """
-        # Check required top-level fields
         if "name" not in layout_data:
             return False, "Missing required field: name"
 
@@ -209,7 +223,6 @@ class LayoutManager:
         if "rules" not in layout_data:
             return False, "Missing required field: rules"
 
-        # Validate screen_requirements
         screen_req = layout_data["screen_requirements"]
 
         if not isinstance(screen_req, dict):
@@ -226,8 +239,8 @@ class LayoutManager:
 
         # Validate each screen requirement
         for i, screen in enumerate(screen_req["screens"]):
-            if "display_number" not in screen:
-                return False, f"Screen {i} missing: display_number"
+            if "slot" not in screen:
+                return False, f"Screen {i} missing: slot"
 
             if "orientation" not in screen:
                 return False, f"Screen {i} missing: orientation"
@@ -239,9 +252,11 @@ class LayoutManager:
                     "(must be 'horizontal' or 'vertical')",
                 )
 
-        # Validate rules
         if not isinstance(layout_data["rules"], list):
             return False, "rules must be a list"
+
+        # Collect valid slots from screen requirements
+        valid_slots = {s["slot"] for s in screen_req["screens"]}
 
         for i, rule in enumerate(layout_data["rules"]):
             if "match_type" not in rule:
@@ -250,106 +265,152 @@ class LayoutManager:
             if "match_value" not in rule:
                 return False, f"Rule {i} missing: match_value"
 
-            if "target_display" not in rule:
-                return False, f"Rule {i} missing: target_display"
+            if "target_slot" not in rule:
+                return False, f"Rule {i} missing: target_slot"
 
-            # Check that target_display references a valid display from requirements
-            target_display = rule["target_display"]
-            required_displays = [s["display_number"] for s in screen_req["screens"]]
-
-            if target_display not in required_displays:
+            if rule["target_slot"] not in valid_slots:
                 return (
                     False,
-                    f"Rule {i} targets DISPLAY{target_display} which is not in screen_requirements",
+                    f"Rule {i} targets slot {rule['target_slot']} which is not "
+                    f"in screen_requirements (valid slots: {sorted(valid_slots)})",
                 )
 
         return True, "Layout is valid"
 
-    def can_apply_layout(self, layout_data: Dict) -> Tuple[bool, str]:
-        """Check if current screen configuration matches layout requirements.
+    # ------------------------------------------------------------------
+    # Slot-based rule resolution
+    # ------------------------------------------------------------------
+
+    def can_apply_layout(
+        self, layout_data: Dict, assignment: Dict[str, str]
+    ) -> Tuple[bool, str]:
+        """Check if the assignment satisfies the layout's screen requirements.
+
+        Verifies:
+        1. The number of slots in the assignment matches total_screens.
+        2. Each required slot is present in the assignment.
+        3. The orientation of the assigned monitor matches the requirement.
 
         Args:
-            layout_data: Layout dictionary
+            layout_data: v2 layout dict (from load_layout)
+            assignment:  {"1": "x_y_W_H", "2": "x_y_W_H", ...}
 
         Returns:
-            Tuple of (can_apply: bool, reason: str)
+            (can_apply: bool, reason: str)
         """
-        # Get current screen configuration
-        current_config = self.matcher.get_screen_configuration()
+        screen_req = layout_data["screen_requirements"]
+        required_total = screen_req.get("total_screens")
 
-        # Match against layout requirements
-        matches, reason = self.matcher.matches_requirements(
-            current_config, layout_data["screen_requirements"]
-        )
+        if required_total is not None and len(assignment) != required_total:
+            return (
+                False,
+                f"Layout needs {required_total} screen(s) but assignment "
+                f"provides {len(assignment)}",
+            )
 
-        return matches, reason
+        # Build slot map (raises LayoutError if an identity key is unmatched)
+        try:
+            slot_map = self.matcher.build_slot_map(assignment)
+        except LayoutError as e:
+            return False, str(e)
 
-    def get_rules_for_layout(self, layout_name: str) -> List[Dict]:
-        """Load a layout by name and return its rules resolved to current monitors.
+        # Check orientation requirements
+        for screen in screen_req.get("screens", []):
+            slot = screen["slot"]
+            required_orientation = screen["orientation"]
 
-        Resolves logical display numbers to physical monitor IDs fresh on every
-        call — the backend is stateless; no active-layout state is stored.
+            if slot not in slot_map:
+                return False, f"Slot {slot} is required but not in assignment"
+
+            monitor_id = slot_map[slot]
+            cfg = self.config_manager.get_monitor(monitor_id)
+            if not cfg:
+                return False, f"Monitor for slot {slot} not found in config"
+
+            actual_orientation = self.matcher.get_orientation(
+                cfg["width"], cfg["height"]
+            )
+            if actual_orientation != required_orientation:
+                return (
+                    False,
+                    f"Slot {slot}: monitor is {actual_orientation} but layout "
+                    f"requires {required_orientation}",
+                )
+
+        return True, "All requirements met"
+
+    def ensure_layout_can_apply(
+        self, layout_name: str, assignment: Dict[str, str]
+    ) -> Dict:
+        """Load layout and verify it can be applied with the given assignment.
 
         Args:
-            layout_name: Name of the layout file (with or without .json extension).
-                         Must be non-empty.
+            layout_name: Layout file name (with or without .json)
+            assignment:  {"1": "x_y_W_H", "2": "x_y_W_H", ...}
 
         Returns:
-            List of runtime rules with target_monitor_id resolved.
+            Loaded layout data if compatible
 
         Raises:
-            LayoutError: If layout_name is empty, file not found, or invalid.
+            LayoutError: If layout cannot be loaded or requirements are not met
+        """
+        layout_data = self.load_layout(layout_name)
+        can_apply, reason = self.can_apply_layout(layout_data, assignment)
+        if not can_apply:
+            layout_title = layout_data.get("name", layout_name)
+            raise LayoutError(f"Layout '{layout_title}' cannot be applied: {reason}")
+        return layout_data
 
-        Example return:
-            [
-                {
-                    "rule_id": "rule_abc123",
-                    "match_type": "exe",
-                    "match_value": "chrome.exe",
-                    "target_monitor_id": "monitor_xyz123",  # Resolved!
-                    "fullscreen": true,
-                    "maximize": false
-                }
-            ]
+    def get_rules_for_layout(
+        self, layout_name: str, assignment: Dict[str, str]
+    ) -> List[Dict]:
+        """Load a layout and return its rules with target_monitor_id resolved.
+
+        Args:
+            layout_name: Layout file name (with or without .json)
+            assignment:  {"1": "x_y_W_H", "2": "x_y_W_H", ...}
+
+        Returns:
+            List of runtime rules with target_monitor_id populated.
+
+        Raises:
+            LayoutError: If layout_name is empty, file not found, invalid,
+                         or assignment does not match connected monitors.
         """
         if not layout_name or not layout_name.strip():
             raise LayoutError("layout_name must be a non-empty string")
 
-        # Load and validate the layout file (raises LayoutError on failure)
         layout_data = self.load_layout(layout_name)
-
-        # Build display map fresh from current screen configuration
-        screen_config = self.matcher.get_screen_configuration()
-        display_map = self.matcher.build_display_map(screen_config)
+        slot_map = self.matcher.build_slot_map(assignment)
 
         self.logger.debug(
-            f"Resolving rules for layout '{layout_data['name']}' with display_map={display_map}"
+            f"Resolving rules for layout '{layout_data['name']}' "
+            f"with slot_map={slot_map}"
         )
 
         rules = []
         for layout_rule in layout_data.get("rules", []):
-            target_display = layout_rule.get("target_display")
+            target_slot = layout_rule.get("target_slot")
 
-            if not target_display:
+            if target_slot is None:
                 self.logger.warning(
-                    f"Rule {layout_rule.get('rule_id', '(no id)')} missing target_display, skipping"
+                    f"Rule {layout_rule.get('rule_id', '(no id)')} missing "
+                    "target_slot, skipping"
                 )
                 continue
 
-            # Map display number to monitor ID
-            if target_display not in display_map:
+            if target_slot not in slot_map:
                 self.logger.warning(
-                    f"Rule targets DISPLAY{target_display} which isn't in display_map: {display_map}"
+                    f"Rule targets slot {target_slot} which is not in "
+                    f"slot_map: {slot_map}"
                 )
                 continue
-
-            target_monitor_id = display_map[target_display]
 
             rule = {
                 "rule_id": layout_rule.get("rule_id", f"rule_{uuid.uuid4().hex[:8]}"),
                 "match_type": layout_rule["match_type"],
                 "match_value": layout_rule["match_value"],
-                "target_monitor_id": target_monitor_id,
+                "target_monitor_id": slot_map[target_slot],
                 "fullscreen": layout_rule.get("fullscreen", False),
                 "maximize": layout_rule.get("maximize", False),
             }
@@ -360,39 +421,34 @@ class LayoutManager:
         )
         return rules
 
+    # ------------------------------------------------------------------
+    # Layout preview & creation
+    # ------------------------------------------------------------------
+
     def get_layout_preview(self, layout_name: str) -> Dict:
         """Get a preview of what a layout would do (without activating it).
+
+        Note: can_apply is not checked here because it requires an assignment
+        dict that is owned by the frontend. The preview returns layout metadata
+        only.
 
         Args:
             layout_name: Name of the layout to preview
 
         Returns:
-            Dictionary with layout preview info:
-            {
-                "name": str,
-                "description": str,
-                "can_apply": bool,
-                "reason": str,
-                "screen_requirements": dict,
-                "current_screen_config": list,
-                "rules_count": int
-            }
+            Dictionary with layout preview info
 
         Raises:
             LayoutError: If layout cannot be loaded
         """
         layout_data = self.load_layout(layout_name)
-        current_config = self.matcher.get_screen_configuration()
-        can_apply, reason = self.can_apply_layout(layout_data)
 
         return {
             "name": layout_data.get("name", layout_name),
             "description": layout_data.get("description", ""),
             "file_name": f"{layout_name}.json",
-            "can_apply": can_apply,
-            "reason": reason,
+            "schema_version": layout_data.get("schema_version", 2),
             "screen_requirements": layout_data.get("screen_requirements", {}),
-            "current_screen_config": current_config,
             "rules_count": len(layout_data.get("rules", [])),
             "data": layout_data,
         }
@@ -400,49 +456,53 @@ class LayoutManager:
     def create_layout_from_current_config(
         self, layout_name: str, description: str = ""
     ) -> Dict:
-        """Create a new layout file from the current screen configuration.
+        """Create a new layout file (schema v2) from connected monitors.
+
+        The new layout has empty rules — the user adds them afterwards.
+        Slot numbers are assigned 1..N (no positional ordering assumed;
+        the user assigns monitors to slots via the frontend).
 
         Args:
             layout_name: Name for the new layout
             description: Optional description
 
         Returns:
-            Dictionary with creation result:
-            {
-                "success": bool,
-                "message": str,
-                "file_name": str,
-                "file_path": str
-            }
+            {"success": bool, "message": str, "file_name": str, "file_path": str}
         """
-        # Get current screen configuration
-        screen_config = self.matcher.get_screen_configuration()
+        self.monitor_manager.detect_monitors()
+        connected_ids = self.monitor_manager.get_connected_monitor_ids()
 
-        if not screen_config:
+        if not connected_ids:
             return {
                 "success": False,
                 "message": "No screens detected. Cannot create layout.",
             }
 
-        # Build screen requirements from current config
         screens = []
-        for screen in screen_config:
+        for i, monitor_id in enumerate(connected_ids, start=1):
+            cfg = self.config_manager.get_monitor(monitor_id)
+            if not cfg:
+                continue
+            orientation = self.matcher.get_orientation(cfg["width"], cfg["height"])
             screens.append(
                 {
-                    "display_number": screen["display_number"],
-                    "orientation": screen["orientation"],
-                    "description": f"{screen['orientation'].capitalize()} screen - {screen['name']}",
+                    "slot": i,
+                    "orientation": orientation,
+                    "description": f"Slot {i} — {cfg['width']}×{cfg['height']} ({orientation})",
                 }
             )
 
-        # Create layout structure (with empty rules - user will add later)
         layout_data = {
+            "schema_version": 2,
             "name": layout_name,
             "description": description
             or f"Layout with {len(screens)} screen{'s' if len(screens) != 1 else ''}",
             "version": "1.0",
-            "screen_requirements": {"total_screens": len(screens), "screens": screens},
-            "rules": [],  # Empty - user will add window rules later
+            "screen_requirements": {
+                "total_screens": len(screens),
+                "screens": screens,
+            },
+            "rules": [],
             "metadata": {
                 "created": datetime.now().isoformat(),
                 "author": "screeny",
@@ -450,11 +510,9 @@ class LayoutManager:
             },
         }
 
-        # Save to file
         file_name = f"{layout_name.lower().replace(' ', '-')}.json"
         file_path = self.layouts_dir / file_name
 
-        # Check if file already exists
         if file_path.exists():
             return {
                 "success": False,
