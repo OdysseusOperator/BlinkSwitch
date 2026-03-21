@@ -50,6 +50,7 @@ LOG_FILE = os.path.join(
     LOG_DIR, f"window_switcher_{datetime.now().strftime('%Y%m%d')}.log"
 )
 
+
 # Create logger
 logger = logging.getLogger("WindowSwitcher")
 logger.setLevel(logging.DEBUG)

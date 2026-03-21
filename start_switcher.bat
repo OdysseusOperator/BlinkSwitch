@@ -2,6 +2,13 @@
 title Screeny - Window Switcher
 cd %~dp0
 
+REM Ensure Git LFS assets (fonts) are available before launching
+echo Ensuring Git LFS assets are downloaded...
+git lfs pull
+if %ERRORLEVEL% NEQ 0 (
+    echo WARNING: git lfs pull failed; make sure Git LFS is installed or fonts may still be pointers.
+)
+
 echo Screeny - Window Switcher
 echo ==========================
 
