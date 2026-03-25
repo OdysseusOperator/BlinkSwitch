@@ -1,4 +1,5 @@
 import ctypes
+import ctypes.wintypes
 import json
 import os
 import re
@@ -565,28 +566,57 @@ def center_mouse_on_window(hwnd: int) -> None:
 
 
 class HotkeyThread(threading.Thread):
+    """Listens for Alt+Space globally and fires a toggle callback.
+
+    Uses a Win32 WH_KEYBOARD_LL low-level hook via ctypes so we can
+    selectively suppress only the Alt+Space combination while letting every
+    other key event pass through to its normal destination unchanged.
+
+    Returning 1 from the hook callback suppresses that specific event.
+    Calling CallNextHookEx passes it through unchanged.
+    """
+
+    # Win32 virtual-key codes
+    _VK_SPACE = 0x20
+    _VK_LALT  = 0xA4
+    _VK_RALT  = 0xA5
+
+    # WH_KEYBOARD_LL hook id
+    _WH_KEYBOARD_LL = 13
+    _WM_KEYDOWN     = 0x0100
+    _WM_SYSKEYDOWN  = 0x0104
+
     def __init__(self, on_toggle, debounce_s: float = 0.25):
         super().__init__(daemon=True)
         self._on_toggle = on_toggle
         self._debounce_s = debounce_s
         self._stop = threading.Event()
         self._last_fire = 0.0
-        self._listener = None
+        self._hook = None
 
     def stop(self) -> None:
         self._stop.set()
-        if self._listener:
-            try:
-                self._listener.stop()
-            except Exception:
-                pass
 
     def run(self) -> None:
-        try:
-            from pynput import keyboard
-        except Exception as e:
-            print(f"pynput keyboard import failed: {e}")
-            return
+        user32   = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
+
+        # KBDLLHOOKSTRUCT layout
+        class KBDLLHOOKSTRUCT(ctypes.Structure):
+            _fields_ = [
+                ("vkCode",      ctypes.c_uint32),
+                ("scanCode",    ctypes.c_uint32),
+                ("flags",       ctypes.c_uint32),
+                ("time",        ctypes.c_uint32),
+                ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong)),
+            ]
+
+        HOOKPROC = ctypes.WINFUNCTYPE(
+            ctypes.c_long,
+            ctypes.c_int,
+            ctypes.c_uint,
+            ctypes.POINTER(KBDLLHOOKSTRUCT),
+        )
 
         def _fire_toggle() -> None:
             now = time.time()
@@ -596,18 +626,49 @@ class HotkeyThread(threading.Thread):
             print("HOTKEY PRESSED")
             self._on_toggle()
 
-        try:
-            # Use GlobalHotKeys which properly handles modifier combinations
-            # without sending spurious key events
-            self._listener = keyboard.GlobalHotKeys({"<alt>+<space>": _fire_toggle})
-            self._listener.start()
-            print("Alt+Space hotkey registered using pynput.GlobalHotKeys")
-        except Exception as e:
-            print(f"hotkey registration failed: {e}")
+        def _hook_proc(nCode, wParam, lParam):
+            if nCode >= 0:
+                vk = lParam.contents.vkCode
+                is_keydown = wParam in (self._WM_KEYDOWN, self._WM_SYSKEYDOWN)
+                if is_keydown and vk == self._VK_SPACE:
+                    # Check whether either Alt key is physically held via GetAsyncKeyState
+                    lalt = user32.GetAsyncKeyState(self._VK_LALT) & 0x8000
+                    ralt = user32.GetAsyncKeyState(self._VK_RALT) & 0x8000
+                    if lalt or ralt:
+                        _fire_toggle()
+                        # Suppress this specific event — return 1 without calling next hook
+                        return 1
+            return user32.CallNextHookEx(self._hook, nCode, wParam, lParam)
+
+        hook_cb = HOOKPROC(_hook_proc)
+        # WH_KEYBOARD_LL is a global hook and does not require a valid hMod.
+        # Passing GetModuleHandleW(None) fails with ERROR_MOD_NOT_FOUND (126)
+        # when the process has no loaded module name (e.g. running from a venv
+        # subprocess). Passing 0 (NULL) works correctly for this hook type.
+        self._hook = user32.SetWindowsHookExW(
+            self._WH_KEYBOARD_LL,
+            hook_cb,
+            0,
+            0,
+        )
+
+        if not self._hook:
+            print(f"SetWindowsHookExW failed (error {kernel32.GetLastError()})")
             return
 
+        print("Alt+Space hotkey registered using WH_KEYBOARD_LL (selective suppress)")
+
+        # Win32 message pump — required to service the hook callbacks
+        msg = ctypes.wintypes.MSG()
         while not self._stop.is_set():
-            time.sleep(0.1)
+            # PeekMessage with PM_REMOVE + short sleep keeps CPU usage low
+            while user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 0x0001):
+                user32.TranslateMessage(ctypes.byref(msg))
+                user32.DispatchMessageW(ctypes.byref(msg))
+            time.sleep(0.01)
+
+        user32.UnhookWindowsHookEx(self._hook)
+        self._hook = None
 
 
 def main() -> None:
