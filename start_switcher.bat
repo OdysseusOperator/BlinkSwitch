@@ -2,17 +2,29 @@
 title Screeny - Window Switcher
 cd %~dp0
 
+REM Ensure Git LFS assets (fonts) are available before launching
+echo Ensuring Git LFS assets are downloaded...
+git lfs pull
+if %ERRORLEVEL% NEQ 0 (
+    echo WARNING: git lfs pull failed; make sure Git LFS is installed or fonts may still be pointers.
+)
+
 echo Screeny - Window Switcher
 echo ==========================
 
-REM Check if frontend virtual environment exists
+REM Ensure frontend virtual environment exists and is usable
 if not exist frontend\.venv (
     echo Creating frontend virtual environment...
     python -m venv frontend\.venv
+) else (
+    if not exist frontend\.venv\Scripts\activate.bat (
+        echo Frontend virtual environment is incomplete. Recreating...
+        python -m venv --clear frontend\.venv
+    )
 )
 
 REM Activate frontend virtual environment
-call frontend\.venv\Scripts\activate.bat
+call "frontend\.venv\Scripts\activate.bat"
 
 REM Check if requirements are installed
 echo Checking/installing frontend requirements...
