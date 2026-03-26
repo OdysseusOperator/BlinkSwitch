@@ -413,6 +413,7 @@ class LayoutManager:
                 "target_monitor_id": slot_map[target_slot],
                 "fullscreen": layout_rule.get("fullscreen", False),
                 "maximize": layout_rule.get("maximize", False),
+                "skip_popups": layout_rule.get("skip_popups", False),
             }
             rules.append(rule)
 

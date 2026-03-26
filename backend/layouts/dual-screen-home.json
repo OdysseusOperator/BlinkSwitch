@@ -9,12 +9,12 @@
       {
         "slot": 1,
         "orientation": "vertical",
-        "description": "Vertical screen - \\\\.\\DISPLAY1 (1080\u00d71920)"
+        "description": "Vertical screen - \\\\.\\DISPLAY1 (1080×1920)"
       },
       {
         "slot": 2,
         "orientation": "horizontal",
-        "description": "Horizontal screen - \\\\.\\DISPLAY2 (1920\u00d71080)"
+        "description": "Horizontal screen - \\\\.\\DISPLAY2 (1920×1080)"
       }
     ]
   },
@@ -60,13 +60,6 @@
       "maximize": false
     },
     {
-      "rule_id": "rule_ceaba664",
-      "match_type": "exe",
-      "match_value": "OUTLOOK.EXE",
-      "target_slot": 2,
-      "maximize": true
-    },
-    {
       "rule_id": "rule_6f9442ad",
       "match_type": "exe",
       "match_value": "msedge.exe",
@@ -95,13 +88,6 @@
       "match_value": "dbeaver.exe",
       "target_slot": 2,
       "fullscreen": false,
-      "maximize": true
-    },
-    {
-      "rule_id": "rule_f6111ad5",
-      "match_type": "exe",
-      "match_value": "ms-teams.exe",
-      "target_slot": 2,
       "maximize": true
     },
     {

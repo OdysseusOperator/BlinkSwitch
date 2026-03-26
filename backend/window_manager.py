@@ -547,7 +547,7 @@ class WindowManager:
         win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
         self.logger.info(f"Maximized '{window_title}'")
 
-    def apply_window_rule(self, hwnd, monitor_id, maximize=False):
+    def apply_window_rule(self, hwnd, monitor_id, maximize=False, skip_popups=False):
         """Apply positioning rule to window with smart state checking.
 
         Only performs operations that are needed to reach desired state.
@@ -557,6 +557,7 @@ class WindowManager:
             hwnd (int): Window handle
             monitor_id (str): Target monitor ID
             maximize (bool): Should be maximized
+            skip_popups (bool): If True, skip maximize for WS_POPUP windows
 
         Returns:
             dict: Result with keys:
@@ -589,9 +590,22 @@ class WindowManager:
             time.sleep(0.3)  # Let move settle
 
         # Step 2: Apply maximize / normal state
+        # If skip_popups is set, check WS_POPUP style bit and suppress maximize for popups
+        effective_maximize = maximize
+        if maximize and skip_popups:
+            try:
+                style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+                if style & win32con.WS_POPUP:
+                    self.logger.info(
+                        f"Skipping maximize for '{window_title}' — WS_POPUP window and skip_popups=True"
+                    )
+                    effective_maximize = False
+            except Exception as e:
+                self.logger.warning(f"Could not read window style for hwnd={hwnd}: {e}")
+
         current_maximized = self.is_window_maximized(hwnd)
 
-        if maximize:
+        if effective_maximize:
             if not current_maximized:
                 self.logger.info(f"Maximizing '{window_title}'")
                 self.maximize_window(hwnd, monitor)
@@ -728,6 +742,7 @@ class WindowManager:
             hwnd,
             target_monitor_id,
             maximize=matched_rule.get("maximize", False),
+            skip_popups=matched_rule.get("skip_popups", False),
         )
 
         return {
@@ -889,6 +904,7 @@ class WindowManager:
                         window["hwnd"],
                         target_monitor_id,
                         maximize=rule.get("maximize", False),
+                        skip_popups=rule.get("skip_popups", False),
                     )
 
                     if result["changed"]:

@@ -714,13 +714,13 @@ class WindowsView:
             key_up: True if up arrow pressed
             key_escape: True if escape pressed
             key_backspace: True if backspace pressed
-            key_d: True if 'd' key pressed (not used)
+            key_d: True if 'd' key pressed (delete rule for selected window)
             key_a: True if 'a' key pressed (not used)
             key_enter: True if enter pressed (open window details)
             key_n: True if 'n' key pressed (not used)
 
         Returns:
-            Action to take: 'close', 'window_details', or None
+            Action to take: 'close', 'window_details', 'delete_window_rule', or None
         """
         # Handle escape (close)
         if key_escape:
@@ -740,6 +740,14 @@ class WindowsView:
         # Handle enter (open window details)
         if key_enter and self.windows and self.active_layout:
             return "window_details"
+
+        # Handle D key - delete rule for the selected window (only if it has one)
+        if key_d and self.windows and self.active_layout:
+            selected_window = self.windows[self.selected] if self.selected < len(self.windows) else None
+            if selected_window:
+                hwnd = selected_window.get("hwnd")
+                if hwnd is not None and hwnd in self.windows_with_rules:
+                    return "delete_window_rule"
 
         return None
 
@@ -809,7 +817,17 @@ class WindowsView:
         layout_name = (
             self.active_layout.get("name", "Unknown") if self.active_layout else "None"
         )
-        help_parts = [f"Layout: {layout_name}", "Enter to configure", "Esc to close"]
+        help_parts = [f"Layout: {layout_name}", "Enter to configure"]
+
+        # Show D=delete hint if the selected window has a rule
+        if self.windows and self.active_layout:
+            selected_window = self.windows[self.selected] if self.selected < len(self.windows) else None
+            if selected_window:
+                hwnd = selected_window.get("hwnd")
+                if hwnd is not None and hwnd in self.windows_with_rules:
+                    help_parts.append("D=delete rule")
+
+        help_parts.append("Esc to close")
         if self.error_message:
             help_parts.insert(0, self.error_message)
 
@@ -859,6 +877,17 @@ class WindowDetailsView:
         self.selected_display = 1  # Default to slot 1
         self.maximize = False
 
+        # match_type: "exe" or "window_title" (substring)
+        # MATCH_TYPES order determines cycling with T key
+        self.MATCH_TYPES = ["exe", "window_title"]
+        self.match_type = "exe"
+        # match_value_title: the substring to match when match_type == "window_title"
+        # Pre-populated from the current window title as a sensible default
+        self.match_value_title = window_data.get("title", "")
+
+        # skip_popups: when True, maximize is skipped for WS_POPUP windows
+        self.skip_popups = False
+
         # Check for existing rule (for edit mode)
         self.existing_rule = None
         self.is_edit_mode = False
@@ -876,6 +905,10 @@ class WindowDetailsView:
                     self.existing_rule.get("target_display", 1),  # v1 fallback
                 )
                 self.maximize = self.existing_rule.get("maximize", False)
+                self.match_type = self.existing_rule.get("match_type", "exe")
+                if self.match_type == "window_title":
+                    self.match_value_title = self.existing_rule.get("match_value", self.match_value_title)
+                self.skip_popups = self.existing_rule.get("skip_popups", False)
                 logger.info(
                     f"Edit mode: Loading existing rule {self.existing_rule.get('rule_id')} for {window_data.get('title', 'Unknown')}"
                 )
@@ -923,8 +956,8 @@ class WindowDetailsView:
         if key_escape or key_backspace:
             return "close"
 
-        # Get total items count (screens + maximize option + save button)
-        total_items = len(self.screens) + 2
+        # Get total items count (screens + match-type row + maximize row + skip-popups row + save button)
+        total_items = len(self.screens) + 4
 
         # Navigation
         if key_down:
@@ -934,17 +967,35 @@ class WindowDetailsView:
             self.selected = (self.selected - 1) % total_items
             logger.debug(f"Selected: {self.selected}")
 
+        # Index offsets for the option rows that follow the slot list
+        idx_match_type = len(self.screens)
+        idx_maximize   = len(self.screens) + 1
+        idx_skip_popups = len(self.screens) + 2
+        idx_save       = len(self.screens) + 3
+
         # Enter key - toggle or save
         if key_enter:
             if self.selected < len(self.screens):
                 # Selecting a slot
                 self.selected_display = self.screens[self.selected]["slot"]
                 logger.info(f"Selected slot: {self.selected_display}")
-            elif self.selected == len(self.screens):
+            elif self.selected == idx_match_type:
+                # If already window_title, Enter opens the text editor for the substring
+                if self.match_type == "window_title":
+                    return "edit_title_match"
+                # Otherwise cycle to window_title
+                current_idx = self.MATCH_TYPES.index(self.match_type)
+                self.match_type = self.MATCH_TYPES[(current_idx + 1) % len(self.MATCH_TYPES)]
+                logger.info(f"Match type cycled to: {self.match_type}")
+            elif self.selected == idx_maximize:
                 # Toggle maximize
                 self.maximize = not self.maximize
                 logger.info(f"Maximize toggled to: {self.maximize}")
-            elif self.selected == len(self.screens) + 1:
+            elif self.selected == idx_skip_popups:
+                # Toggle skip_popups
+                self.skip_popups = not self.skip_popups
+                logger.info(f"Skip popups toggled to: {self.skip_popups}")
+            elif self.selected == idx_save:
                 # Save button
                 return "save"
 
@@ -952,6 +1003,17 @@ class WindowDetailsView:
         if ch == ord("m") or ch == ord("M"):
             self.maximize = not self.maximize
             logger.info(f"Maximize toggled to: {self.maximize}")
+        elif ch == ord("t") or ch == ord("T"):
+            # If already window_title, T opens the substring text editor
+            if self.match_type == "window_title":
+                return "edit_title_match"
+            # Otherwise cycle to window_title
+            current_idx = self.MATCH_TYPES.index(self.match_type)
+            self.match_type = self.MATCH_TYPES[(current_idx + 1) % len(self.MATCH_TYPES)]
+            logger.info(f"Match type cycled to: {self.match_type}")
+        elif ch == ord("p") or ch == ord("P"):
+            self.skip_popups = not self.skip_popups
+            logger.info(f"Skip popups toggled to: {self.skip_popups}")
         elif ch == ord("s") or ch == ord("S"):
             return "save"
         elif (ch == ord("d") or ch == ord("D")) and self.is_edit_mode:
@@ -991,9 +1053,22 @@ class WindowDetailsView:
                 }
             )
 
+        # Add match-type row
+        if self.match_type == "exe":
+            match_label = f"[T] Match: exe = {exe_name}"
+        else:
+            # Show the title substring value (truncated for display)
+            display_val = self.match_value_title[:38] + "…" if len(self.match_value_title) > 38 else self.match_value_title
+            match_label = f"[T] Match: title contains \"{display_val}\""
+        items.append({"label": match_label, "connected": True})
+
         # Add maximize option
         maximize_marker = "[X]" if self.maximize else "[ ]"
         items.append({"label": f"{maximize_marker} Maximize", "connected": True})
+
+        # Add skip-popups option
+        skip_marker = "[X]" if self.skip_popups else "[ ]"
+        items.append({"label": f"{skip_marker} Skip popups (don't maximize WS_POPUP windows)", "connected": True})
 
         # Add save button
         save_label = ">> UPDATE RULE <<" if self.is_edit_mode else ">> SAVE RULE <<"
@@ -1001,7 +1076,10 @@ class WindowDetailsView:
 
         # Build help text
         help_parts = [f"Window: {exe_name}"]
-        help_parts.append("M=maximize S=save")
+        if self.match_type == "window_title":
+            help_parts.append("T=edit substring  M=maximize  P=skip popups  S=save")
+        else:
+            help_parts.append("T=match type  M=maximize  P=skip popups  S=save")
         if self.is_edit_mode:
             help_parts.append("D=delete")
         help_parts.append("Esc=cancel")
@@ -1033,11 +1111,17 @@ class WindowDetailsView:
         """
         exe_name = self.window.get("exe_name", "unknown.exe")
 
+        if self.match_type == "window_title":
+            match_value = self.match_value_title
+        else:
+            match_value = exe_name
+
         return {
-            "match_type": "exe",
-            "match_value": exe_name,
+            "match_type": self.match_type,
+            "match_value": match_value,
             "target_slot": self.selected_display,  # Slot number (1, 2, 3...)
             "maximize": self.maximize,
+            "skip_popups": self.skip_popups,
         }
 
 

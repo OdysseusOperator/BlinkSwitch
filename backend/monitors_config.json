@@ -1,28 +1,28 @@
 {
   "known_monitors": [
     {
-      "name": "\\\\.\\DISPLAY2 (1080\u00d71920)",
+      "name": "\\\\.\\DISPLAY1 (1080\u00d71920)",
       "width": 1080,
       "height": 1920,
       "x": 0,
       "y": 0,
       "is_primary": true,
       "fingerprints": {
-        "primary": "DISPLAY2_1080x1920",
+        "primary": "DISPLAY1_1080x1920",
         "secondary": "1080x1920"
       },
       "id": "monitor_7a122ffa",
       "first_detected": "2026-02-02T15:17:00.481256"
     },
     {
-      "name": "\\\\.\\DISPLAY1 (1920\u00d71080)",
+      "name": "\\\\.\\DISPLAY2 (1920\u00d71080)",
       "width": 1920,
       "height": 1080,
       "x": -1920,
       "y": 0,
       "is_primary": false,
       "fingerprints": {
-        "primary": "DISPLAY1_1920x1080",
+        "primary": "DISPLAY2_1920x1080",
         "secondary": "1920x1080"
       },
       "id": "monitor_0ec6d598",

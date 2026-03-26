@@ -15,6 +15,7 @@ from datetime import datetime
 from .commands import (
     get_registry,
     register_builtin_commands,
+    _find_matching_rule_for_window,
     AssignView,
     MonitorManagementView,
     LayoutManagementView,
@@ -1171,10 +1172,11 @@ def main() -> None:
         in_command_mode = False
         filtered_commands: list[Any] = []
 
-        # Text input mode for creating new layouts
+        # Text input mode for creating new layouts or editing rule match values
         text_input_mode = False
         text_input_value = ""
         text_input_prompt = ""
+        text_input_target = ""  # "new_layout" | "title_match"
 
         def _save_last_used() -> None:
             return
@@ -1609,6 +1611,7 @@ def main() -> None:
                             if rl.IsKeyPressed(rl.KEY_ESCAPE):
                                 # Cancel text input
                                 text_input_mode = False
+                                text_input_target = ""
                                 text_input_value = ""
                                 logger.info("Text input cancelled")
 
@@ -1616,53 +1619,65 @@ def main() -> None:
                                 rl.IsKeyPressed(rl.KEY_ENTER)
                                 and text_input_value.strip()
                             ):
-                                # Submit the layout name
-                                layout_name = text_input_value.strip()
-                                logger.info(f"Creating layout: {layout_name}")
-                                try:
-                                    response = _http_session.post(
-                                        f"{TABS_API_URL}/layouts",
-                                        json={"name": layout_name, "description": ""},
-                                        timeout=TABS_API_TIMEOUT,
-                                    )
-                                    if response.ok:
-                                        result = response.json()
-                                        logger.info(f"Layout created: {result}")
-                                        if isinstance(
-                                            current_view, LayoutManagementView
-                                        ):
+                                if text_input_target == "title_match":
+                                    # Write the edited substring back into the WindowDetailsView
+                                    if isinstance(current_view, WindowDetailsView):
+                                        current_view.match_value_title = text_input_value.strip()
+                                        logger.info(
+                                            f"Title match value set to: {current_view.match_value_title}"
+                                        )
+                                    text_input_mode = False
+                                    text_input_target = ""
+                                    text_input_value = ""
+                                else:
+                                    # Submit the layout name
+                                    layout_name = text_input_value.strip()
+                                    logger.info(f"Creating layout: {layout_name}")
+                                    try:
+                                        response = _http_session.post(
+                                            f"{TABS_API_URL}/layouts",
+                                            json={"name": layout_name, "description": ""},
+                                            timeout=TABS_API_TIMEOUT,
+                                        )
+                                        if response.ok:
+                                            result = response.json()
+                                            logger.info(f"Layout created: {result}")
+                                            if isinstance(
+                                                current_view, LayoutManagementView
+                                            ):
+                                                current_view.error_message = (
+                                                    f"✓ Created: {layout_name}"
+                                                )
+                                                current_view.layouts = fetch_layouts()
+                                                current_view.active_layout = active_layout
+                                        else:
+                                            error_msg = (
+                                                response.json().get(
+                                                    "error", "Unknown error"
+                                                )
+                                                if response.text
+                                                else "Request failed"
+                                            )
+                                            logger.error(
+                                                f"Failed to create layout: {error_msg}"
+                                            )
+                                            if isinstance(
+                                                current_view, LayoutManagementView
+                                            ):
+                                                current_view.error_message = (
+                                                    f"✗ Create failed: {error_msg}"
+                                                )
+                                    except Exception as e:
+                                        logger.error(f"Error creating layout: {e}")
+                                        if isinstance(current_view, LayoutManagementView):
                                             current_view.error_message = (
-                                                f"✓ Created: {layout_name}"
+                                                f"✗ Error: {str(e)}"
                                             )
-                                            current_view.layouts = fetch_layouts()
-                                            current_view.active_layout = active_layout
-                                    else:
-                                        error_msg = (
-                                            response.json().get(
-                                                "error", "Unknown error"
-                                            )
-                                            if response.text
-                                            else "Request failed"
-                                        )
-                                        logger.error(
-                                            f"Failed to create layout: {error_msg}"
-                                        )
-                                        if isinstance(
-                                            current_view, LayoutManagementView
-                                        ):
-                                            current_view.error_message = (
-                                                f"✗ Create failed: {error_msg}"
-                                            )
-                                except Exception as e:
-                                    logger.error(f"Error creating layout: {e}")
-                                    if isinstance(current_view, LayoutManagementView):
-                                        current_view.error_message = (
-                                            f"✗ Error: {str(e)}"
-                                        )
 
-                                # Exit text input mode
-                                text_input_mode = False
-                                text_input_value = ""
+                                    # Exit text input mode
+                                    text_input_mode = False
+                                    text_input_target = ""
+                                    text_input_value = ""
 
                         elif current_view is not None:
                             # We're in a command view
@@ -1781,6 +1796,7 @@ def main() -> None:
                                     # Enter text input mode for new layout name
                                     logger.info("Starting new layout creation")
                                     text_input_mode = True
+                                    text_input_target = "new_layout"
                                     text_input_value = ""
                                     text_input_prompt = "Enter layout name:"
                                 elif action == "window_details":
@@ -1860,6 +1876,15 @@ def main() -> None:
                                         except Exception as e:
                                             logger.error(f"Error saving rule: {e}")
 
+                                elif action == "edit_title_match":
+                                    # Enter text input mode to edit the title match substring
+                                    if isinstance(current_view, WindowDetailsView):
+                                        logger.info("Entering text input mode for title match value")
+                                        text_input_mode = True
+                                        text_input_target = "title_match"
+                                        text_input_value = current_view.match_value_title
+                                        text_input_prompt = "Enter title substring to match (case-insensitive):"
+
                                 elif action == "delete":
                                     # Delete window rule from active layout
                                     if isinstance(current_view, WindowDetailsView):
@@ -1909,6 +1934,54 @@ def main() -> None:
                                             current_view.error_message = (
                                                 f"❌ Delete error: {str(e)}"
                                             )
+
+                                elif action == "delete_window_rule":
+                                    # Delete rule for the selected window directly from WindowsView
+                                    if isinstance(current_view, WindowsView):
+                                        selected_window = (
+                                            current_view.windows[current_view.selected]
+                                            if current_view.selected < len(current_view.windows)
+                                            else None
+                                        )
+                                        if selected_window:
+                                            rules = current_view.active_layout["data"].get("rules", [])
+                                            existing_rule = _find_matching_rule_for_window(selected_window, rules)
+                                            if existing_rule:
+                                                rule_id = existing_rule.get("rule_id")
+                                                layout_file_name = current_view.active_layout.get("file_name", "")
+                                                layout_name_slug = layout_file_name.replace(".json", "")
+                                                logger.info(
+                                                    f"Deleting rule {rule_id} for window {selected_window.get('exe_name')} from WindowsView"
+                                                )
+                                                try:
+                                                    response = _http_session.delete(
+                                                        f"http://127.0.0.1:5555/screenassign/layouts/{layout_name_slug}/rules/{rule_id}",
+                                                        timeout=2.0,
+                                                    )
+                                                    if response.ok:
+                                                        logger.info("Rule deleted successfully from WindowsView")
+                                                        # Refresh layout data and rebuild the view in-place
+                                                        full_layout = (
+                                                            fetch_layout_data(active_layout)
+                                                            if active_layout
+                                                            else None
+                                                        )
+                                                        prev_selected = current_view.selected
+                                                        current_view = WindowsView(
+                                                            fetch_windows(), full_layout
+                                                        )
+                                                        current_view.selected = min(
+                                                            prev_selected, max(0, len(current_view.windows) - 1)
+                                                        )
+                                                        current_view.error_message = "Rule deleted"
+                                                    else:
+                                                        logger.error(
+                                                            f"Failed to delete rule: {response.text}"
+                                                        )
+                                                        current_view.error_message = f"Delete failed: {response.status_code}"
+                                                except Exception as e:
+                                                    logger.error(f"Error deleting rule from WindowsView: {e}")
+                                                    current_view.error_message = f"Delete error: {str(e)}"
 
                                 elif action.startswith("delete:"):
                                     monitor_id = action.split(":", 1)[1]
@@ -2091,10 +2164,15 @@ def main() -> None:
 
                         # Draw based on current mode
                         if text_input_mode:
-                            # Draw text input dialog for new layout
+                            # Draw text input dialog (new layout or title match editing)
                             # Title
+                            dialog_title = (
+                                "Edit Title Match"
+                                if text_input_target == "title_match"
+                                else "Create New Layout"
+                            )
                             draw_text(
-                                b"Create New Layout",
+                                dialog_title.encode("utf-8", errors="ignore"),
                                 20,
                                 16,
                                 FONT_SIZE,
@@ -2125,8 +2203,13 @@ def main() -> None:
                             )
 
                             # Help text
+                            help_hint = (
+                                b"Enter to confirm | Esc to cancel"
+                                if text_input_target == "title_match"
+                                else b"Enter to create | Esc to cancel"
+                            )
                             draw_text(
-                                b"Enter to create | Esc to cancel",
+                                help_hint,
                                 20,
                                 help_text_y,
                                 FONT_SIZE - 8,

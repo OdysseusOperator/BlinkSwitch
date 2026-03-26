@@ -909,8 +909,11 @@ def add_rule_to_layout(layout_name):
                 if rule.get("rule_id") == rule_id:
                     layout_data["rules"][i].update(
                         {
+                            "match_type": data.get("match_type"),
+                            "match_value": data.get("match_value"),
                             "target_slot": target_slot,
                             "maximize": data.get("maximize", False),
+                            "skip_popups": data.get("skip_popups", False),
                         }
                     )
                     layout_data["rules"][i].pop("fullscreen", None)
@@ -932,6 +935,7 @@ def add_rule_to_layout(layout_name):
                 "match_value": data.get("match_value"),
                 "target_slot": target_slot,
                 "maximize": data.get("maximize", False),
+                "skip_popups": data.get("skip_popups", False),
             }
 
             layout_data["rules"].append(rule)
