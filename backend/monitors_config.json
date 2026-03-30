@@ -1,14 +1,14 @@
 {
   "known_monitors": [
     {
-      "name": "\\\\.\\DISPLAY1 (1080\u00d71920)",
+      "name": "\\\\.\\DISPLAY2 (1080\u00d71920)",
       "width": 1080,
       "height": 1920,
       "x": 0,
       "y": 0,
       "is_primary": true,
       "fingerprints": {
-        "primary": "DISPLAY1_1080x1920",
+        "primary": "DISPLAY2_1080x1920",
         "secondary": "1080x1920"
       },
       "id": "monitor_7a122ffa",

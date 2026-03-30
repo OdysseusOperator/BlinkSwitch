@@ -110,7 +110,7 @@ class ScreenAssignService:
 
         Args:
             layout_name: Name of the layout whose rules to apply
-            assignment:  Slot→identity_key mapping from the frontend,
+            assignment:  Slot->identity_key mapping from the frontend,
                          e.g. {"1": "-1920_0_1080_1920", "2": "0_0_1920_1080"}
 
         Returns:
@@ -132,13 +132,15 @@ class ScreenAssignService:
 
         return results
 
-    def apply_rules_for_window(self, hwnd: int, layout_name: str, assignment: dict) -> dict:
+    def apply_rules_for_window(
+        self, hwnd: int, layout_name: str, assignment: dict
+    ) -> dict:
         """Apply rules to a single window identified by hwnd.
 
         Args:
             hwnd: Window handle
             layout_name: Name of the layout whose rules to apply
-            assignment:  Slot→identity_key mapping from the frontend
+            assignment:  Slot->identity_key mapping from the frontend
 
         Returns:
             dict: Result of rule application for that window

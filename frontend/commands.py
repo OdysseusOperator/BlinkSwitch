@@ -435,9 +435,7 @@ class LayoutManagementView:
         ]
 
         # Get current active layout name
-        active_name = (
-            f"{self.active_layout}.json" if self.active_layout else ""
-        )
+        active_name = f"{self.active_layout}.json" if self.active_layout else ""
 
         items = []
         for layout in visible:
@@ -504,7 +502,7 @@ class AssignView:
         Args:
             active_layout: Layout info dict (must have 'data' with screen_requirements)
             monitors: List of monitor dicts from /screen-config (identity_key, orientation, etc.)
-            current_assignment: Current slot→identity_key mapping for this layout
+            current_assignment: Current slot->identity_key mapping for this layout
                                 e.g. {"1": "-1920_0_1080_1920", "2": "0_0_1920_1080"}
             layout_name: Stem name of the layout being assigned (e.g. "dual-screen-home").
                          Used by the save handler; does NOT need to be the active layout.
@@ -518,7 +516,7 @@ class AssignView:
             sr = active_layout["data"].get("screen_requirements", {})
             self.slots = sr.get("screens", [])
 
-        # Working copy of the assignment (slot str → identity_key str)
+        # Working copy of the assignment (slot str -> identity_key str)
         self.assignment: Dict[str, str] = dict(current_assignment)
 
         self.selected = 0  # index into self.slots
@@ -533,7 +531,7 @@ class AssignView:
         self.error_message = msg
 
     def get_assignment(self) -> Dict[str, str]:
-        """Return the current (possibly edited) slot→identity_key mapping."""
+        """Return the current (possibly edited) slot->identity_key mapping."""
         return dict(self.assignment)
 
     def handle_input(
@@ -579,7 +577,7 @@ class AssignView:
                     slot_num = str(self.slots[self.selected]["slot"])
                     self.assignment[slot_num] = identity_key
                     logger.info(
-                        f"AssignView: slot {slot_num} → {identity_key} (monitor {digit})"
+                        f"AssignView: slot {slot_num} -> {identity_key} (monitor {digit})"
                     )
             else:
                 self.error_message = f"No monitor #{digit}"
@@ -595,7 +593,7 @@ class AssignView:
         Get data needed for rendering.
 
         Returns items list with:
-          - Slot rows: "[*] Slot 1 (vertical) → -1920_0_1080_1920"
+          - Slot rows: "[*] Slot 1 (vertical) -> -1920_0_1080_1920"
           - Blank separator row
           - Monitor legend rows: "1: -1920_0_1080_1920 (vertical, 1080×1920)"
 
@@ -609,7 +607,7 @@ class AssignView:
             orientation = screen.get("orientation", "?")
             assigned_key = self.assignment.get(str(slot_num), "(unassigned)")
             marker = "[*]" if idx == self.selected else "[ ]"
-            label = f"{marker} Slot {slot_num} ({orientation}) → {assigned_key}"
+            label = f"{marker} Slot {slot_num} ({orientation}) -> {assigned_key}"
             items.append({"label": label, "connected": idx == self.selected})
 
         # Blank separator
@@ -743,7 +741,11 @@ class WindowsView:
 
         # Handle D key - delete rule for the selected window (only if it has one)
         if key_d and self.windows and self.active_layout:
-            selected_window = self.windows[self.selected] if self.selected < len(self.windows) else None
+            selected_window = (
+                self.windows[self.selected]
+                if self.selected < len(self.windows)
+                else None
+            )
             if selected_window:
                 hwnd = selected_window.get("hwnd")
                 if hwnd is not None and hwnd in self.windows_with_rules:
@@ -821,7 +823,11 @@ class WindowsView:
 
         # Show D=delete hint if the selected window has a rule
         if self.windows and self.active_layout:
-            selected_window = self.windows[self.selected] if self.selected < len(self.windows) else None
+            selected_window = (
+                self.windows[self.selected]
+                if self.selected < len(self.windows)
+                else None
+            )
             if selected_window:
                 hwnd = selected_window.get("hwnd")
                 if hwnd is not None and hwnd in self.windows_with_rules:
@@ -907,7 +913,9 @@ class WindowDetailsView:
                 self.maximize = self.existing_rule.get("maximize", False)
                 self.match_type = self.existing_rule.get("match_type", "exe")
                 if self.match_type == "window_title":
-                    self.match_value_title = self.existing_rule.get("match_value", self.match_value_title)
+                    self.match_value_title = self.existing_rule.get(
+                        "match_value", self.match_value_title
+                    )
                 self.skip_popups = self.existing_rule.get("skip_popups", False)
                 logger.info(
                     f"Edit mode: Loading existing rule {self.existing_rule.get('rule_id')} for {window_data.get('title', 'Unknown')}"
@@ -969,9 +977,9 @@ class WindowDetailsView:
 
         # Index offsets for the option rows that follow the slot list
         idx_match_type = len(self.screens)
-        idx_maximize   = len(self.screens) + 1
+        idx_maximize = len(self.screens) + 1
         idx_skip_popups = len(self.screens) + 2
-        idx_save       = len(self.screens) + 3
+        idx_save = len(self.screens) + 3
 
         # Enter key - toggle or save
         if key_enter:
@@ -985,7 +993,9 @@ class WindowDetailsView:
                     return "edit_title_match"
                 # Otherwise cycle to window_title
                 current_idx = self.MATCH_TYPES.index(self.match_type)
-                self.match_type = self.MATCH_TYPES[(current_idx + 1) % len(self.MATCH_TYPES)]
+                self.match_type = self.MATCH_TYPES[
+                    (current_idx + 1) % len(self.MATCH_TYPES)
+                ]
                 logger.info(f"Match type cycled to: {self.match_type}")
             elif self.selected == idx_maximize:
                 # Toggle maximize
@@ -1009,7 +1019,9 @@ class WindowDetailsView:
                 return "edit_title_match"
             # Otherwise cycle to window_title
             current_idx = self.MATCH_TYPES.index(self.match_type)
-            self.match_type = self.MATCH_TYPES[(current_idx + 1) % len(self.MATCH_TYPES)]
+            self.match_type = self.MATCH_TYPES[
+                (current_idx + 1) % len(self.MATCH_TYPES)
+            ]
             logger.info(f"Match type cycled to: {self.match_type}")
         elif ch == ord("p") or ch == ord("P"):
             self.skip_popups = not self.skip_popups
@@ -1058,8 +1070,12 @@ class WindowDetailsView:
             match_label = f"[T] Match: exe = {exe_name}"
         else:
             # Show the title substring value (truncated for display)
-            display_val = self.match_value_title[:38] + "…" if len(self.match_value_title) > 38 else self.match_value_title
-            match_label = f"[T] Match: title contains \"{display_val}\""
+            display_val = (
+                self.match_value_title[:38] + "…"
+                if len(self.match_value_title) > 38
+                else self.match_value_title
+            )
+            match_label = f'[T] Match: title contains "{display_val}"'
         items.append({"label": match_label, "connected": True})
 
         # Add maximize option
@@ -1068,7 +1084,12 @@ class WindowDetailsView:
 
         # Add skip-popups option
         skip_marker = "[X]" if self.skip_popups else "[ ]"
-        items.append({"label": f"{skip_marker} Skip popups (don't maximize WS_POPUP windows)", "connected": True})
+        items.append(
+            {
+                "label": f"{skip_marker} Skip popups (don't maximize WS_POPUP windows)",
+                "connected": True,
+            }
+        )
 
         # Add save button
         save_label = ">> UPDATE RULE <<" if self.is_edit_mode else ">> SAVE RULE <<"
@@ -1363,10 +1384,10 @@ def register_builtin_commands(
         fetch_settings_fn: Function to fetch application settings
         update_settings_fn: Function to update application settings
         fetch_layout_data_fn: Function to fetch full layout data dict by name
-        fetch_screen_config_fn: Function to fetch /screen-config → {"monitors": [...]}
+        fetch_screen_config_fn: Function to fetch /screen-config -> {"monitors": [...]}
                                 Required for the /assign command.
-        get_assignment_fn: Function(layout_name) → dict[str, str] returning the
-                           current slot→identity_key assignment for that layout.
+        get_assignment_fn: Function(layout_name) -> dict[str, str] returning the
+                           current slot->identity_key assignment for that layout.
                            Required for the /assign command.
     """
     registry = get_registry()
@@ -1391,7 +1412,9 @@ def register_builtin_commands(
             """Handle /layouts command - show available layouts."""
             logger.info("Executing /layouts command")
             layouts = fetch_layouts_fn()
-            active_layout = get_active_layout_name_fn() if get_active_layout_name_fn else None
+            active_layout = (
+                get_active_layout_name_fn() if get_active_layout_name_fn else None
+            )
             return LayoutManagementView(
                 layouts,
                 active_layout,
@@ -1408,7 +1431,12 @@ def register_builtin_commands(
         )
 
     # /assign command — map layout slots to physical monitors
-    if fetch_screen_config_fn and get_assignment_fn and fetch_layout_data_fn and get_active_layout_name_fn:
+    if (
+        fetch_screen_config_fn
+        and get_assignment_fn
+        and fetch_layout_data_fn
+        and get_active_layout_name_fn
+    ):
 
         def handle_assign_command(context: Dict[str, Any]) -> Any:
             """Handle /assign command - assign monitors to layout slots.
@@ -1426,8 +1454,12 @@ def register_builtin_commands(
                     layouts = fetch_layouts_fn()
                     if layouts:
                         first = layouts[0]
-                        target_layout_name = first.get("file_name", "").replace(".json", "")
-                        logger.info(f"/assign: no active layout, falling back to '{target_layout_name}'")
+                        target_layout_name = first.get("file_name", "").replace(
+                            ".json", ""
+                        )
+                        logger.info(
+                            f"/assign: no active layout, falling back to '{target_layout_name}'"
+                        )
 
             if not target_layout_name:
                 error_view = AssignView({}, [], {}, layout_name="")
@@ -1443,7 +1475,12 @@ def register_builtin_commands(
             screen_config = fetch_screen_config_fn()
             monitors = screen_config.get("monitors", [])
             current_assignment = get_assignment_fn(target_layout_name)
-            return AssignView(layout_data, monitors, current_assignment, layout_name=target_layout_name)
+            return AssignView(
+                layout_data,
+                monitors,
+                current_assignment,
+                layout_name=target_layout_name,
+            )
 
         registry.register(
             "assign",
@@ -1458,7 +1495,9 @@ def register_builtin_commands(
             """Handle /windows command - show all windows."""
             logger.info("Executing /windows command")
             windows = fetch_windows_fn()
-            active_layout_name = get_active_layout_name_fn() if get_active_layout_name_fn else None
+            active_layout_name = (
+                get_active_layout_name_fn() if get_active_layout_name_fn else None
+            )
             active_layout = (
                 fetch_layout_data_fn(active_layout_name)
                 if fetch_layout_data_fn and active_layout_name

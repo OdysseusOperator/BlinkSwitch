@@ -17,6 +17,7 @@ from typing import Dict
 
 class LayoutError(Exception):
     """Raised for layout-related errors (unmatched assignment, bad schema, etc.)."""
+
     pass
 
 
@@ -49,7 +50,7 @@ class LayoutMatcher:
 
         Steps:
           1. Refresh connected monitors via detect_monitors().
-          2. Build an identity_key → monitor_id lookup from the live topology.
+          2. Build an identity_key -> monitor_id lookup from the live topology.
           3. For each slot in the assignment, look up the monitor_id.
           4. Raise LayoutError with a clear message if any key is unmatched.
 
@@ -72,9 +73,12 @@ class LayoutMatcher:
         # Fresh topology
         self.monitor_manager.detect_monitors()
 
-        # Build identity_key → monitor_id from connected monitors
+        # Build identity_key -> monitor_id from connected monitors
         identity_map: Dict[str, str] = {}
-        for monitor_id, monitor in self.monitor_manager.get_all_connected_monitors().items():
+        for (
+            monitor_id,
+            monitor,
+        ) in self.monitor_manager.get_all_connected_monitors().items():
             cfg = self.monitor_manager.config_manager.get_monitor(monitor_id)
             if not cfg:
                 continue

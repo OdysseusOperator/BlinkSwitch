@@ -73,13 +73,14 @@ def _migrate_v1_to_v2(layout_data: Dict) -> Dict:
     """Return an in-memory v2 copy of a v1 layout dict.
 
     Renames:
-      screen_requirements.screens[*].display_number  →  slot
-      rules[*].target_display                        →  target_slot
+      screen_requirements.screens[*].display_number  ->  slot
+      rules[*].target_display                        ->  target_slot
     Adds schema_version: 2.
 
     The original dict is NOT modified; a shallow-copied version is returned.
     """
     import copy
+
     data = copy.deepcopy(layout_data)
 
     # Migrate screen requirements
@@ -101,7 +102,7 @@ class LayoutManager:
 
     The backend is stateless:
     - The frontend tracks which layout is active.
-    - The frontend owns the slot→monitor assignment and passes it on every call.
+    - The frontend owns the slot->monitor assignment and passes it on every call.
     - This class never persists assignment data.
     """
 
@@ -157,7 +158,7 @@ class LayoutManager:
         return layouts
 
     def load_layout(self, layout_name: str) -> Dict:
-        """Load a layout file by name, migrating v1 → v2 in-memory if needed.
+        """Load a layout file by name, migrating v1 -> v2 in-memory if needed.
 
         Args:
             layout_name: Name of the layout file (with or without .json extension)
@@ -180,7 +181,7 @@ class LayoutManager:
             with open(layout_path, "r") as f:
                 layout_data = json.load(f)
 
-            # Migrate v1 → v2 in memory
+            # Migrate v1 -> v2 in memory
             if layout_data.get("schema_version", 1) < 2:
                 self.logger.info(
                     f"Migrating layout '{layout_data.get('name', layout_name)}' "

@@ -1,5 +1,5 @@
 """
-assignment.py — persistence helpers for slot→monitor assignments.
+assignment.py — persistence helpers for slot->monitor assignments.
 
 Format of assignment.json:
 {
@@ -26,7 +26,7 @@ def load_assignments() -> Dict[str, Dict[str, str]]:
     """Load all layout assignments from disk.
 
     Returns:
-        Dict mapping layout_name → {slot_str → identity_key}.
+        Dict mapping layout_name -> {slot_str -> identity_key}.
         Returns an empty dict if the file does not exist or cannot be parsed.
     """
     if not os.path.exists(_ASSIGNMENT_FILE):
@@ -38,7 +38,9 @@ def load_assignments() -> Dict[str, Dict[str, str]]:
         if not isinstance(data, dict):
             logger.warning("assignment.json root is not a dict — ignoring")
             return {}
-        logger.info(f"Loaded assignments for {len(data)} layouts from {_ASSIGNMENT_FILE}")
+        logger.info(
+            f"Loaded assignments for {len(data)} layouts from {_ASSIGNMENT_FILE}"
+        )
         return data
     except Exception as exc:
         logger.warning(f"Failed to load assignment.json: {exc}")
@@ -49,7 +51,7 @@ def save_assignments(assignments: Dict[str, Dict[str, str]]) -> None:
     """Persist all layout assignments to disk.
 
     Args:
-        assignments: Dict mapping layout_name → {slot_str → identity_key}.
+        assignments: Dict mapping layout_name -> {slot_str -> identity_key}.
 
     Raises:
         OSError: if the file cannot be written (caller should handle).
@@ -57,7 +59,9 @@ def save_assignments(assignments: Dict[str, Dict[str, str]]) -> None:
     try:
         with open(_ASSIGNMENT_FILE, "w", encoding="utf-8") as fh:
             json.dump(assignments, fh, indent=2)
-        logger.info(f"Saved assignments for {len(assignments)} layouts to {_ASSIGNMENT_FILE}")
+        logger.info(
+            f"Saved assignments for {len(assignments)} layouts to {_ASSIGNMENT_FILE}"
+        )
     except Exception as exc:
         logger.error(f"Failed to save assignment.json: {exc}")
         raise

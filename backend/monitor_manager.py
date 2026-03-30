@@ -194,7 +194,7 @@ class MonitorManager:
         Returns:
             list: List of monitor dicts with added dpi_scale and identity_key fields.
                   identity_key is formatted as  x_y_W_H  (e.g. "-1920_0_1080_1920")
-                  and is used by the frontend to build the slot→monitor assignment.
+                  and is used by the frontend to build the slot->monitor assignment.
         """
         self.detect_monitors()
         monitors_with_dpi = []

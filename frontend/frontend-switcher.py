@@ -53,6 +53,23 @@ LOG_FILE = os.path.join(
 )
 
 
+class SafeConsoleHandler(logging.StreamHandler):
+    """Stream handler that replaces unencodable characters instead of crashing."""
+
+    def emit(self, record: logging.LogRecord) -> None:  # type: ignore[override]
+        try:
+            msg = self.format(record)
+            stream = self.stream
+            encoding = getattr(stream, "encoding", None) or "utf-8"
+            safe_msg = msg.encode(encoding, errors="replace").decode(
+                encoding, errors="replace"
+            )
+            stream.write(safe_msg + self.terminator)
+            self.flush()
+        except Exception:
+            self.handleError(record)
+
+
 # Create logger
 logger = logging.getLogger("WindowSwitcher")
 logger.setLevel(logging.DEBUG)
@@ -61,14 +78,14 @@ logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s [%(name)s] [%(levelname)s] %(message)s")
 
 # File handler - force flush after every write
-file_handler = logging.FileHandler(LOG_FILE, mode="a")
+file_handler = logging.FileHandler(LOG_FILE, mode="a", encoding="utf-8")
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 # Force immediate flush
 file_handler.flush()
 
 # Console handler
-console_handler = logging.StreamHandler()
+console_handler = SafeConsoleHandler()
 console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(formatter)
 
@@ -186,7 +203,9 @@ def activate_tab_via_api(tab_id: str) -> bool:
     return False
 
 
-def find_browser_hwnd(tab: dict[str, Any], all_windows: list[dict[str, Any]]) -> Optional[int]:
+def find_browser_hwnd(
+    tab: dict[str, Any], all_windows: list[dict[str, Any]]
+) -> Optional[int]:
     """Return the Win32 HWND for the browser window that owns *tab*.
 
     Uses the same creation-order heuristic as the backend:
@@ -203,7 +222,11 @@ def find_browser_hwnd(tab: dict[str, Any], all_windows: list[dict[str, Any]]) ->
 
     # All Win32 windows for this browser, sorted by hwnd (creation-order proxy)
     browser_wins = sorted(
-        [w for w in all_windows if w.get("type") != "tab" and w.get("exe_name") == exe_name],
+        [
+            w
+            for w in all_windows
+            if w.get("type") != "tab" and w.get("exe_name") == exe_name
+        ],
         key=lambda w: w.get("hwnd", 0),
     )
     if not browser_wins:
@@ -213,12 +236,15 @@ def find_browser_hwnd(tab: dict[str, Any], all_windows: list[dict[str, Any]]) ->
         return browser_wins[0].get("hwnd")
 
     # All unique chrome windowIds for this exe across all tabs, sorted ascending
-    chrome_win_ids: list[int] = sorted({
-        int(t["chrome_window_id"])
-        for t in all_windows
-        if t.get("type") == "tab" and t.get("exe_name") == exe_name
-        and t.get("chrome_window_id") is not None
-    })
+    chrome_win_ids: list[int] = sorted(
+        {
+            int(t["chrome_window_id"])
+            for t in all_windows
+            if t.get("type") == "tab"
+            and t.get("exe_name") == exe_name
+            and t.get("chrome_window_id") is not None
+        }
+    )
 
     try:
         idx = chrome_win_ids.index(chrome_window_id)
@@ -254,7 +280,9 @@ def fetch_screen_config() -> dict[str, Any]:
         )
         if response.ok:
             config = response.json()
-            logger.info(f"Fetched screen config: {len(config.get('monitors', []))} monitors")
+            logger.info(
+                f"Fetched screen config: {len(config.get('monitors', []))} monitors"
+            )
             return config
     except Exception as e:
         logger.warning(f"Failed to fetch screen config: {e}")
@@ -418,7 +446,9 @@ def apply_rule_for_window_async(hwnd: int, layout_name: Optional[str]) -> None:
     for the background timer.
     """
     if layout_name is None:
-        logger.debug(f"apply_rule_for_window_async: no active layout, skipping hwnd={hwnd}")
+        logger.debug(
+            f"apply_rule_for_window_async: no active layout, skipping hwnd={hwnd}"
+        )
         return
 
     # Capture layout_name at call time (closure-safe)
@@ -580,13 +610,13 @@ class HotkeyThread(threading.Thread):
 
     # Win32 virtual-key codes
     _VK_SPACE = 0x20
-    _VK_LALT  = 0xA4
-    _VK_RALT  = 0xA5
+    _VK_LALT = 0xA4
+    _VK_RALT = 0xA5
 
     # WH_KEYBOARD_LL hook id
     _WH_KEYBOARD_LL = 13
-    _WM_KEYDOWN     = 0x0100
-    _WM_SYSKEYDOWN  = 0x0104
+    _WM_KEYDOWN = 0x0100
+    _WM_SYSKEYDOWN = 0x0104
 
     def __init__(self, on_toggle, debounce_s: float = 0.25):
         super().__init__(daemon=True)
@@ -600,16 +630,16 @@ class HotkeyThread(threading.Thread):
         self._stop.set()
 
     def run(self) -> None:
-        user32   = ctypes.windll.user32
+        user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
 
         # KBDLLHOOKSTRUCT layout
         class KBDLLHOOKSTRUCT(ctypes.Structure):
             _fields_ = [
-                ("vkCode",      ctypes.c_uint32),
-                ("scanCode",    ctypes.c_uint32),
-                ("flags",       ctypes.c_uint32),
-                ("time",        ctypes.c_uint32),
+                ("vkCode", ctypes.c_uint32),
+                ("scanCode", ctypes.c_uint32),
+                ("flags", ctypes.c_uint32),
+                ("time", ctypes.c_uint32),
                 ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong)),
             ]
 
@@ -677,7 +707,7 @@ def main() -> None:
     logger.info("=== Starting Window Switcher ===")
     logger.info(f"Log file: {LOG_FILE}")
 
-    # Load slot→monitor assignments from disk
+    # Load slot->monitor assignments from disk
     assignments: dict[str, dict[str, str]] = load_assignments()
     logger.info(f"Loaded assignments: {assignments}")
 
@@ -767,7 +797,9 @@ def main() -> None:
                 error = payload.get("error") or payload.get("message") or error
             except Exception:
                 pass
-            logger.warning(f"apply-rules on activate returned {response.status_code}: {error}")
+            logger.warning(
+                f"apply-rules on activate returned {response.status_code}: {error}"
+            )
             _error_state["last_error"] = error
             _error_state["error_timestamp"] = time.time()
             logger.warning(f"UI error surfaced: {error}")
@@ -991,7 +1023,10 @@ def main() -> None:
                 try:
                     response = _http_session.post(
                         f"{TABS_API_URL}/apply-rules",
-                        json={"layout_name": layout_name_now, "assignment": layout_assignment_now},
+                        json={
+                            "layout_name": layout_name_now,
+                            "assignment": layout_assignment_now,
+                        },
                         timeout=15.0,  # rules can be slow (F11 + waits)
                     )
                     if response.ok:
@@ -1001,7 +1036,9 @@ def main() -> None:
                             f"failed={result.get('failed')}"
                         )
                     else:
-                        logger.warning(f"apply-rules tick returned {response.status_code}")
+                        logger.warning(
+                            f"apply-rules tick returned {response.status_code}"
+                        )
                 except Exception as e:
                     logger.debug(f"apply-rules tick failed (backend may be busy): {e}")
 
@@ -1622,7 +1659,9 @@ def main() -> None:
                                 if text_input_target == "title_match":
                                     # Write the edited substring back into the WindowDetailsView
                                     if isinstance(current_view, WindowDetailsView):
-                                        current_view.match_value_title = text_input_value.strip()
+                                        current_view.match_value_title = (
+                                            text_input_value.strip()
+                                        )
                                         logger.info(
                                             f"Title match value set to: {current_view.match_value_title}"
                                         )
@@ -1636,7 +1675,10 @@ def main() -> None:
                                     try:
                                         response = _http_session.post(
                                             f"{TABS_API_URL}/layouts",
-                                            json={"name": layout_name, "description": ""},
+                                            json={
+                                                "name": layout_name,
+                                                "description": "",
+                                            },
                                             timeout=TABS_API_TIMEOUT,
                                         )
                                         if response.ok:
@@ -1649,7 +1691,9 @@ def main() -> None:
                                                     f"✓ Created: {layout_name}"
                                                 )
                                                 current_view.layouts = fetch_layouts()
-                                                current_view.active_layout = active_layout
+                                                current_view.active_layout = (
+                                                    active_layout
+                                                )
                                         else:
                                             error_msg = (
                                                 response.json().get(
@@ -1669,7 +1713,9 @@ def main() -> None:
                                                 )
                                     except Exception as e:
                                         logger.error(f"Error creating layout: {e}")
-                                        if isinstance(current_view, LayoutManagementView):
+                                        if isinstance(
+                                            current_view, LayoutManagementView
+                                        ):
                                             current_view.error_message = (
                                                 f"✗ Error: {str(e)}"
                                             )
@@ -1757,7 +1803,9 @@ def main() -> None:
                                                 )
                                                 # Refresh the layouts list
                                                 current_view.layouts = fetch_layouts()
-                                                current_view.active_layout = active_layout
+                                                current_view.active_layout = (
+                                                    active_layout
+                                                )
                                                 # Reset selection if needed
                                                 if current_view.selected >= len(
                                                     current_view.layouts
@@ -1814,14 +1862,21 @@ def main() -> None:
                                             current_view.active_layout,
                                         )
                                 elif action == "save":
-                                    # Handle save for AssignView (slot→monitor assignment)
+                                    # Handle save for AssignView (slot->monitor assignment)
                                     if isinstance(current_view, AssignView):
-                                        logger.info("Saving slot→monitor assignment")
+                                        logger.info("Saving slot->monitor assignment")
                                         try:
-                                            layout_name_now = current_view.layout_name or active_layout
+                                            layout_name_now = (
+                                                current_view.layout_name
+                                                or active_layout
+                                            )
                                             if layout_name_now:
-                                                new_assignment = current_view.get_assignment()
-                                                assignments[layout_name_now] = new_assignment
+                                                new_assignment = (
+                                                    current_view.get_assignment()
+                                                )
+                                                assignments[layout_name_now] = (
+                                                    new_assignment
+                                                )
                                                 save_assignments(assignments)
                                                 logger.info(
                                                     f"Assignment saved for '{layout_name_now}': {new_assignment}"
@@ -1829,7 +1884,9 @@ def main() -> None:
                                             current_view = None
                                             in_command_mode = False
                                         except Exception as e:
-                                            logger.error(f"Failed to save assignment: {e}")
+                                            logger.error(
+                                                f"Failed to save assignment: {e}"
+                                            )
                                             current_view.set_error(f"Save failed: {e}")
                                     # Save window rule to active layout
                                     elif isinstance(current_view, WindowDetailsView):
@@ -1879,10 +1936,14 @@ def main() -> None:
                                 elif action == "edit_title_match":
                                     # Enter text input mode to edit the title match substring
                                     if isinstance(current_view, WindowDetailsView):
-                                        logger.info("Entering text input mode for title match value")
+                                        logger.info(
+                                            "Entering text input mode for title match value"
+                                        )
                                         text_input_mode = True
                                         text_input_target = "title_match"
-                                        text_input_value = current_view.match_value_title
+                                        text_input_value = (
+                                            current_view.match_value_title
+                                        )
                                         text_input_prompt = "Enter title substring to match (case-insensitive):"
 
                                 elif action == "delete":
@@ -1940,16 +2001,31 @@ def main() -> None:
                                     if isinstance(current_view, WindowsView):
                                         selected_window = (
                                             current_view.windows[current_view.selected]
-                                            if current_view.selected < len(current_view.windows)
+                                            if current_view.selected
+                                            < len(current_view.windows)
                                             else None
                                         )
                                         if selected_window:
-                                            rules = current_view.active_layout["data"].get("rules", [])
-                                            existing_rule = _find_matching_rule_for_window(selected_window, rules)
+                                            rules = current_view.active_layout[
+                                                "data"
+                                            ].get("rules", [])
+                                            existing_rule = (
+                                                _find_matching_rule_for_window(
+                                                    selected_window, rules
+                                                )
+                                            )
                                             if existing_rule:
                                                 rule_id = existing_rule.get("rule_id")
-                                                layout_file_name = current_view.active_layout.get("file_name", "")
-                                                layout_name_slug = layout_file_name.replace(".json", "")
+                                                layout_file_name = (
+                                                    current_view.active_layout.get(
+                                                        "file_name", ""
+                                                    )
+                                                )
+                                                layout_name_slug = (
+                                                    layout_file_name.replace(
+                                                        ".json", ""
+                                                    )
+                                                )
                                                 logger.info(
                                                     f"Deleting rule {rule_id} for window {selected_window.get('exe_name')} from WindowsView"
                                                 )
@@ -1959,29 +2035,48 @@ def main() -> None:
                                                         timeout=2.0,
                                                     )
                                                     if response.ok:
-                                                        logger.info("Rule deleted successfully from WindowsView")
+                                                        logger.info(
+                                                            "Rule deleted successfully from WindowsView"
+                                                        )
                                                         # Refresh layout data and rebuild the view in-place
                                                         full_layout = (
-                                                            fetch_layout_data(active_layout)
+                                                            fetch_layout_data(
+                                                                active_layout
+                                                            )
                                                             if active_layout
                                                             else None
                                                         )
-                                                        prev_selected = current_view.selected
+                                                        prev_selected = (
+                                                            current_view.selected
+                                                        )
                                                         current_view = WindowsView(
                                                             fetch_windows(), full_layout
                                                         )
                                                         current_view.selected = min(
-                                                            prev_selected, max(0, len(current_view.windows) - 1)
+                                                            prev_selected,
+                                                            max(
+                                                                0,
+                                                                len(
+                                                                    current_view.windows
+                                                                )
+                                                                - 1,
+                                                            ),
                                                         )
-                                                        current_view.error_message = "Rule deleted"
+                                                        current_view.error_message = (
+                                                            "Rule deleted"
+                                                        )
                                                     else:
                                                         logger.error(
                                                             f"Failed to delete rule: {response.text}"
                                                         )
                                                         current_view.error_message = f"Delete failed: {response.status_code}"
                                                 except Exception as e:
-                                                    logger.error(f"Error deleting rule from WindowsView: {e}")
-                                                    current_view.error_message = f"Delete error: {str(e)}"
+                                                    logger.error(
+                                                        f"Error deleting rule from WindowsView: {e}"
+                                                    )
+                                                    current_view.error_message = (
+                                                        f"Delete error: {str(e)}"
+                                                    )
 
                                 elif action.startswith("delete:"):
                                     monitor_id = action.split(":", 1)[1]
@@ -2104,10 +2199,16 @@ def main() -> None:
                                                 browser_hwnd,
                                                 active_layout,
                                                 False,  # don't center mouse for tab switches
-                                                layout_assignment=assignments.get(active_layout, {}) if active_layout else {},
+                                                layout_assignment=assignments.get(
+                                                    active_layout, {}
+                                                )
+                                                if active_layout
+                                                else {},
                                             )
                                         else:
-                                            print(f"No browser window found for tab {tab_id}, exe={w.get('exe_name')}")
+                                            print(
+                                                f"No browser window found for tab {tab_id}, exe={w.get('exe_name')}"
+                                            )
 
                                         # Step 2: Queue the Chrome activateTab command
                                         # so the extension navigates to the right tab.
@@ -2146,7 +2247,11 @@ def main() -> None:
                                             hwnd,
                                             active_layout,
                                             center_mouse_on_switch,
-                                            layout_assignment=assignments.get(active_layout, {}) if active_layout else {},
+                                            layout_assignment=assignments.get(
+                                                active_layout, {}
+                                            )
+                                            if active_layout
+                                            else {},
                                         )
                                         print(
                                             f"Switch requested for hwnd={hwnd} (async)"
@@ -2270,9 +2375,7 @@ def main() -> None:
                                 is_sel = idx == render_data["selected"]
 
                                 if is_sel:
-                                    draw_text(
-                                        b">", 20, y, FONT_SIZE, ACCENT_SELECTION
-                                    )
+                                    draw_text(b">", 20, y, FONT_SIZE, ACCENT_SELECTION)
 
                                 # Color: yellow for has rule, white for no rule
                                 color = (
@@ -2302,7 +2405,9 @@ def main() -> None:
 
                             # Draw help text (show timed error for up to 4 s)
                             _err_msg = _error_state.get("last_error")
-                            _err_age = time.time() - _error_state.get("error_timestamp", 0.0)
+                            _err_age = time.time() - _error_state.get(
+                                "error_timestamp", 0.0
+                            )
                             if _err_msg and _err_age < 4.0:
                                 _help_display = f"Error: {_err_msg}"
                                 _help_color = (220, 60, 60, 255)  # red-ish
@@ -2310,8 +2415,11 @@ def main() -> None:
                                 _help_display = render_data["help_text"]
                                 _help_color = TEXT_SECONDARY
                             draw_text(
-                                (_help_display if isinstance(_help_display, bytes)
-                                 else _help_display.encode("utf-8", errors="ignore")),
+                                (
+                                    _help_display
+                                    if isinstance(_help_display, bytes)
+                                    else _help_display.encode("utf-8", errors="ignore")
+                                ),
                                 20,
                                 help_text_y,
                                 FONT_SIZE - 4,
@@ -2320,9 +2428,7 @@ def main() -> None:
 
                         else:
                             # Normal window/command list mode
-                            draw_text(
-                                b"query:", 20, 16, FONT_SIZE, TEXT_SECONDARY
-                            )
+                            draw_text(b"query:", 20, 16, FONT_SIZE, TEXT_SECONDARY)
                             draw_text(
                                 query.encode("utf-8", errors="ignore"),
                                 100,
@@ -2503,8 +2609,7 @@ def main() -> None:
                                 )
                                 handle_height = max(
                                     18,
-                                    (max_visible_rows / items_count)
-                                    * scrollbar_height,
+                                    (max_visible_rows / items_count) * scrollbar_height,
                                 )
                                 handle_y = scrollbar_y + (
                                     scroll_ratio
@@ -2527,9 +2632,13 @@ def main() -> None:
 
                             # Draw help text (show timed error for up to 4 s)
                             _err_msg = _error_state.get("last_error")
-                            _err_age = time.time() - _error_state.get("error_timestamp", 0.0)
+                            _err_age = time.time() - _error_state.get(
+                                "error_timestamp", 0.0
+                            )
                             if _err_msg and _err_age < 4.0:
-                                help_text = f"Error: {_err_msg}".encode("utf-8", errors="ignore")
+                                help_text = f"Error: {_err_msg}".encode(
+                                    "utf-8", errors="ignore"
+                                )
                                 _help_color = (220, 60, 60, 255)
                             elif in_command_mode:
                                 help_text = b"Type command name | Enter to execute | Esc to close"

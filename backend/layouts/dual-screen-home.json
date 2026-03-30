@@ -103,6 +103,14 @@
       "match_value": "msrdc.exe",
       "target_slot": 2,
       "maximize": true
+    },
+    {
+      "rule_id": "rule_47f13248",
+      "match_type": "exe",
+      "match_value": "astroboy4.exe",
+      "target_slot": 2,
+      "maximize": false,
+      "skip_popups": false
     }
   ],
   "metadata": {
