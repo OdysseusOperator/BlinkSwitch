@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 from datetime import datetime
 
 # Import command system
@@ -851,51 +851,85 @@ def main() -> None:
         FONT_SIZE = 24
 
         # Create overlay windows for dimming background (one per monitor)
-        overlay_windows = []
+        overlay_windows: list[Any] = []
         overlay_visible = [False]
+        overlay_click_handler: list[Optional[Callable[[Any], None]]] = [None]
+        overlay_layout_signature: list[tuple[int, int, int, int]] = []
 
-        def create_overlay():
-            """Create fullscreen transparent overlays for all monitors."""
-            nonlocal overlay_windows
+        def sync_overlay_windows() -> None:
+            """Create or reposition overlay windows to match the current monitors."""
+            nonlocal overlay_windows, overlay_layout_signature
             try:
-                # Create one overlay window per monitor
                 monitor_count = rl.GetMonitorCount()
-
+                monitors: list[tuple[int, int, int, int]] = []
                 for monitor_idx in range(monitor_count):
                     monitor_pos = rl.GetMonitorPosition(monitor_idx)
-                    monitor_width = rl.GetMonitorWidth(monitor_idx)
-                    monitor_height = rl.GetMonitorHeight(monitor_idx)
-
-                    # Create overlay window for this monitor
-                    overlay = tk.Toplevel() if overlay_windows else tk.Tk()
-                    overlay.title(
-                        "__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__"
-                    )  # Protect from rule assignments
-                    overlay.attributes("-alpha", 0.5)  # 50% transparent
-                    overlay.attributes("-topmost", True)
-                    overlay.overrideredirect(True)  # Remove window decorations
-                    overlay.configure(bg="black")
-
-                    # Position on this monitor
-                    overlay.geometry(
-                        f"{monitor_width}x{monitor_height}+{int(monitor_pos.x)}+{int(monitor_pos.y)}"
+                    monitors.append(
+                        (
+                            int(monitor_pos.x),
+                            int(monitor_pos.y),
+                            int(rl.GetMonitorWidth(monitor_idx)),
+                            int(rl.GetMonitorHeight(monitor_idx)),
+                        )
                     )
-
-                    # Start hidden
-                    overlay.withdraw()
-
-                    overlay_windows.append(overlay)
-
-                print(
-                    f"Created {len(overlay_windows)} overlay windows (one per monitor)"
-                )
             except Exception as e:
-                print(f"Overlay creation error: {e}")
+                print(f"Overlay sync error: {e}")
+                return
 
-        def show_overlay(
-            monitor_x=None, monitor_y=None, monitor_width=None, monitor_height=None
-        ):
+            if not monitors:
+                for overlay in overlay_windows:
+                    try:
+                        overlay.destroy()
+                    except Exception:
+                        pass
+                overlay_windows = []
+                overlay_layout_signature = []
+                overlay_visible[0] = False
+                return
+
+            desired_count = len(monitors)
+            current_count = len(overlay_windows)
+
+            if current_count > desired_count:
+                for overlay in overlay_windows[desired_count:]:
+                    try:
+                        overlay.destroy()
+                    except Exception:
+                        pass
+                overlay_windows = overlay_windows[:desired_count]
+            elif current_count < desired_count:
+                for _ in range(desired_count - current_count):
+                    overlay = tk.Toplevel() if overlay_windows else tk.Tk()
+                    overlay.title("__SCREENY_WINDOW_SWITCHER_UNIQUE_MARKER__")
+                    overlay.attributes("-alpha", 0.5)
+                    overlay.attributes("-topmost", True)
+                    overlay.overrideredirect(True)
+                    overlay.configure(bg="black")
+                    overlay.withdraw()
+                    overlay_windows.append(overlay)
+                    if overlay_click_handler[0]:
+                        overlay.bind("<Button-1>", overlay_click_handler[0])
+
+            new_signature = monitors
+            layout_changed = (
+                new_signature != overlay_layout_signature
+                or current_count != desired_count
+            )
+
+            for overlay, (pos_x, pos_y, width, height) in zip(
+                overlay_windows, new_signature
+            ):
+                overlay.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
+                if overlay_click_handler[0]:
+                    overlay.bind("<Button-1>", overlay_click_handler[0])
+
+            overlay_layout_signature = list(new_signature)
+            if layout_changed:
+                print(f"Synced overlay windows to {len(overlay_windows)} monitors")
+
+        def show_overlay():
             """Show the dimming overlay on all monitors."""
+            sync_overlay_windows()
             if overlay_windows:
                 try:
                     for overlay in overlay_windows:
@@ -947,7 +981,7 @@ def main() -> None:
         rl.SetTargetFPS(60)
 
         # Create overlays after Raylib is initialized (need monitor info)
-        create_overlay()
+        sync_overlay_windows()
 
         # Center window on primary monitor initially
         # (will be repositioned when opened based on mouse position)
@@ -1159,18 +1193,17 @@ def main() -> None:
         # Setup overlay click handler to close when clicking outside main window
         def setup_overlay_click():
             """Bind click event to overlays to close the window."""
-            if overlay_windows:
 
-                def on_overlay_click(event):
-                    nonlocal window_visible
-                    window_visible = False
-                    rl.SetWindowState(rl.FLAG_WINDOW_HIDDEN)
-                    hide_overlay()
-                    print("Window hidden (overlay click)")
+            def on_overlay_click(event):
+                nonlocal window_visible
+                window_visible = False
+                rl.SetWindowState(rl.FLAG_WINDOW_HIDDEN)
+                hide_overlay()
+                print("Window hidden (overlay click)")
 
-                # Bind click handler to all overlay windows
-                for overlay in overlay_windows:
-                    overlay.bind("<Button-1>", on_overlay_click)
+            overlay_click_handler[0] = on_overlay_click
+            for overlay in overlay_windows:
+                overlay.bind("<Button-1>", on_overlay_click)
 
         setup_overlay_click()
 
