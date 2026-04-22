@@ -80,37 +80,6 @@ Options:
 - `--daemon`: Run as background service
 - `--no-autostart`: Don't start service automatically
 
-## Dashboard Integration
-
-ScreenAssign integrates with the Dashboard through a REST API. To use it within the Dashboard:
-
-1. Ensure the Dashboard backend (Flask) is running
-2. Import and initialize the ScreenAssign API in your Flask app:
-
-```python
-from window_stuff.api import setup_api
-
-# Initialize the API with your Flask app
-setup_api(app)
-```
-
-This will add the following endpoints to your Dashboard backend:
-
-- `GET /screenassign/status`: Get service status
-- `POST /screenassign/start`: Start the service
-- `POST /screenassign/stop`: Stop the service
-- `POST /screenassign/restart`: Restart the service
-- `POST /screenassign/apply-rules`: Apply rules immediately
-- `GET /screenassign/monitors`: Get all known monitors
-- `GET /screenassign/rules`: Get all rules
-- `POST /screenassign/rules`: Add/update a rule
-- `DELETE /screenassign/rules/<rule_id>`: Delete a rule
-- `GET /screenassign/windows`: Get all currently running windows
-
-## Signal File
-
-The service checks for a signal file at `../signalFiles/screenassign.flag`. If this file doesn't exist, the service will pause and not apply any rules. This allows you to easily disable the service temporarily without stopping it.
-
 ## Logs
 
 Logs are written to `logs/screenassign_YYYYMMDD.log` by default.
