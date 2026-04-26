@@ -46,6 +46,7 @@ frontend/logs/
 monitors_config.json
 backend/monitors_config.json
 frontend/assignment.json
+backend/layouts/
 
 # Windows/editor temp files
 Desktop.ini
