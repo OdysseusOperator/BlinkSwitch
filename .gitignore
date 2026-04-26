@@ -40,3 +40,15 @@ Thumbs.db
 # Logs
 *.log
 logs/
+frontend/logs/
+
+# Local runtime state (machine-specific)
+monitors_config.json
+backend/monitors_config.json
+frontend/assignment.json
+
+# Windows/editor temp files
+Desktop.ini
+*.tmp
+*.bak
+*.backup
