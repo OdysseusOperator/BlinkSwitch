@@ -8,12 +8,34 @@ import os
 import time
 import ctypes
 from ctypes import wintypes
+from enum import Enum
 from pathlib import Path
 from datetime import datetime
 from typing import Any, cast
 from .monitor_manager import MonitorManager
 from .config_manager import ConfigManager
 
+
+class MaximizeState(str, Enum):
+    MAXIMIZED = "maximized"
+    NOT_MAXIMIZED = "not_maximized"
+    UNSET = "unset"
+
+    @classmethod
+    def from_rule(cls, value) -> "MaximizeState":
+        """Deserialize a rule's maximize field.
+
+        Old format: true -> MAXIMIZED, false/None -> UNSET (false was never 'enforce restore').
+        New format: 'maximized' | 'not_maximized' | 'unset'.
+        """
+        if value is True:
+            return cls.MAXIMIZED
+        if isinstance(value, str):
+            try:
+                return cls(value)
+            except ValueError:
+                return cls.UNSET
+        return cls.UNSET
 
 # SendInput structures for keyboard simulation
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -437,7 +459,7 @@ class WindowManager:
         return current_monitor_id == monitor_id
 
     def is_window_in_correct_state(
-        self, hwnd, monitor_id, monitor, maximize
+        self, hwnd, monitor_id, monitor, maximize: MaximizeState
     ):
         """Check if window is in the desired state (position + maximize).
 
@@ -445,7 +467,7 @@ class WindowManager:
             hwnd (int): Window handle
             monitor_id (str): Target monitor ID
             monitor: Monitor object (screeninfo)
-            maximize (bool): Should be maximized
+            maximize (MaximizeState): Desired maximize state
 
         Returns:
             bool: True if window matches desired state exactly
@@ -453,8 +475,13 @@ class WindowManager:
         if not self.is_window_on_monitor(hwnd, monitor_id):
             return False
 
+        if maximize is MaximizeState.UNSET:
+            return True  # No maximize preference — on correct monitor is enough
+
         is_max = self.is_window_maximized(hwnd)
-        return is_max if maximize else not is_max
+        if maximize is MaximizeState.MAXIMIZED:
+            return is_max
+        return not is_max  # NOT_MAXIMIZED
 
     # NOTE: We intentionally do not keep a broad "ignore" filter anymore.
     # Listing should be close to what WinSwitcher would enumerate: visible + title,
@@ -547,7 +574,7 @@ class WindowManager:
         win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
         self.logger.info(f"Maximized '{window_title}'")
 
-    def apply_window_rule(self, hwnd, monitor_id, maximize=False, skip_popups=False):
+    def apply_window_rule(self, hwnd, monitor_id, maximize: MaximizeState = MaximizeState.UNSET, skip_popups=False):
         """Apply positioning rule to window with smart state checking.
 
         Only performs operations that are needed to reach desired state.
@@ -556,7 +583,7 @@ class WindowManager:
         Args:
             hwnd (int): Window handle
             monitor_id (str): Target monitor ID
-            maximize (bool): Should be maximized
+            maximize (MaximizeState): MAXIMIZED | NOT_MAXIMIZED | UNSET (leave alone)
             skip_popups (bool): If True, skip maximize for WS_POPUP windows
 
         Returns:
@@ -592,26 +619,28 @@ class WindowManager:
         # Step 2: Apply maximize / normal state
         # If skip_popups is set, check WS_POPUP style bit and suppress maximize for popups
         effective_maximize = maximize
-        if maximize and skip_popups:
+        if maximize is MaximizeState.MAXIMIZED and skip_popups:
             try:
                 style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
                 if style & win32con.WS_POPUP:
                     self.logger.info(
                         f"Skipping maximize for '{window_title}' — WS_POPUP window and skip_popups=True"
                     )
-                    effective_maximize = False
+                    effective_maximize = MaximizeState.UNSET
             except Exception as e:
                 self.logger.warning(f"Could not read window style for hwnd={hwnd}: {e}")
 
         current_maximized = self.is_window_maximized(hwnd)
 
-        if effective_maximize:
+        if effective_maximize is MaximizeState.UNSET:
+            pass  # No preference — leave window maximize state untouched
+        elif effective_maximize is MaximizeState.MAXIMIZED:
             if not current_maximized:
                 self.logger.info(f"Maximizing '{window_title}'")
                 self.maximize_window(hwnd, monitor)
                 operations.append("maximize")
-        else:
-            # Un-maximize if needed (already done by move_window if we moved)
+        elif effective_maximize is MaximizeState.NOT_MAXIMIZED:
+            # Un-maximize only if explicitly requested (already done by move_window if we moved)
             if current_maximized and not needs_move:
                 win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
                 operations.append("restore")
@@ -741,7 +770,7 @@ class WindowManager:
         result = self.apply_window_rule(
             hwnd,
             target_monitor_id,
-            maximize=matched_rule.get("maximize", False),
+            maximize=MaximizeState.from_rule(matched_rule.get("maximize")),
             skip_popups=matched_rule.get("skip_popups", False),
         )
 
@@ -903,7 +932,7 @@ class WindowManager:
                     result = self.apply_window_rule(
                         window["hwnd"],
                         target_monitor_id,
-                        maximize=rule.get("maximize", False),
+                        maximize=MaximizeState.from_rule(rule.get("maximize")),
                         skip_popups=rule.get("skip_popups", False),
                     )
 

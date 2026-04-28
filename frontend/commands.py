@@ -881,7 +881,7 @@ class WindowDetailsView:
 
         # Configuration options
         self.selected_display = 1  # Default to slot 1
-        self.maximize = False
+        self.maximize = "unset"  # MaximizeState: "unset" | "maximized" | "not_maximized"
 
         # match_type: "exe" or "window_title" (substring)
         # MATCH_TYPES order determines cycling with T key
@@ -911,6 +911,11 @@ class WindowDetailsView:
                     self.existing_rule.get("target_display", 1),  # v1 fallback
                 )
                 self.maximize = self.existing_rule.get("maximize", False)
+                # Migrate old bool format: False -> "unset", True -> "maximized"
+                if self.maximize is False:
+                    self.maximize = "unset"
+                elif self.maximize is True:
+                    self.maximize = "maximized"
                 self.match_type = self.existing_rule.get("match_type", "exe")
                 if self.match_type == "window_title":
                     self.match_value_title = self.existing_rule.get(
@@ -924,6 +929,12 @@ class WindowDetailsView:
         logger.info(
             f"WindowDetailsView initialized for window: {window_data.get('title', 'Unknown')}"
         )
+
+    def _cycle_maximize(self) -> None:
+        """Cycle maximize state: unset -> maximized -> not_maximized -> unset."""
+        cycle = ["unset", "maximized", "not_maximized"]
+        current = self.maximize if self.maximize in cycle else "unset"
+        self.maximize = cycle[(cycle.index(current) + 1) % len(cycle)]
 
     def handle_input(
         self,
@@ -998,9 +1009,9 @@ class WindowDetailsView:
                 ]
                 logger.info(f"Match type cycled to: {self.match_type}")
             elif self.selected == idx_maximize:
-                # Toggle maximize
-                self.maximize = not self.maximize
-                logger.info(f"Maximize toggled to: {self.maximize}")
+                # Cycle maximize state: unset -> maximized -> not_maximized -> unset
+                self._cycle_maximize()
+                logger.info(f"Maximize cycled to: {self.maximize}")
             elif self.selected == idx_skip_popups:
                 # Toggle skip_popups
                 self.skip_popups = not self.skip_popups
@@ -1011,8 +1022,8 @@ class WindowDetailsView:
 
         # Keyboard shortcuts
         if ch == ord("m") or ch == ord("M"):
-            self.maximize = not self.maximize
-            logger.info(f"Maximize toggled to: {self.maximize}")
+            self._cycle_maximize()
+            logger.info(f"Maximize cycled to: {self.maximize}")
         elif ch == ord("t") or ch == ord("T"):
             # If already window_title, T opens the substring text editor
             if self.match_type == "window_title":
@@ -1079,8 +1090,8 @@ class WindowDetailsView:
         items.append({"label": match_label, "connected": True})
 
         # Add maximize option
-        maximize_marker = "[X]" if self.maximize else "[ ]"
-        items.append({"label": f"{maximize_marker} Maximize", "connected": True})
+        maximize_labels = {"unset": "[ ] Maximize: Unset", "maximized": "[M] Maximize: On", "not_maximized": "[R] Maximize: Off (restore)"}
+        items.append({"label": maximize_labels.get(self.maximize, "[ ] Maximize: Unset"), "connected": True})
 
         # Add skip-popups option
         skip_marker = "[X]" if self.skip_popups else "[ ]"

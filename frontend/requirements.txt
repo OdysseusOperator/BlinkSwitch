@@ -4,3 +4,4 @@ rapidfuzz
 pynput
 keyboard
 mouse
+pywin32

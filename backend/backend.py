@@ -912,7 +912,7 @@ def add_rule_to_layout(layout_name):
                             "match_type": data.get("match_type"),
                             "match_value": data.get("match_value"),
                             "target_slot": target_slot,
-                            "maximize": data.get("maximize", False),
+                            "maximize": data.get("maximize", "unset"),
                             "skip_popups": data.get("skip_popups", False),
                         }
                     )
@@ -934,7 +934,7 @@ def add_rule_to_layout(layout_name):
                 "match_type": data.get("match_type"),
                 "match_value": data.get("match_value"),
                 "target_slot": target_slot,
-                "maximize": data.get("maximize", False),
+                "maximize": data.get("maximize", "unset"),
                 "skip_popups": data.get("skip_popups", False),
             }
 

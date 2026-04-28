@@ -375,17 +375,25 @@ def focus_window_with_retry(
         user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
 
+        GWL_STYLE = -16
+        WS_MINIMIZE = 0x20000000
+        SW_RESTORE = 9
+
+        # Restore only if minimized — do not touch maximize state
+        try:
+            style = user32.GetWindowLongW(hwnd, GWL_STYLE)
+            if style & WS_MINIMIZE:
+                user32.ShowWindow(hwnd, SW_RESTORE)
+        except Exception as e:
+            logger.warning(f"Could not read window style for hwnd={hwnd}: {e}")
+
         for attempt in range(max_attempts):
-            # Check if we already have focus
             fg_hwnd = user32.GetForegroundWindow()
             if fg_hwnd == hwnd:
                 print(f"Focus achieved for hwnd={hwnd} after {attempt + 1} attempts")
                 return True
 
-            # Try to focus
             try:
-                SW_RESTORE = 9
-                user32.ShowWindow(hwnd, SW_RESTORE)
                 user32.BringWindowToTop(hwnd)
 
                 # Attach thread input to avoid Windows foreground restrictions
@@ -557,13 +565,13 @@ def center_mouse_on_window(hwnd: int) -> None:
         class POINT(Structure):
             _fields_ = [("x", c_long), ("y", c_long)]
 
-        # Get window rect
+        # Use window center point — more robust than top-left for windows near monitor edges
+        # and correctly resolves the monitor after a layout move has settled
         rect = win32gui.GetWindowRect(hwnd)
-        window_x = rect[0]
-        window_y = rect[1]
+        window_center_x = (rect[0] + rect[2]) // 2
+        window_center_y = (rect[1] + rect[3]) // 2
 
-        # Get monitor info for the window's position
-        point = POINT(window_x, window_y)
+        point = POINT(window_center_x, window_center_y)
         monitor = windll.user32.MonitorFromPoint(point, 2)  # MONITOR_DEFAULTTONEAREST
 
         class RECT(Structure):
