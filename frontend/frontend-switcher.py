@@ -856,7 +856,9 @@ def main() -> None:
         import tkinter as tk
 
         # Font configuration
-        FONT_SIZE = 24
+        BASE_FONT_SIZE = 24
+        # Mutable so nested scopes (show-window handler) can update it
+        current_dpi_scale = [1.0]
 
         # Create overlay windows for dimming background (one per monitor)
         overlay_windows: list[Any] = []
@@ -1605,6 +1607,10 @@ def main() -> None:
                                             "y"
                                         ] == int(monitor_pos.y):
                                             dpi_scale = mon.get("dpi_scale", 1.0)
+                                            current_dpi_scale[0] = dpi_scale
+                                            # Pre-load scaled font sizes for this DPI
+                                            for _base in (16, 20, 24, 32):
+                                                load_font(int(_base * dpi_scale))
                                             logger.debug(
                                                 f"Found cached DPI for monitor: {dpi_scale}"
                                             )
@@ -2303,6 +2309,9 @@ def main() -> None:
                                         rl.SetWindowState(rl.FLAG_WINDOW_HIDDEN)
                                         hide_overlay()
                                         print("Window hidden after focus request")
+
+                        # Compute DPI-scaled font size for this frame
+                        FONT_SIZE = int(BASE_FONT_SIZE * current_dpi_scale[0])
 
                         # Draw
                         rl.BeginDrawing()
