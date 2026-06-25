@@ -17,7 +17,6 @@ from .commands import (
     register_builtin_commands,
     _find_matching_rule_for_window,
     AssignView,
-    MonitorManagementView,
     LayoutManagementView,
     WindowsView,
     WindowDetailsView,
@@ -827,7 +826,6 @@ def main() -> None:
         return {"success": True, "deactivated": prev or "layout"}
 
     register_builtin_commands(
-        fetch_monitors_fn=fetch_monitors_with_dpi,
         fetch_layouts_fn=fetch_layouts,
         activate_layout_fn=activate_layout_tracked,
         deactivate_layout_fn=deactivate_layout_tracked,
@@ -862,6 +860,7 @@ def main() -> None:
 
         # Create overlay windows for dimming background (one per monitor)
         overlay_windows: list[Any] = []
+        monitor_number_windows: list[Any] = []
         overlay_visible = [False]
         overlay_click_handler: list[Optional[Callable[[Any], None]]] = [None]
         overlay_layout_signature: list[tuple[int, int, int, int]] = []
@@ -892,7 +891,13 @@ def main() -> None:
                         overlay.destroy()
                     except Exception:
                         pass
+                for number_window in monitor_number_windows:
+                    try:
+                        number_window.destroy()
+                    except Exception:
+                        pass
                 overlay_windows = []
+                monitor_number_windows.clear()
                 overlay_layout_signature = []
                 overlay_visible[0] = False
                 return
@@ -907,6 +912,12 @@ def main() -> None:
                     except Exception:
                         pass
                 overlay_windows = overlay_windows[:desired_count]
+                for number_window in monitor_number_windows[desired_count:]:
+                    try:
+                        number_window.destroy()
+                    except Exception:
+                        pass
+                del monitor_number_windows[desired_count:]
             elif current_count < desired_count:
                 for _ in range(desired_count - current_count):
                     overlay = tk.Toplevel() if overlay_windows else tk.Tk()
@@ -920,6 +931,23 @@ def main() -> None:
                     if overlay_click_handler[0]:
                         overlay.bind("<Button-1>", overlay_click_handler[0])
 
+                    number_window = tk.Toplevel(overlay)
+                    number_window.title("__SCREENY_MONITOR_NUMBER_OVERLAY__")
+                    number_window.attributes("-topmost", True)
+                    number_window.overrideredirect(True)
+                    number_window.configure(bg="black")
+                    label = tk.Label(
+                        number_window,
+                        bg="black",
+                        fg="white",
+                        font=("Segoe UI", 72, "bold"),
+                        padx=28,
+                        pady=10,
+                    )
+                    label.pack()
+                    number_window.withdraw()
+                    monitor_number_windows.append(number_window)
+
             new_signature = monitors
             layout_changed = (
                 new_signature != overlay_layout_signature
@@ -932,6 +960,20 @@ def main() -> None:
                 overlay.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
                 if overlay_click_handler[0]:
                     overlay.bind("<Button-1>", overlay_click_handler[0])
+
+            for idx, (number_window, (pos_x, pos_y, width, height)) in enumerate(
+                zip(monitor_number_windows, new_signature), start=1
+            ):
+                label = number_window.winfo_children()[0]
+                label.configure(text=str(idx))
+                number_window.update_idletasks()
+                label_width = max(1, label.winfo_reqwidth())
+                label_height = max(1, label.winfo_reqheight())
+                label_x = int(pos_x + (width - label_width) / 2)
+                label_y = int(pos_y + (height - label_height) / 2)
+                number_window.geometry(
+                    f"{label_width}x{label_height}+{label_x}+{label_y}"
+                )
 
             overlay_layout_signature = list(new_signature)
             if layout_changed:
@@ -953,6 +995,7 @@ def main() -> None:
 
         def hide_overlay():
             """Hide the dimming overlay on all monitors."""
+            hide_monitor_numbers()
             if overlay_windows:
                 try:
                     for overlay in overlay_windows:
@@ -962,12 +1005,33 @@ def main() -> None:
                 except Exception as e:
                     print(f"Hide overlay error: {e}")
 
+        def show_monitor_numbers():
+            """Show the numbered monitor overlay used by /assign."""
+            sync_overlay_windows()
+            try:
+                for number_window in monitor_number_windows:
+                    number_window.deiconify()
+                    number_window.lift()
+                    number_window.attributes("-topmost", True)
+            except Exception as e:
+                print(f"Show monitor numbers error: {e}")
+
+        def hide_monitor_numbers():
+            """Hide the numbered monitor overlay."""
+            try:
+                for number_window in monitor_number_windows:
+                    number_window.withdraw()
+            except Exception as e:
+                print(f"Hide monitor numbers error: {e}")
+
         def update_overlay():
             """Process overlay events (call this in main loop)."""
             if overlay_windows:
                 try:
                     for overlay in overlay_windows:
                         overlay.update()
+                    for number_window in monitor_number_windows:
+                        number_window.update()
                 except Exception as e:
                     print(f"Overlay update error: {e}")
 
@@ -1235,7 +1299,7 @@ def main() -> None:
         # Command system state
         command_registry = get_registry()
         current_view: Optional[Any] = (
-            None  # Can be AssignView, MonitorManagementView, LayoutManagementView, etc.
+            None  # Can be AssignView, LayoutManagementView, WindowsView, etc.
         )
 
         def set_global_error(msg: str) -> None:
@@ -1776,43 +1840,22 @@ def main() -> None:
                             # We're in a command view
                             ch = rl.GetCharPressed()
 
-                            # Check if view supports additional keys (layouts/windows/screens do, monitors don't)
-                            if isinstance(
-                                current_view,
-                                (
-                                    AssignView,
-                                    LayoutManagementView,
-                                    WindowsView,
-                                    WindowDetailsView,
-                                    SettingsView,
-                                ),
-                            ):
-                                # Pass additional keys for these views
-                                action = current_view.handle_input(
-                                    ch,
-                                    rl.IsKeyPressed(rl.KEY_DOWN),
-                                    rl.IsKeyPressed(rl.KEY_UP),
-                                    rl.IsKeyPressed(rl.KEY_ESCAPE),
-                                    rl.IsKeyPressed(rl.KEY_BACKSPACE),
-                                    rl.IsKeyPressed(rl.KEY_D),
-                                    key_a=rl.IsKeyPressed(rl.KEY_A),
-                                    key_enter=rl.IsKeyPressed(rl.KEY_ENTER),
-                                    key_n=rl.IsKeyPressed(rl.KEY_N),
-                                )
-                            else:
-                                # MonitorManagementView uses original signature
-                                action = current_view.handle_input(
-                                    ch,
-                                    rl.IsKeyPressed(rl.KEY_DOWN),
-                                    rl.IsKeyPressed(rl.KEY_UP),
-                                    rl.IsKeyPressed(rl.KEY_ESCAPE),
-                                    rl.IsKeyPressed(rl.KEY_BACKSPACE),
-                                    rl.IsKeyPressed(rl.KEY_D),
-                                )
+                            action = current_view.handle_input(
+                                ch,
+                                rl.IsKeyPressed(rl.KEY_DOWN),
+                                rl.IsKeyPressed(rl.KEY_UP),
+                                rl.IsKeyPressed(rl.KEY_ESCAPE),
+                                rl.IsKeyPressed(rl.KEY_BACKSPACE),
+                                rl.IsKeyPressed(rl.KEY_D),
+                                key_a=rl.IsKeyPressed(rl.KEY_A),
+                                key_enter=rl.IsKeyPressed(rl.KEY_ENTER),
+                                key_n=rl.IsKeyPressed(rl.KEY_N),
+                            )
 
                             if action:
                                 if action == "close":
                                     current_view = None
+                                    hide_monitor_numbers()
                                     query = ""
                                     do_filter()
                                 elif action == "refresh":
@@ -1820,12 +1863,6 @@ def main() -> None:
                                     if isinstance(current_view, LayoutManagementView):
                                         current_view.layouts = fetch_layouts()
                                         current_view.active_layout = active_layout
-                                    elif isinstance(
-                                        current_view, MonitorManagementView
-                                    ):
-                                        current_view.monitors = (
-                                            fetch_monitors_with_dpi()
-                                        )
                                 elif action == "delete_layout":
                                     # Delete the selected layout file
                                     if isinstance(current_view, LayoutManagementView):
@@ -1929,6 +1966,7 @@ def main() -> None:
                                                     f"Assignment saved for '{layout_name_now}': {new_assignment}"
                                                 )
                                             current_view = None
+                                            hide_monitor_numbers()
                                             in_command_mode = False
                                         except Exception as e:
                                             logger.error(
@@ -2124,44 +2162,6 @@ def main() -> None:
                                                     current_view.error_message = (
                                                         f"Delete error: {str(e)}"
                                                     )
-
-                                elif action.startswith("delete:"):
-                                    monitor_id = action.split(":", 1)[1]
-                                    logger.info(f"Deleting monitor: {monitor_id}")
-                                    try:
-                                        response = _http_session.delete(
-                                            f"http://127.0.0.1:5555/screenassign/monitors/{monitor_id}",
-                                            timeout=1.0,
-                                        )
-                                        if response.ok:
-                                            logger.info(
-                                                f"Monitor {monitor_id} deleted successfully"
-                                            )
-                                            # Refresh the view
-                                            current_view.monitors = (
-                                                fetch_monitors_with_dpi()
-                                            )
-                                            # Reset selection if needed
-                                            if current_view.selected >= len(
-                                                current_view.monitors
-                                            ):
-                                                current_view.selected = max(
-                                                    0, len(current_view.monitors) - 1
-                                                )
-                                            if current_view.scroll_offset >= len(
-                                                current_view.monitors
-                                            ):
-                                                current_view.scroll_offset = max(
-                                                    0,
-                                                    len(current_view.monitors)
-                                                    - current_view.max_visible_rows,
-                                                )
-                                        else:
-                                            logger.error(
-                                                f"Failed to delete monitor: {response.text}"
-                                            )
-                                    except Exception as e:
-                                        logger.error(f"Error deleting monitor: {e}")
                         else:
                             # Normal input handling
                             ch = rl.GetCharPressed()
@@ -2210,7 +2210,6 @@ def main() -> None:
                                         result,
                                         (
                                             AssignView,
-                                            MonitorManagementView,
                                             LayoutManagementView,
                                             WindowsView,
                                             WindowDetailsView,
@@ -2218,6 +2217,10 @@ def main() -> None:
                                         ),
                                     ):
                                         current_view = result
+                                        if isinstance(current_view, AssignView):
+                                            show_monitor_numbers()
+                                        else:
+                                            hide_monitor_numbers()
                                         query = ""
                                 except Exception as e:
                                     logger.error(f"Command execution failed: {e}")
@@ -2397,7 +2400,7 @@ def main() -> None:
                             elif isinstance(current_view, SettingsView):
                                 count_label = "settings"
                             else:
-                                count_label = "monitors"
+                                count_label = "items"
 
                             count_text = (
                                 f"{render_data['total_count']} {count_label}".encode(

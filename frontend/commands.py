@@ -1,7 +1,7 @@
 """
 Command system for Screeny window switcher.
 
-Provides a registry of fuzzy-findable commands (like /monitors)
+Provides a registry of fuzzy-findable commands
 and their corresponding UI views.
 """
 
@@ -81,7 +81,7 @@ class Command:
         Initialize a command.
 
         Args:
-            name: Command name (e.g., "monitors")
+            name: Command name (e.g., "layouts")
             description: Human-readable description
             handler: Function to call when command is selected
             category: Optional category for grouping
@@ -158,126 +158,6 @@ class CommandRegistry:
     def is_command_query(self, query: str) -> bool:
         """Check if a query string is a command (starts with /)."""
         return query.strip().startswith("/")
-
-
-class MonitorManagementView:
-    """
-    UI View for managing monitors.
-
-    Displays list of monitors and allows deletion with 'd' key.
-    """
-
-    def __init__(self, monitors_data: List[Dict[str, Any]]):
-        """
-        Initialize the monitor management view.
-
-        Args:
-            monitors_data: List of monitor dictionaries from API
-        """
-        self.monitors = monitors_data
-        self.selected = 0
-        self.scroll_offset = 0
-        self.max_visible_rows = 12
-        logger.info(
-            f"MonitorManagementView initialized with {len(monitors_data)} monitors"
-        )
-
-    def handle_input(
-        self,
-        ch: int,
-        key_down: bool,
-        key_up: bool,
-        key_escape: bool,
-        key_backspace: bool,
-        key_d: bool,
-    ) -> Optional[str]:
-        """
-        Handle keyboard input.
-
-        Args:
-            ch: Character code (0 if none)
-            key_down: True if down arrow pressed
-            key_up: True if up arrow pressed
-            key_escape: True if escape pressed
-            key_backspace: True if backspace pressed
-            key_d: True if 'd' key pressed
-
-        Returns:
-            Action to take: 'close', 'delete:<monitor_id>', or None
-        """
-        # Handle escape (close)
-        if key_escape:
-            return "close"
-
-        # Handle navigation
-        if key_down and self.monitors:
-            self.selected = min(self.selected + 1, len(self.monitors) - 1)
-            if self.selected >= self.scroll_offset + self.max_visible_rows:
-                self.scroll_offset = self.selected - self.max_visible_rows + 1
-
-        if key_up and self.monitors:
-            self.selected = max(self.selected - 1, 0)
-            if self.selected < self.scroll_offset:
-                self.scroll_offset = self.selected
-
-        # Handle delete
-        if key_d and self.monitors:
-            monitor = self.monitors[self.selected]
-            return f"delete:{monitor['id']}"
-
-        return None
-
-    def get_render_data(self) -> Dict[str, Any]:
-        """
-        Get data needed for rendering.
-
-        Returns:
-            Dict with:
-                - title: View title
-                - items: List of visible monitor items
-                - selected: Index of selected item
-                - scroll_offset: Current scroll position
-                - total_count: Total number of monitors
-                - help_text: Help text to display
-        """
-        visible = self.monitors[
-            self.scroll_offset : self.scroll_offset + self.max_visible_rows
-        ]
-
-        items = []
-        for monitor in visible:
-            # Format: "DISPLAY1 (3840×2160) at (-3840, 0)"
-            name = monitor.get("name", "Unknown")
-            width = monitor.get("width", 0)
-            height = monitor.get("height", 0)
-            x = monitor.get("x", 0)
-            y = monitor.get("y", 0)
-            is_primary = monitor.get("is_primary", False)
-            connected = monitor.get("connected", True)
-
-            # Build label
-            primary_tag = " [PRIMARY]" if is_primary else ""
-            connected_tag = "" if connected else " [DISCONNECTED]"
-            label = (
-                f"{name} ({width}×{height}) at ({x}, {y}){primary_tag}{connected_tag}"
-            )
-
-            items.append(
-                {
-                    "label": label,
-                    "id": monitor.get("id", ""),
-                    "connected": connected,
-                }
-            )
-
-        return {
-            "title": "Monitor Management",
-            "items": items,
-            "selected": self.selected - self.scroll_offset,
-            "scroll_offset": self.scroll_offset,
-            "total_count": len(self.monitors),
-            "help_text": "Press 'd' to delete | Esc to close",
-        }
 
 
 class LayoutManagementView:
@@ -1370,7 +1250,6 @@ def get_registry() -> CommandRegistry:
 
 
 def register_builtin_commands(
-    fetch_monitors_fn: Callable,
     fetch_layouts_fn: Optional[Callable] = None,
     activate_layout_fn: Optional[Callable] = None,
     deactivate_layout_fn: Optional[Callable] = None,
@@ -1386,7 +1265,6 @@ def register_builtin_commands(
     Register built-in commands.
 
     Args:
-        fetch_monitors_fn: Function to fetch monitors from API (legacy /monitors command)
         fetch_layouts_fn: Function to fetch available layouts
         activate_layout_fn: Function to activate a layout
         deactivate_layout_fn: Function to deactivate current layout
@@ -1402,19 +1280,6 @@ def register_builtin_commands(
                            Required for the /assign command.
     """
     registry = get_registry()
-
-    def handle_monitors_command(context: Dict[str, Any]) -> Any:
-        """Handle /monitors command - show monitor management view."""
-        logger.info("Executing /monitors command")
-        monitors = fetch_monitors_fn()
-        return MonitorManagementView(monitors)
-
-    registry.register(
-        "monitors",
-        "Manage monitors (press 'd' to delete)",
-        handle_monitors_command,
-        category="System",
-    )
 
     # Layout commands (if handlers provided)
     if fetch_layouts_fn:

@@ -27,41 +27,31 @@ Access system management features by typing commands starting with `/`.
 
 1. **Open BlinkSwitch**: Press `Alt+Space` to open the window frontend (enters switch_mode)
 2. **Type a command**: Start typing `/` to enter command mode
-3. **Fuzzy search**: Type part of the command name (e.g., `/mon` for monitors)
+3. **Fuzzy search**: Type part of the command name (e.g., `/assign` for monitor assignment)
 4. **Execute**: Press `Enter` to execute the selected command
 
 ### Available Commands
 
-#### `/monitors` - Monitor Management
+#### `/assign` - Monitor Assignment
 
-Manage your known monitors (including disconnected ones).
+Assign physical monitors to layout slots. The monitor number overlay appears on screen while this view is open.
 
 **Features:**
-- List all monitors with their resolutions and positions
-- Shows PRIMARY and DISCONNECTED status
-- Delete old/unused monitors
+- List layout slots and connected monitors
+- Show numbered monitor overlays for matching digit keys
+- Save slot-to-monitor assignments per layout
 
 **Usage:**
-1. Type `/monitors` in the fuzzy finder
-2. Press `Enter` to open the monitor management view
-3. Navigate with `↑` `↓` arrow keys
-4. Press `d` to delete the selected monitor
-5. Press `Esc` to close the view
-
-**Example workflow:**
-```
-1. Press Alt+Space
-2. Type: /monitors
-3. Press Enter
-4. Navigate to old disconnected monitor
-5. Press 'd' to delete
-6. Press Esc to return to window frontend
-```
+1. Type `/assign` in the fuzzy finder
+2. Press `Enter` to open the assignment view
+3. Navigate slots with `↑` `↓` arrow keys
+4. Press `1`-`9` to assign the matching monitor number
+5. Press `S` to save or `Esc` to cancel
 
 ### Command Mode Indicators
 
 When in **command mode** (typing `/` commands):
-- **Query shows**: The command you're typing (e.g., `/monitors`)
+- **Query shows**: The command you're typing (e.g., `/assign`)
 - **Count shows**: "X commands" instead of "X windows"
 - **Help text**: "Type command name | Enter to execute | Esc to close"
 
@@ -70,15 +60,14 @@ When in **switch_mode** (normal window switching):
 - **Count shows**: "X windows"
 - **Help text**: "Alt+Space to close"
 
-### Monitor Management View
+### Assign View
 
-When inside `/monitors`:
+When inside `/assign`:
 
-- **Title**: "Monitor Management"
-- **List shows**: Monitor name, resolution, position, and status
-- **Connected monitors**: Yellow text (active/available)
-- **Disconnected monitors**: Gray text (inactive/removed)
-- **Help text**: "Press 'd' to delete | Esc to close"
+- **Title**: "Assign Monitors to Slots"
+- **List shows**: Layout slots followed by the monitor legend
+- **Screen overlay**: Numbered labels appear centered on each monitor
+- **Help text**: "1-9 assign monitor | Up/Down navigate | S save | Esc cancel"
 
 ## Technical Details
 
@@ -89,16 +78,12 @@ When inside `/monitors`:
    - Fuzzy search for command names
    - Command execution with context
 
-2. **Monitor Management View** (`commands.py`):
-   - Dedicated UI view for monitor list
-   - Keyboard-driven deletion with 'd' key
-   - Simple navigation with arrow keys
+2. **Assign View** (`commands.py`):
+   - Dedicated UI view for slot-to-monitor assignment
+   - Digit-driven assignment with `1`-`9`
+   - Save or cancel workflow
 
-3. **API Integration** (`window_stuff/api.py`):
-   - `DELETE /screenassign/monitors/<monitor_id>` endpoint
-   - Deletes monitor from configuration
-
-4. **Window Frontend Integration** (`frontend/frontend-switcher.py`):
+3. **Window Frontend Integration** (`frontend/frontend-switcher.py`):
    - Detects `/` prefix to enter command mode
    - Routes input to appropriate view
    - Manages view lifecycle
