@@ -75,7 +75,6 @@ class Command:
         name: str,
         description: str,
         handler: Callable,
-        category: str = "General",
     ):
         """
         Initialize a command.
@@ -84,12 +83,10 @@ class Command:
             name: Command name (e.g., "layouts")
             description: Human-readable description
             handler: Function to call when command is selected
-            category: Optional category for grouping
         """
         self.name = name
         self.description = description
         self.handler = handler
-        self.category = category
 
     def get_label(self) -> str:
         """Get the display label for this command."""
@@ -112,16 +109,11 @@ class CommandRegistry:
         name: str,
         description: str,
         handler: Callable,
-        category: str = "General",
     ) -> None:
         """Register a new command."""
-        cmd = Command(name, description, handler, category)
+        cmd = Command(name, description, handler)
         self.commands[name] = cmd
         logger.info(f"Registered command: /{name}")
-
-    def get_command(self, name: str) -> Optional[Command]:
-        """Get a command by name."""
-        return self.commands.get(name)
 
     def search_commands(self, query: str) -> List[Command]:
         """
@@ -173,7 +165,6 @@ class LayoutManagementView:
         active_layout: Optional[str],
         activate_fn: Optional[Callable],
         deactivate_fn: Optional[Callable],
-        fetch_screen_config_fn: Optional[Callable],
     ):
         """
         Initialize the layout management view.
@@ -183,13 +174,11 @@ class LayoutManagementView:
             active_layout: Currently active layout name (stem only, e.g. "coding") or None
             activate_fn: Function to activate a layout
             deactivate_fn: Function to deactivate current layout
-            fetch_screen_config_fn: Function to fetch current screen config
         """
         self.layouts = layouts_data
         self.active_layout = active_layout
         self.activate_fn = activate_fn
         self.deactivate_fn = deactivate_fn
-        self.fetch_screen_config_fn = fetch_screen_config_fn
         self.selected = 0
         self.scroll_offset = 0
         self.max_visible_rows = 12
@@ -675,8 +664,6 @@ class WindowsView:
             # Format: "Chrome - GitHub (chrome.exe)"
             title = window.get("title", "Untitled")
             exe_name = window.get("exe_name", "unknown.exe")
-            app_name = window.get("app_name", exe_name)
-
             # Truncate long titles
             if len(title) > 50:
                 title = title[:47] + "..."
@@ -1070,7 +1057,6 @@ class SettingsView:
             "center_mouse_on_switch",
         ]
         self.selected = 0
-        self.max_visible_rows = 12
         self.error_message = None
 
         logger.info("SettingsView initialized")
@@ -1137,7 +1123,7 @@ class SettingsView:
 
                 # Build layout name list (None first, then all layouts)
                 layout_names = [None] + [
-                    l["file_name"].replace(".json", "") for l in self.layouts
+                    layout["file_name"].replace(".json", "") for layout in self.layouts
                 ]
 
                 try:
@@ -1296,14 +1282,12 @@ def register_builtin_commands(
                 active_layout,
                 activate_layout_fn,
                 deactivate_layout_fn,
-                None,  # fetch_screen_config_fn no longer used by LayoutManagementView
             )
 
         registry.register(
             "layouts",
             "Manage layouts (select to activate, 'a' to activate, 'd' to deactivate)",
             handle_layouts_command,
-            category="Layouts",
         )
 
     # /assign command — map layout slots to physical monitors
@@ -1362,7 +1346,6 @@ def register_builtin_commands(
             "assign",
             "Assign physical monitors to layout slots (digit keys 1-9, S to save)",
             handle_assign_command,
-            category="System",
         )
 
     if fetch_windows_fn:
@@ -1385,7 +1368,6 @@ def register_builtin_commands(
             "windows",
             "Manage windows (select to configure)",
             handle_windows_command,
-            category="Windows",
         )
 
     # Settings command
@@ -1402,7 +1384,6 @@ def register_builtin_commands(
             "settings",
             "Application settings (default layout, mouse centering)",
             handle_settings_command,
-            category="System",
         )
 
     logger.info("Built-in commands registered")

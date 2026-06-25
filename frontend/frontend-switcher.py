@@ -1,6 +1,5 @@
 import ctypes
 import ctypes.wintypes
-import json
 import os
 import re
 import requests
@@ -96,24 +95,6 @@ logger.addHandler(console_handler)
 logger.info(f"=== Logger initialized, writing to: {LOG_FILE} ===")
 
 
-def fetch_tabs_from_api() -> list[dict[str, Any]]:
-    """Fetch browser tabs from Flask API.
-
-    DEPRECATED: Use fetch_windows_and_tabs_cached() instead for better performance.
-    """
-    try:
-        response = requests.get(
-            f"{TABS_API_URL}/browser-tabs", timeout=TABS_API_TIMEOUT
-        )
-        if response.ok:
-            data = response.json()
-            return data.get("tabs", [])
-    except Exception as e:
-        # Silent fail - API might not be running
-        print(f"Tab API unavailable: {e}")
-    return []
-
-
 def fetch_monitors_with_dpi() -> list[dict[str, Any]]:
     """Fetch monitor information with DPI scales from ScreenAssign API.
 
@@ -184,6 +165,7 @@ def fetch_windows_and_tabs_cached() -> dict[str, Any]:
         "cached": False,
         "cache_age_ms": 0,
     }
+    fallback_ms = (time.time() - start) * 1000
     logger.info(f"Fallback completed in {fallback_ms:.0f}ms")
     return result
 
@@ -432,60 +414,6 @@ def focus_window_with_retry(
         return False
 
 
-def focus_window_async(hwnd: int) -> None:
-    """Asynchronously focus a window in background thread.
-
-    Uses the unified focus_window_with_retry method with retry loop.
-    """
-
-    def _focus_in_background():
-        focus_window_with_retry(hwnd)
-
-    thread = threading.Thread(target=_focus_in_background, daemon=True)
-    thread.start()
-
-
-def apply_rule_for_window_async(hwnd: int, layout_name: Optional[str]) -> None:
-    """Fire-and-forget: ask the backend to apply the matching layout rule for a window.
-
-    Called after focusing a window so that layout rules are enforced
-    immediately on switch, rather than waiting
-    for the background timer.
-    """
-    if layout_name is None:
-        logger.debug(
-            f"apply_rule_for_window_async: no active layout, skipping hwnd={hwnd}"
-        )
-        return
-
-    # Capture layout_name at call time (closure-safe)
-    _layout_name = layout_name
-
-    def _apply_in_background():
-        try:
-            response = _http_session.post(
-                f"{TABS_API_URL}/apply-rule-for-window",
-                json={"hwnd": hwnd, "layout_name": _layout_name},
-                timeout=10.0,  # rules can take a few seconds (F11 + waits)
-            )
-            if response.ok:
-                result = response.json()
-                logger.info(
-                    f"Rule applied for hwnd={hwnd}: matched={result.get('matched')}, "
-                    f"changed={result.get('changed')}, ops={result.get('operations')}, "
-                    f"msg={result.get('message')}"
-                )
-            else:
-                logger.warning(
-                    f"apply-rule-for-window returned {response.status_code} for hwnd={hwnd}"
-                )
-        except Exception as e:
-            logger.warning(f"apply-rule-for-window failed for hwnd={hwnd}: {e}")
-
-    thread = threading.Thread(target=_apply_in_background, daemon=True)
-    thread.start()
-
-
 def switch_to_window_async(
     hwnd: int,
     layout_name: Optional[str],
@@ -535,19 +463,6 @@ def switch_to_window_async(
 
     thread = threading.Thread(target=_switch_in_background, daemon=True)
     thread.start()
-
-
-def focus_hwnd_async(hwnd: int, delay_s: float = 0.05) -> None:
-    """Best-effort async focus/raise for a given hwnd (Windows).
-
-    Deprecated: Use focus_window_async instead for unified behavior.
-    """
-
-    def _focus_in_background() -> None:
-        time.sleep(max(0.0, float(delay_s)))
-        focus_window_with_retry(hwnd)
-
-    threading.Thread(target=_focus_in_background, daemon=True).start()
 
 
 def center_mouse_on_window(hwnd: int) -> None:
@@ -1194,10 +1109,8 @@ def main() -> None:
                     return None
 
             # Common sizes used by this UI.
-            Font32 = load_font(32)
-            Font24 = load_font(24)
-            Font20 = load_font(20)
-            Font16 = load_font(16)
+            for font_size in (32, 24, 20, 16):
+                load_font(font_size)
         except Exception as e:
             print(f"Font load error: {e}")
             import traceback
@@ -1301,14 +1214,6 @@ def main() -> None:
         current_view: Optional[Any] = (
             None  # Can be AssignView, LayoutManagementView, WindowsView, etc.
         )
-
-        def set_global_error(msg: str) -> None:
-            """Surface an error: store globally (timed) and push to current view."""
-            _error_state["last_error"] = msg
-            _error_state["error_timestamp"] = time.time()
-            if current_view is not None and hasattr(current_view, "set_error"):
-                current_view.set_error(msg)
-            logger.warning(f"UI error surfaced: {msg}")
 
         # Mode tracking:
         # - switch_mode (default): Normal window selection/switching (in_command_mode=False)
@@ -1629,11 +1534,6 @@ def main() -> None:
                             print(f"Using mouse position: {mouse_x}, {mouse_y}")
 
                             # Determine which monitor the mouse is on
-                            current_monitor_x = 0
-                            current_monitor_y = 0
-                            current_monitor_width = 1920
-                            current_monitor_height = 1080
-
                             pos_x = 0
                             pos_y = 0
 
@@ -1658,12 +1558,6 @@ def main() -> None:
                                 )
 
                                 if is_on_monitor:
-                                    # Store monitor info for overlay
-                                    current_monitor_x = int(monitor_pos.x)
-                                    current_monitor_y = int(monitor_pos.y)
-                                    current_monitor_width = monitor_width
-                                    current_monitor_height = monitor_height
-
                                     # Find this monitor's DPI scale from our cached data
                                     dpi_scale = 1.0
                                     for mon in monitors_with_dpi:
