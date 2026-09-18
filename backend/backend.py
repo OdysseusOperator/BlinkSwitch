@@ -184,7 +184,16 @@ def get_windows():
 
 
 def _focus_window(hwnd: int) -> None:
-    """Best-effort focus/raise a window on Windows."""
+    """Focus a window through the active platform window manager."""
+    if os.name != "nt":
+        svc = _require_service()
+        focus = getattr(svc.window_manager, "focus_window", None)
+        if focus is None:
+            raise RuntimeError("Window focus is not supported by this platform")
+        if not focus(hwnd):
+            raise RuntimeError(f"Could not focus window {hwnd}")
+        return
+
     import win32api
     import win32con
     import win32gui
@@ -1825,4 +1834,6 @@ if __name__ == "__main__" or __name__ == "backend.backend":
     # If this is the main module (not imported), run the app
     if __name__ == "__main__":
         print("Starting ScreenAssign API server at http://localhost:5555")
-        app.run(host="127.0.0.1", port=5555, debug=True)
+        # The Werkzeug reloader watches the repository and would observe the
+        # log file written by this process, causing an inotify event storm.
+        app.run(host="127.0.0.1", port=5555, debug=False, use_reloader=False)

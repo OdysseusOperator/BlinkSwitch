@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /home/mw/BlinkSwitch
+exec /run/current-system/sw/bin/nix develop --command /home/mw/BlinkSwitch/frontend/.venv/bin/python -m frontend.frontend-switcher --toggle

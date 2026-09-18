@@ -3,6 +3,7 @@ import time
 import json
 import logging
 import threading
+import sys
 from datetime import datetime
 
 from .config_manager import ConfigManager
@@ -31,7 +32,12 @@ class ScreenAssignService:
         self.layout_manager = LayoutManager(
             self.config_manager, self.monitor_manager, layouts_dir=layouts_dir
         )
-        self.window_manager = WindowManager(
+        manager_class = WindowManager
+        if sys.platform.startswith("linux"):
+            from .cosmic_window_manager import CosmicWindowManager
+
+            manager_class = CosmicWindowManager
+        self.window_manager = manager_class(
             self.config_manager, self.monitor_manager, self.layout_manager
         )
 
@@ -85,6 +91,10 @@ class ScreenAssignService:
         # Wait for thread to exit
         if self.service_thread:
             self.service_thread.join(timeout=5)
+
+        close_manager = getattr(self.window_manager, "close", None)
+        if close_manager:
+            close_manager()
 
         self.status["status"] = "stopped"
         self._save_status()

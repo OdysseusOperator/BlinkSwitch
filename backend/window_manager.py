@@ -1,8 +1,4 @@
 import logging
-import win32gui
-import win32con
-import win32api
-import win32process
 import psutil
 import os
 import time
@@ -14,6 +10,12 @@ from datetime import datetime
 from typing import Any, cast
 from .monitor_manager import MonitorManager
 from .config_manager import ConfigManager
+
+if os.name == "nt":
+    import win32api
+    import win32con
+    import win32gui
+    import win32process
 
 
 class MaximizeState(str, Enum):

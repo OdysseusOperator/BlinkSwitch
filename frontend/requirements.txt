@@ -1,7 +1,7 @@
 raylib>=5.5.0
 requests
 rapidfuzz
-pynput
-keyboard
-mouse
-pywin32
+pynput; sys_platform == "win32"
+keyboard; sys_platform == "win32"
+mouse; sys_platform == "win32"
+pywin32; sys_platform == "win32"

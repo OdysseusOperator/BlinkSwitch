@@ -20,6 +20,45 @@ A service that automatically assigns windows to specific monitors based on confi
 pip install -r requirements.txt
 ```
 
+### COSMIC Wayland
+
+Native Linux support targets the COSMIC Wayland compositor. Build the helper
+before starting the backend:
+
+```
+cargo build --release --manifest-path cosmic-helper/Cargo.toml
+python -m backend.backend
+```
+
+On NixOS or systems with Nix, use the provided development shell to supply
+Rust and the native Wayland build dependencies:
+
+```
+nix develop
+cargo build --release --manifest-path cosmic-helper/Cargo.toml
+```
+
+Create the frontend virtual environment after entering the shell so it uses
+the Nix Python runtime with Tk support:
+
+```
+python -m venv --clear frontend/.venv
+source frontend/.venv/bin/activate
+python -m pip install -r frontend/requirements.txt
+```
+
+The helper uses COSMIC Wayland protocols for window discovery, focus,
+fullscreen, maximize, and moving a window to a workspace on a selected
+monitor. Set `COSMIC_HELPER` if the helper is installed elsewhere. The
+protocols are currently unstable, so use a COSMIC release that provides
+`zcosmic_toplevel_info_v1` and `zcosmic_toplevel_manager_v1`.
+
+Global hotkeys are compositor-owned on Wayland. Configure the desired launch
+binding in COSMIC Settings; the frontend does not install a global hook.
+Raylib is forced through XWayland for overlay positioning; window discovery
+and management remain native COSMIC Wayland.
+For an already-running frontend, bind `Alt+Space` to the absolute executable `/home/mw/BlinkSwitch/scripts/blinkswitch-toggle` so COSMIC signals it to toggle.
+
 ## Configuration
 
 ScreenAssign uses a JSON configuration file located at `monitors_config.json` by default. The file is created automatically when the service starts.

@@ -3,6 +3,7 @@ import ctypes.wintypes
 import os
 import re
 import requests
+import socket
 import sys
 import threading
 import time
@@ -39,6 +40,7 @@ from .colors import (
 # Tab API configuration
 TABS_API_URL = "http://127.0.0.1:5555/screenassign"  # Use IP instead of localhost for faster connection
 TABS_API_TIMEOUT = 1.0  # Fast timeout - don't block UI
+IPC_SOCKET_PATH = "/tmp/blinkswitch-frontend.sock"
 
 # Create persistent HTTP session for fast requests (avoids connection overhead)
 _http_session = requests.Session()
@@ -352,6 +354,20 @@ def focus_window_with_retry(
     if hwnd <= 0:
         return False
 
+    # Wayland does not expose native window handles to clients. Window IDs
+    # from the COSMIC helper are only valid for backend API requests.
+    if os.name != "nt":
+        try:
+            response = _http_session.post(
+                f"{TABS_API_URL}/focus-window-only",
+                json={"hwnd": hwnd},
+                timeout=TABS_API_TIMEOUT,
+            )
+            return response.ok and response.json().get("success", False)
+        except Exception as e:
+            logger.warning(f"Wayland focus request failed for id={hwnd}: {e}")
+            return False
+
     try:
         user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
@@ -471,6 +487,10 @@ def center_mouse_on_window(hwnd: int) -> None:
     Args:
         hwnd: Window handle
     """
+    if os.name != "nt":
+        logger.debug("Skipping mouse centering on Wayland; compositor controls pointer access")
+        return
+
     try:
         import win32gui
         import win32api
@@ -552,6 +572,10 @@ class HotkeyThread(threading.Thread):
         self._stop.set()
 
     def run(self) -> None:
+        if os.name != "nt":
+            logger.info("Global hotkey hook is disabled on Wayland; configure Alt+Space in COSMIC")
+            return
+
         user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
 
@@ -765,6 +789,10 @@ def main() -> None:
         logger.warning(f"Could not read default layout from settings: {e}")
 
     try:
+        if os.name != "nt":
+            # Raylib's bundled GLFW ignores GLFW_PLATFORM. Hide Wayland so it
+            # selects the available XWayland display for positionable overlays.
+            os.environ.pop("WAYLAND_DISPLAY", None)
         from raylib import rl
         import tkinter as tk
 
@@ -896,6 +924,10 @@ def main() -> None:
 
         def show_overlay():
             """Show the dimming overlay on all monitors."""
+            if os.name != "nt":
+                # Tk's fullscreen transparent windows cover the Raylib window
+                # under COSMIC/XWayland instead of behaving as dimming layers.
+                return
             sync_overlay_windows()
             if overlay_windows:
                 try:
@@ -991,6 +1023,24 @@ def main() -> None:
         print("Raylib initialized")
 
         toggle_requested = threading.Event()
+
+        def toggle_ipc_loop() -> None:
+            try:
+                if os.path.exists(IPC_SOCKET_PATH):
+                    os.unlink(IPC_SOCKET_PATH)
+                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
+                    server.bind(IPC_SOCKET_PATH)
+                    os.chmod(IPC_SOCKET_PATH, 0o600)
+                    server.listen()
+                    while True:
+                        connection, _ = server.accept()
+                        with connection:
+                            connection.recv(1)
+                        toggle_requested.set()
+            except Exception as e:
+                logger.warning(f"Frontend toggle IPC stopped: {e}")
+
+        threading.Thread(target=toggle_ipc_loop, daemon=True, name="ToggleIPC").start()
 
         # Initialize with actual current mouse position
         try:
@@ -1620,7 +1670,10 @@ def main() -> None:
 
                                 hwnd_ptr = rl.GetWindowHandle()
                                 hwnd = int(ffi.cast("uintptr_t", hwnd_ptr))
-                                focus_window_with_retry(hwnd)
+                                if os.name == "nt":
+                                    focus_window_with_retry(hwnd)
+                                else:
+                                    logger.debug("Skipping native overlay focus on Wayland")
                             except Exception as e:
                                 print(f"Focus window error: {e}")
                         except Exception as e:
@@ -2626,5 +2679,18 @@ def main() -> None:
         traceback.print_exc()
 
 
+def notify_toggle() -> bool:
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.settimeout(0.5)
+            client.connect(IPC_SOCKET_PATH)
+            client.sendall(b"t")
+        return True
+    except (FileNotFoundError, ConnectionRefusedError, TimeoutError, OSError):
+        return False
+
+
 if __name__ == "__main__":
+    if "--toggle" in sys.argv:
+        raise SystemExit(0 if notify_toggle() else 1)
     main()

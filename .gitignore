@@ -26,6 +26,14 @@ env/
 ENV/
 .venv
 
+# Rust build output
+cosmic-helper/target/
+
+# Local tool caches
+.direnv/
+.ruff_cache/
+.pytest_cache/
+
 # IDE
 .vscode/
 .idea/

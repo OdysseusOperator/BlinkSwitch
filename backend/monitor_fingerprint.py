@@ -65,9 +65,9 @@ class MonitorFingerprint:
         import re
 
         # Try to extract DISPLAY# from name
-        match = re.search(r"DISPLAY(\d+)", name)
+        match = re.search(r"DISPLAY(\d+)|((?:DP|HDMI|eDP|DVI|VGA|USB-C)-[A-Za-z0-9_.-]+)", name)
         if match:
-            connector = f"DISPLAY{match.group(1)}"
+            connector = match.group(0)
             fp = f"{connector}_{width}x{height}"
             self.logger.debug(f"Generated connector+resolution FP: {fp}")
             return fp
