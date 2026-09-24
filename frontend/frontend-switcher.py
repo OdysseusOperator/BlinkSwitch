@@ -912,8 +912,9 @@ def main() -> None:
                 number_window.update_idletasks()
                 label_width = max(1, label.winfo_reqwidth())
                 label_height = max(1, label.winfo_reqheight())
-                label_x = int(pos_x + (width - label_width) / 2)
-                label_y = int(pos_y + (height - label_height) / 2)
+                overlay_margin = 24
+                label_x = int(pos_x + max(0, width - label_width - overlay_margin))
+                label_y = int(pos_y + min(overlay_margin, max(0, height - label_height)))
                 number_window.geometry(
                     f"{label_width}x{label_height}+{label_x}+{label_y}"
                 )
