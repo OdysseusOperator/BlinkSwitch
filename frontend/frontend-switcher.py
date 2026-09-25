@@ -1449,7 +1449,11 @@ def main() -> None:
             # Check if we're in command mode (query starts with /)
             if command_registry.is_command_query(query):
                 in_command_mode = True
-                filtered_commands = command_registry.search_commands(query)
+                filtered_commands = [
+                    command
+                    for command in command_registry.search_commands(query)
+                    if command.name != "assign"
+                ]
                 selected = 0
                 scroll_offset = 0
                 return
@@ -2655,6 +2659,20 @@ def main() -> None:
                                 FONT_SIZE - 4,
                                 _help_color,
                             )
+                            if not in_command_mode and not (_err_msg and _err_age < 4.0):
+                                layout_label = (
+                                    f"Active layout: {active_layout}"
+                                    if active_layout
+                                    else "No active layout"
+                                ).encode("utf-8", errors="ignore")
+                                layout_width = rl.MeasureText(layout_label, FONT_SIZE - 4)
+                                draw_text(
+                                    layout_label,
+                                    max(20, 720 - layout_width),
+                                    help_text_y,
+                                    FONT_SIZE - 4,
+                                    TEXT_SECONDARY,
+                                )
                         rl.EndDrawing()
                     except Exception as e:
                         print(f"Draw error: {e}")
