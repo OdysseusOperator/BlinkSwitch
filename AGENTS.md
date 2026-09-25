@@ -3,14 +3,15 @@
 This document is the operations manual for agentic assistants working inside BlinkSwitch (aka ScreenAssign/Screeny). Follow it exactly; deviations usually break the Windows-focused workflow.
 
 ## Repository Orientation
-- `backend/` hosts the Flask API, background service, monitor heuristics, and Chrome tab bridge.
-- `frontend/` houses the Raylib-powered window switcher plus command palette UI assets.
-- `window_stuff/`, `tab_enumerators/`, and `extensions/` contain Win32 integration helpers and browser hooks.
-- Root-level scripts `start_assigner.bat` and `start_switcher.bat` orchestrate both halves; they assume Windows paths.
+- `backend/` hosts the Flask API, service, monitor handling, browser bridge, and platform window managers. Windows and COSMIC-specific operations are only partly isolated; see `documentation/INTERNALS.md` and `documentation/COSMIC_WAYLAND.md`.
+- `frontend/` houses the mostly shared Raylib window switcher and command palette assets.
+- `backend/tab_enumerators/` and `extensions/` contain the browser tab bridge and browser hooks.
+- `cosmic-helper/` contains the Rust helper used for native COSMIC Wayland operations.
+- Root-level `start_assigner.bat` and `start_switcher.bat` launch the primary Windows workflow.
 - Logs are rotated into `logs/` (backend) and `frontend/logs/`; configs such as `monitors_config.json` live at repo root.
 
 ## Environment Reality
-- BlinkSwitch is Windows-only; pywin32, win32gui, and BAT files are required, and Linux/Mac shells are unsupported.
+- Windows is the primary supported workflow and requires Windows-specific dependencies such as pywin32. An experimental COSMIC Wayland backend exists for Linux; see `documentation/COSMIC_WAYLAND.md`. Do not assume every feature or launcher works cross-platform.
 - Use 64-bit Python 3.11+; repo `.python-version` pins interpreter expectations.
 - Always operate inside a venv: `.venv` for the backend, `frontend/.venv` for the window switcher.
 - Microsoft Visual C++ Build Tools must be available so pip can compile Raylib bindings if binaries are missing.
@@ -34,20 +35,20 @@ This document is the operations manual for agentic assistants working inside Bli
 - Ruff is the de-facto linter (cache lives in `.ruff_cache` even though no pyproject is present); run `ruff check .` from the repo root.
 - Format fixes: `ruff check . --fix` handles import sorting and simple rewrites; review the diff before committing.
 - For built-in formatter parity, follow Black-like 120 char lines and double quotes by default unless Windows escape sequences force single quotes.
-- Type checking is light-touch; optional mypy passes can be run via `python -m mypy backend frontend window_stuff` if the tool is installed.
+- Type checking is light-touch; optional mypy passes can be run via `python -m mypy backend frontend` if the tool is installed.
 - Keep logging noise lint-free by running `ruff check backend/backend.py frontend/frontend-switcher.py` before opening a PR.
 
 ## Tests & Diagnostics
 - There is no formal pytest suite yet; smoke testing relies on targeted scripts plus manual verification against real windows.
 - System smoke test: `python test_placement.py` (ensures Win32 placement heuristics behave on the active foreground window).
-- Config verification: `python -m window_stuff.monitor_fingerprint` (confirm monitor fingerprints and IDs) once available.
+- Config verification: `python -m backend.monitor_fingerprint` (confirm monitor fingerprints and IDs) once available.
 - API sanity: with backend venv active, `python - <<'PY'` mini-scripts can `requests.get("http://127.0.0.1:5555/screenassign/health")` to confirm readiness.
 - When you add pytest modules, follow this pattern for a single test: `.venv\Scripts\activate && python -m pytest backend/tests/test_service.py -k test_apply_rules`.
 
 ## Running One-Off Commands
-- Enumerate connected monitors: `.venv\Scripts\activate && python -m window_stuff.config_manager --list` (if CLI helpers exist).
+- Enumerate connected monitors using the backend monitor manager/API; platform-specific CLI support may vary.
 - Refresh assignment cache: `frontend\.venv\Scripts\activate && python - <<'PY'` imports `frontend.assignment` to rewrite `frontend/assignment.json`.
-- Browser tab bridge debug: `.venv\Scripts\activate && python -m tab_enumerators.chrome_listener` while Chrome extension runs.
+- Browser tab bridge debug: inspect `backend/tab_enumerators/` while the browser extension runs.
 - Layout diffing: `python compare_styles.py "logs/layout_a.json" "logs/layout_b.json"` to inspect UI tweaks.
 - Stress test backend loop: `.venv\Scripts\activate && python -m backend.service --dry-run --iterations 100` (service module includes CLI helpers).
 
@@ -55,7 +56,7 @@ This document is the operations manual for agentic assistants working inside Bli
 - Standard library imports first, then third-party, then internal modules; group each block with a blank line.
 - Avoid wildcard imports; import modules (`import win32gui`) instead of dumping names into the namespace.
 - Use explicit relative imports within packages (e.g., `from .service import ScreenAssignService`) to keep tooling aware of package roots.
-- When referencing top-level helpers (e.g., `window_stuff`), add the project root to `sys.path` only once per file and comment why.
+- When referencing top-level helpers, add the project root to `sys.path` only once per file and comment why.
 - Keep HTTP constants, paths, and Win32 magic numbers defined near the top of the module for easier tuning.
 
 ## Naming & Structure
