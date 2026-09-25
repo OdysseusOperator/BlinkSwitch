@@ -3,10 +3,11 @@
 This document is the operations manual for agentic assistants working inside BlinkSwitch (aka ScreenAssign/Screeny). Follow it exactly; deviations usually break the Windows-focused workflow.
 
 ## Repository Orientation
-- `backend/` hosts the Flask API, service, monitor handling, browser bridge, and platform window managers. Windows and COSMIC-specific operations are only partly isolated; see `documentation/INTERNALS.md` and `documentation/COSMIC_WAYLAND.md`.
+- `backend/` hosts the Flask API, shared service, monitor registry, and browser bridge. Window and monitor platform adapters live under `backend/platforms/windows/` and `backend/platforms/cosmic/`; shared monitor identity/topology logic remains in `backend/monitor_manager.py`. See `documentation/INTERNALS.md` and `documentation/COSMIC_WAYLAND.md`.
 - `frontend/` houses the mostly shared Raylib window switcher and command palette assets.
 - `backend/tab_enumerators/` and `extensions/` contain the browser tab bridge and browser hooks.
-- `cosmic-helper/` contains the Rust helper used for native COSMIC Wayland operations.
+- `backend/platforms/common.py` contains platform-neutral window state types, `backend/platforms/contracts.py` defines adapter protocols, and `backend/platforms/__init__.py` selects platform adapters.
+- `cosmic-helper/` contains the Rust helper used by the COSMIC adapter for native Wayland operations.
 - Root-level `start_assigner.bat` and `start_switcher.bat` launch the primary Windows workflow.
 - Logs are rotated into `logs/` (backend) and `frontend/logs/`; configs such as `monitors_config.json` live at repo root.
 

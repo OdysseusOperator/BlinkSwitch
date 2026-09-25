@@ -1,8 +1,15 @@
 # COSMIC Wayland Support
 
-BlinkSwitch's Linux backend is native Wayland support for the COSMIC
-compositor. It does not use X11, XWayland, `wmctrl`, or synthetic pointer
-input.
+BlinkSwitch's Linux window-management backend targets the COSMIC Wayland
+compositor. Platform-specific window operations live in
+`backend/platforms/cosmic/` and use the Rust `cosmic-helper/`; shared service and
+API code lives in `backend/service.py` and `backend/backend.py`. COSMIC output
+enumeration and output scale metadata live in
+`backend/platforms/cosmic/monitor_provider.py`; shared monitor registration and
+identity handling live in `backend/monitor_manager.py`.
+
+The backend does not use X11, XWayland, `wmctrl`, or synthetic pointer input for
+window management. The frontend overlay itself uses XWayland, as described below.
 
 ## Setup
 

@@ -9,7 +9,6 @@ from datetime import datetime
 from flask import Flask, jsonify, request, Blueprint, Response
 from flask_cors import CORS
 
-import ctypes
 from typing import Optional, List, Dict, Any
 
 from .service import ScreenAssignService
@@ -185,70 +184,8 @@ def get_windows():
 
 def _focus_window(hwnd: int) -> None:
     """Focus a window through the active platform window manager."""
-    if os.name != "nt":
-        svc = _require_service()
-        focus = getattr(svc.window_manager, "focus_window", None)
-        if focus is None:
-            raise RuntimeError("Window focus is not supported by this platform")
-        if not focus(hwnd):
-            raise RuntimeError(f"Could not focus window {hwnd}")
-        return
-
-    import win32api
-    import win32con
-    import win32gui
-    import win32process
-
-    if hwnd <= 0:
-        raise ValueError("Invalid hwnd")
-
-    # Restore if minimized
-    try:
-        if win32gui.IsIconic(hwnd):
-            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-    except Exception:
-        # Continue with best-effort focus even if restore fails
-        pass
-
-    # Raise window
-    try:
-        win32gui.BringWindowToTop(hwnd)
-    except Exception:
-        pass
-
-    # Windows may block SetForegroundWindow unless thread input is attached.
-    try:
-        foreground_hwnd = win32gui.GetForegroundWindow()
-        fg_thread_id, _ = win32process.GetWindowThreadProcessId(foreground_hwnd)
-        target_thread_id, _ = win32process.GetWindowThreadProcessId(hwnd)
-        current_thread_id = win32api.GetCurrentThreadId()
-
-        windll = getattr(ctypes, "windll", None)
-        if windll is None:
-            raise RuntimeError("ctypes.windll is not available on this platform")
-        user32 = windll.user32
-
-        # Attach current thread to the target and foreground threads.
-        if fg_thread_id:
-            user32.AttachThreadInput(current_thread_id, fg_thread_id, True)
-        if target_thread_id:
-            user32.AttachThreadInput(current_thread_id, target_thread_id, True)
-
-        win32gui.SetForegroundWindow(hwnd)
-        win32gui.SetActiveWindow(hwnd)
-
-        if target_thread_id:
-            user32.AttachThreadInput(current_thread_id, target_thread_id, False)
-        if fg_thread_id:
-            user32.AttachThreadInput(current_thread_id, fg_thread_id, False)
-    except Exception:
-        # Fallback attempt
-        try:
-            import win32gui
-
-            win32gui.SetForegroundWindow(hwnd)
-        except Exception:
-            pass
+    if not _require_service().focus_window(hwnd):
+        raise RuntimeError(f"Could not focus window {hwnd}")
 
 
 @screenassign_api.route("/focus-window-only", methods=["POST"])

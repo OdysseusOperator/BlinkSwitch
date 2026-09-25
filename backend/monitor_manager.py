@@ -1,19 +1,19 @@
 import logging
-import ctypes
-import os
-import re
-import subprocess
-import sys
-from types import SimpleNamespace
-from screeninfo import get_monitors
+
 from .config_manager import ConfigManager
 from .monitor_fingerprint import MonitorFingerprint
+from .platforms import create_monitor_provider
+from .platforms.contracts import MonitorProviderProtocol
 
 
 class MonitorManager:
     """Manages detection and tracking of connected monitors."""
 
-    def __init__(self, config_manager=None):
+    def __init__(
+        self,
+        config_manager=None,
+        monitor_provider: MonitorProviderProtocol | None = None,
+    ):
         """Initialize the monitor manager.
 
         Args:
@@ -26,6 +26,8 @@ class MonitorManager:
             self.config_manager = ConfigManager()
         else:
             self.config_manager = config_manager
+
+        self.monitor_provider = monitor_provider or create_monitor_provider()
 
         # Monitor fingerprint utility for stable identification
         self.fingerprint_manager = MonitorFingerprint()
@@ -88,108 +90,15 @@ class MonitorManager:
             return []
 
     def _enumerate_monitors(self):
-        """Use COSMIC's native output listing on Linux Wayland."""
-        if sys.platform.startswith("linux") and os.environ.get("WAYLAND_DISPLAY"):
-            try:
-                output = subprocess.run(
-                    ["cosmic-randr", "list", "--kdl"],
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                    timeout=2,
-                ).stdout
-                monitors = self._parse_cosmic_outputs(output)
-                if monitors:
-                    return monitors
-            except (OSError, subprocess.SubprocessError) as exc:
-                self.logger.warning(f"COSMIC output enumeration unavailable: {exc}")
-        return get_monitors()
-
-    @staticmethod
-    def _parse_cosmic_outputs(kdl):
-        monitors = []
-        block = []
-        depth = 0
-        for line in kdl.splitlines():
-            if not block and line.startswith("output "):
-                block = [line]
-                depth = line.count("{") - line.count("}")
-                continue
-            if not block:
-                continue
-            block.append(line)
-            depth += line.count("{") - line.count("}")
-            if depth > 0:
-                continue
-
-            text = "\n".join(block)
-            name = re.search(r'^output "([^"]+)" enabled=#true', text, re.MULTILINE)
-            position = re.search(r"^  position (-?\d+) (-?\d+)", text, re.MULTILINE)
-            scale = re.search(r"^  scale ([0-9.]+)", text, re.MULTILINE)
-            mode = re.search(r"^    mode (\d+) (\d+) \d+ current=#true", text, re.MULTILINE)
-            transform = re.search(r'^  transform "([^"]+)"', text, re.MULTILINE)
-            if name and position and mode:
-                width, height = int(mode.group(1)), int(mode.group(2))
-                if transform and transform.group(1) in {"rotate90", "rotate270"}:
-                    width, height = height, width
-                monitors.append(SimpleNamespace(
-                    name=name.group(1), width=width, height=height,
-                    x=int(position.group(1)), y=int(position.group(2)),
-                    scale=float(scale.group(1)) if scale else 1.0,
-                    is_primary=len(monitors) == 0,
-                ))
-            block = []
-        return monitors
+        """Enumerate monitors through the selected platform provider."""
+        return self.monitor_provider.enumerate_monitors()
 
     def _detect_monitor_dpi_scale(self, monitor):
-        """Detect the DPI scale factor for a monitor using Windows API.
-
-        Args:
-            monitor: Monitor object from screeninfo
-
-        Returns:
-            float: DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, etc.)
-        """
-        if sys.platform.startswith("linux"):
-            return float(getattr(monitor, "scale", 1.0))
-
+        """Return platform-reported monitor scale, defaulting to 1.0."""
         try:
-            user32 = ctypes.windll.user32
-            shcore = ctypes.windll.shcore
-
-            # Create a POINT at the center of the monitor
-            center_x = monitor.x + (monitor.width // 2)
-            center_y = monitor.y + (monitor.height // 2)
-
-            # Get monitor handle using MonitorFromPoint
-            MONITOR_DEFAULTTONEAREST = 2
-            hmonitor = user32.MonitorFromPoint(
-                ctypes.wintypes.POINT(center_x, center_y), MONITOR_DEFAULTTONEAREST
-            )
-
-            # Get scale factor (Windows 8.1+)
-            # DEVICE_SCALE_FACTOR enum values: 100, 120, 125, 140, 150, 160, 175, 180, 200, 225, 250, etc.
-            scale_factor = ctypes.c_int()
-            result = shcore.GetScaleFactorForMonitor(
-                hmonitor, ctypes.byref(scale_factor)
-            )
-
-            if result == 0:  # S_OK
-                # Convert from percentage to decimal (100 -> 1.0, 150 -> 1.5, etc.)
-                scale = scale_factor.value / 100.0
-                self.logger.debug(
-                    f"Monitor at ({monitor.x},{monitor.y}): "
-                    f"scale={scale_factor.value}% ({scale:.2f}x)"
-                )
-                return scale
-            else:
-                self.logger.debug(
-                    f"GetScaleFactorForMonitor returned {result}, using 1.0"
-                )
-                return 1.0
-
-        except Exception as e:
-            self.logger.debug(f"Could not detect DPI scale: {e}, using 1.0")
+            return float(self.monitor_provider.get_scale_factor(monitor))
+        except (AttributeError, OSError, TypeError, ValueError) as exc:
+            self.logger.warning("Could not detect monitor scale: %s", exc)
             return 1.0
 
     def _generate_monitor_name(self, monitor):

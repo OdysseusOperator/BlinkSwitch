@@ -6,15 +6,21 @@ BlinkSwitch is a desktop window-management tool with a Flask HTTP backend and a
 Python/Raylib overlay frontend. Windows is the primary platform; the backend also
 has an experimental Linux COSMIC Wayland implementation.
 
-Platform-specific support is only partly isolated. `backend/window_manager.py`
-contains Windows window-management code, while `backend/cosmic_window_manager.py`
-implements COSMIC operations via the Rust `cosmic-helper/`. Shared orchestration
-lives in `backend/service.py` and the API in `backend/backend.py`; the API still
-contains Windows-specific focus fallback code. Monitor handling is similarly
-mixed in `backend/monitor_manager.py` (including COSMIC output enumeration and
-Windows DPI detection). `frontend/` is largely shared, but the Linux COSMIC setup
-uses XWayland for its overlay and a Unix socket for toggling. Windows BAT launchers
-and Windows-centric setup instructions remain the primary workflow.
+Window-management code is separated by platform: `backend/platforms/windows/`
+contains the Win32 adapter, and `backend/platforms/cosmic/` contains the COSMIC
+Wayland adapter, which communicates with the Rust `cosmic-helper/`. Shared window
+state types live in `backend/platforms/common.py`; the platform package selects
+which adapter to construct. Shared orchestration lives in `backend/service.py`,
+and HTTP/API behavior lives in `backend/backend.py`. Window focus is routed through
+the service and implemented by each adapter.
+
+Monitor-specific OS operations are also behind providers under
+`backend/platforms/windows/` and `backend/platforms/cosmic/`; shared monitor
+registration, identity, and position lookup remain in `backend/monitor_manager.py`.
+A `MonitorProviderProtocol` allows tests and callers to inject a provider. The
+frontend is largely shared, but the Linux COSMIC setup uses XWayland for its
+overlay and a Unix socket for toggling. Windows BAT launchers and Windows-centric
+setup instructions remain the primary workflow.
 
 ---
 
@@ -129,9 +135,13 @@ window_manager.apply_rules(layout_name, assignment)
 |---|---|
 | `layout_matcher.py` | Defines `LayoutError`; `build_slot_map(assignment)` resolves slots to monitor IDs; `get_orientation()` utility |
 | `layout_manager.py` | Loads/validates/lists layout JSON files; v1→v2 in-memory migration; re-exports `LayoutError`; `get_rules_for_layout()`, `can_apply_layout()`, `ensure_layout_can_apply()` all take `assignment` |
-| `monitor_manager.py` | Mixed platform monitor handling: `screeninfo`, COSMIC output enumeration, and Windows DPI detection; returns runtime monitor details |
-| `window_manager.py` | Windows window enumeration and rule application |
-| `cosmic_window_manager.py` | COSMIC Wayland window operations through `cosmic-helper/` |
+| `monitor_manager.py` | Shared monitor registration, identity, and topology; delegates enumeration and scaling to a platform provider |
+| `platforms/windows/window_manager.py` | Windows window enumeration, rule application, and focus implementation |
+| `platforms/cosmic/window_manager.py` | COSMIC Wayland window operations through `cosmic-helper/` |
+| `platforms/windows/monitor_provider.py` | Windows monitor enumeration and DPI scale detection |
+| `platforms/cosmic/monitor_provider.py` | COSMIC output enumeration and output scale metadata |
+| `platforms/monitor_provider.py` | `screeninfo` fallback provider |
+| `platforms/contracts.py` | Structural protocols for window managers and monitor providers |
 | `service.py` | Shared service orchestration; provides rule-application entry points over platform-specific managers |
 | `backend.py` | Flask HTTP API; validates payloads and routes calls to `service`; includes some Win32-specific focus fallback |
 | `config_manager.py` | Persists monitor fingerprint data to disk (JSON) |

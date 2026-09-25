@@ -1,15 +1,14 @@
-import os
-import time
-import json
 import logging
+import os
 import threading
-import sys
+import time
 from datetime import datetime
 
 from .config_manager import ConfigManager
 from .layout_manager import LayoutManager
 from .monitor_manager import MonitorManager
-from .window_manager import WindowManager
+from .platforms import create_window_manager
+from .platforms.contracts import WindowManagerProtocol
 
 
 class ScreenAssignService:
@@ -32,12 +31,7 @@ class ScreenAssignService:
         self.layout_manager = LayoutManager(
             self.config_manager, self.monitor_manager, layouts_dir=layouts_dir
         )
-        manager_class = WindowManager
-        if sys.platform.startswith("linux"):
-            from .cosmic_window_manager import CosmicWindowManager
-
-            manager_class = CosmicWindowManager
-        self.window_manager = manager_class(
+        self.window_manager: WindowManagerProtocol = create_window_manager(
             self.config_manager, self.monitor_manager, self.layout_manager
         )
 
@@ -261,6 +255,10 @@ class ScreenAssignService:
             list: Window information dictionaries
         """
         return self.window_manager.get_all_windows()
+
+    def focus_window(self, hwnd: int) -> bool:
+        """Focus a window using the active platform window manager."""
+        return self.window_manager.focus_window(hwnd)
 
     def get_cached_windows_and_tabs(self):
         """Get cached windows for fast window switcher access.

@@ -9,7 +9,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from .window_manager import MaximizeState
+from ..common import MaximizeState
 
 
 class CosmicWindowManager:

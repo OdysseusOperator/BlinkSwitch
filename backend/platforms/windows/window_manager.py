@@ -4,12 +4,12 @@ import os
 import time
 import ctypes
 from ctypes import wintypes
-from enum import Enum
 from pathlib import Path
 from datetime import datetime
 from typing import Any, cast
-from .monitor_manager import MonitorManager
-from .config_manager import ConfigManager
+from ...monitor_manager import MonitorManager
+from ...config_manager import ConfigManager
+from ..common import MaximizeState
 
 if os.name == "nt":
     import win32api
@@ -17,27 +17,6 @@ if os.name == "nt":
     import win32gui
     import win32process
 
-
-class MaximizeState(str, Enum):
-    MAXIMIZED = "maximized"
-    NOT_MAXIMIZED = "not_maximized"
-    UNSET = "unset"
-
-    @classmethod
-    def from_rule(cls, value) -> "MaximizeState":
-        """Deserialize a rule's maximize field.
-
-        Old format: true -> MAXIMIZED, false/None -> UNSET (false was never 'enforce restore').
-        New format: 'maximized' | 'not_maximized' | 'unset'.
-        """
-        if value is True:
-            return cls.MAXIMIZED
-        if isinstance(value, str):
-            try:
-                return cls(value)
-            except ValueError:
-                return cls.UNSET
-        return cls.UNSET
 
 # SendInput structures for keyboard simulation
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -98,8 +77,8 @@ def _release_key(hex_key_code):
     ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 
-class WindowManager:
-    """Manages window detection and movement to specified monitors."""
+class WindowsWindowManager:
+    """Manages Windows window detection and movement to specified monitors."""
 
     def __init__(self, config_manager=None, monitor_manager=None, layout_manager=None):
         """Initialize the window manager.
@@ -189,6 +168,51 @@ class WindowManager:
 
         win32gui.EnumWindows(_cb, None)
         return hwnds
+
+    def focus_window(self, hwnd: int) -> bool:
+        """Focus a Win32 window, restoring it first when minimized."""
+        if os.name != "nt":
+            raise RuntimeError("Win32 window focus is unavailable on this platform")
+        if hwnd <= 0:
+            raise ValueError("Invalid hwnd")
+
+        import win32api
+        import win32con
+        import win32gui
+        import win32process
+
+        try:
+            if win32gui.IsIconic(hwnd):
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+        except Exception as exc:
+            self.logger.debug("Could not restore hwnd=%s before focus: %s", hwnd, exc)
+
+        try:
+            win32gui.BringWindowToTop(hwnd)
+        except Exception as exc:
+            self.logger.debug("Could not raise hwnd=%s before focus: %s", hwnd, exc)
+
+        try:
+            foreground_hwnd = win32gui.GetForegroundWindow()
+            foreground_thread, _ = win32process.GetWindowThreadProcessId(foreground_hwnd)
+            target_thread, _ = win32process.GetWindowThreadProcessId(hwnd)
+            current_thread = win32api.GetCurrentThreadId()
+            user32 = ctypes.windll.user32
+
+            if foreground_thread:
+                user32.AttachThreadInput(current_thread, foreground_thread, True)
+            if target_thread:
+                user32.AttachThreadInput(current_thread, target_thread, True)
+            win32gui.SetForegroundWindow(hwnd)
+            win32gui.SetActiveWindow(hwnd)
+            if target_thread:
+                user32.AttachThreadInput(current_thread, target_thread, False)
+            if foreground_thread:
+                user32.AttachThreadInput(current_thread, foreground_thread, False)
+        except Exception as exc:
+            self.logger.debug("Thread-attached focus failed for hwnd=%s: %s", hwnd, exc)
+            win32gui.SetForegroundWindow(hwnd)
+        return True
 
     def get_all_windows(self):
         """Get all visible windows.
