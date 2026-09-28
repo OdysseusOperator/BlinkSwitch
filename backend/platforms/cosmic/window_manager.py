@@ -46,7 +46,7 @@ class CosmicWindowManager:
         env_path = os.environ.get("COSMIC_HELPER")
         if env_path:
             candidates.append(Path(env_path).expanduser())
-        root = Path(__file__).resolve().parent.parent / "cosmic-helper"
+        root = Path(__file__).resolve().parents[3] / "cosmic-helper"
         candidates.extend((root / "target" / "release" / "blinkswitch-cosmic-helper",
                            root / "target" / "debug" / "blinkswitch-cosmic-helper"))
         found = shutil.which("blinkswitch-cosmic-helper")
@@ -93,9 +93,11 @@ class CosmicWindowManager:
         for window in result.get("windows", []):
             geometry = (window.get("geometry") or [{}])[0]
             app_id = window.get("app_id") or ""
+            display_app_name = app_id.rsplit(".", 1)[-1] if app_id else ""
             windows.append({
                 "hwnd": window["id"], "title": window.get("title") or "",
                 "app_name": app_id, "app_display_name": app_id,
+                "display_app_name": display_app_name,
                 "class_name": app_id, "pid": None, "process_path": None,
                 "exe_name": app_id, "is_system": False, "is_uwp": False,
                 "is_minimized": self._state(window, "minimized"),

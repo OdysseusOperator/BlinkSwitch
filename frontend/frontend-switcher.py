@@ -1404,8 +1404,10 @@ def main() -> None:
                 title = w.get("title", "Untitled")  # Already includes domain
                 return f"{app} • {title}"
             else:
-                # Regular window (existing logic)
-                return f"{window_app(w)} - {window_title_display(w)}"
+                display_app = str(w.get("display_app_name") or "").strip()
+                if display_app:
+                    return f"{display_app} - {window_title_display(w)}"
+                return window_title_display(w)
 
         mono_char_width_px_by_size: dict[int, float] = {}
 

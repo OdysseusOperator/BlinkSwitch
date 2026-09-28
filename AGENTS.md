@@ -8,6 +8,8 @@ This document is the operations manual for agentic assistants working inside Bli
 - `backend/tab_enumerators/` and `extensions/` contain the browser tab bridge and browser hooks.
 - `backend/platforms/common.py` contains platform-neutral window state types, `backend/platforms/contracts.py` defines adapter protocols, and `backend/platforms/__init__.py` selects platform adapters.
 - `cosmic-helper/` contains the Rust helper used by the COSMIC adapter for native Wayland operations.
+
+- Platform-specific behavior belongs in the matching adapter under `backend/platforms/windows/` or `backend/platforms/cosmic/`. Do not infer the active platform from incidental payload fields such as `process_path`, executable names, or nullability; expose an explicit normalized field from the adapter when shared frontend code needs platform-specific behavior.
 - Root-level `start_assigner.bat` and `start_switcher.bat` launch the primary Windows workflow.
 - Logs are rotated into `logs/` (backend) and `frontend/logs/`; configs such as `monitors_config.json` live at repo root.
 

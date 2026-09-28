@@ -265,6 +265,7 @@ class WindowsWindowManager:
                     "title": title,
                     # Backwards-compatible field used by rules/UI; make it stable (exe name).
                     "app_name": exe_name,
+                    "display_app_name": app_display_name or exe_name,
                     "class_name": class_name,
                     "pid": pid,
                     "process_path": process_path,
