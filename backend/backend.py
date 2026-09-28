@@ -799,8 +799,16 @@ def add_rule_to_layout(layout_name):
     if not target_slot:
         return jsonify({"error": "target_slot is required"}), 400
 
-    if not isinstance(target_slot, int) or target_slot < 1:
+    if not isinstance(target_slot, int) or isinstance(target_slot, bool) or target_slot < 1:
         return jsonify({"error": "target_slot must be a positive integer"}), 400
+
+    target_workspace = data.get("target_workspace", 1)
+    if (
+        not isinstance(target_workspace, int)
+        or isinstance(target_workspace, bool)
+        or target_workspace < 1
+    ):
+        return jsonify({"error": "target_workspace must be a positive integer"}), 400
 
     try:
         svc = _require_service()
@@ -863,6 +871,10 @@ def add_rule_to_layout(layout_name):
                         }
                     )
                     layout_data["rules"][i].pop("fullscreen", None)
+                    if target_workspace == 1:
+                        layout_data["rules"][i].pop("target_workspace", None)
+                    else:
+                        layout_data["rules"][i]["target_workspace"] = target_workspace
                     layout_data["rules"][i].pop("target_display", None)  # remove v1 key if present
                     api_logger.info(
                         f"Updated existing rule {rule_id} in layout {layout_name}"
@@ -883,6 +895,8 @@ def add_rule_to_layout(layout_name):
                 "maximize": data.get("maximize", "unset"),
                 "skip_popups": data.get("skip_popups", False),
             }
+            if target_workspace != 1:
+                rule["target_workspace"] = target_workspace
 
             layout_data["rules"].append(rule)
             api_logger.info(f"Added new rule {rule_id} to layout {layout_name}")

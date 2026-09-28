@@ -276,6 +276,14 @@ class LayoutManager:
                     f"in screen_requirements (valid slots: {sorted(valid_slots)})",
                 )
 
+            target_workspace = rule.get("target_workspace", 1)
+            if (
+                isinstance(target_workspace, bool)
+                or not isinstance(target_workspace, int)
+                or target_workspace < 1
+            ):
+                return False, f"Rule {i} target_workspace must be a positive integer"
+
         return True, "Layout is valid"
 
     # ------------------------------------------------------------------
@@ -412,6 +420,7 @@ class LayoutManager:
                 "match_type": layout_rule["match_type"],
                 "match_value": layout_rule["match_value"],
                 "target_monitor_id": slot_map[target_slot],
+                "target_workspace": layout_rule.get("target_workspace", 1),
                 "fullscreen": layout_rule.get("fullscreen", False),
                 "maximize": layout_rule.get("maximize", False),
                 "skip_popups": layout_rule.get("skip_popups", False),

@@ -5,7 +5,7 @@ A service that automatically assigns windows to specific monitors based on confi
 ## Features
 
 - Automatically detect and track connected monitors
-- Define rules to place windows on specific monitors
+- Define rules to place windows on specific monitors and workspaces/virtual desktops
 - Match windows by executable name or window title
 - Configure window state (maximize or fullscreen)
 - Integrates with Dashboard via REST API
@@ -48,8 +48,10 @@ python -m pip install -r frontend/requirements.txt
 ```
 
 The helper uses COSMIC Wayland protocols for window discovery, focus,
-fullscreen, maximize, and moving a window to a workspace on a selected
-monitor. Set `COSMIC_HELPER` if the helper is installed elsewhere. The
+fullscreen, maximize, and moving a window to a selected workspace on a selected
+monitor. Layout rules may specify an optional 1-based `target_workspace`; when
+omitted, the first workspace is used. Windows uses the `pyvda` dependency to move
+windows between virtual desktops, with the same default of desktop 1. Set `COSMIC_HELPER` if the helper is installed elsewhere. The
 protocols are currently unstable, so use a COSMIC release that provides
 `zcosmic_toplevel_info_v1` and `zcosmic_toplevel_manager_v1`.
 

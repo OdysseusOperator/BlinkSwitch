@@ -152,16 +152,34 @@ Each screen in `screens` array must have:
 
 ### Rule Format
 
-Each rule in `rules` array:
+Each rule in `rules` array (current schema uses `target_slot`; legacy `target_display` is migrated):
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `match_type` | string | "exe", "window_title", or "process_path" |
 | `match_value` | string | What to match (e.g., "Code.exe", "Chrome") |
-| `target_display` | number | Which DISPLAY# to place the window (1, 2, 3, ...) |
+| `target_slot` | number | Monitor slot for the window (1, 2, 3, ...) |
+| `target_workspace` | number (optional) | 1-based workspace/virtual desktop number; defaults to the first workspace (1) |
 | `fullscreen` | boolean | Make window fullscreen (removes borders) |
-| `maximize` | boolean | Maximize window within display |
+| `maximize` | boolean or string | Maximize window within the target monitor |
 | `enabled` | boolean | Whether rule is active |
+
+Example: send `Weztearm` windows to monitor slot 1 and workspace 2:
+
+```json
+{
+  "match_type": "exe",
+  "match_value": "Weztearm",
+  "target_slot": 1,
+  "target_workspace": 2
+}
+```
+
+Workspace numbers are 1-based. Omitting `target_workspace` means workspace 1.
+On Windows, workspace numbers refer to Windows virtual desktops. On COSMIC,
+workspace numbers are counted among the workspaces associated with the selected
+monitor/output. The rule editor cycles workspace numbers 1-9 with `W` or Enter;
+workspace 1 is omitted from saved rules because it is the default.
 
 ---
 

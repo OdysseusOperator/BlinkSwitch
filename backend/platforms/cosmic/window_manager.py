@@ -104,6 +104,7 @@ class CosmicWindowManager:
                 "is_maximized": self._state(window, "maximized"),
                 "is_fullscreen": self._state(window, "fullscreen"),
                 "monitor_id": self._monitor_id(geometry, window),
+                "workspaces": window.get("workspaces", []),
             })
         return windows
 
@@ -187,35 +188,77 @@ class CosmicWindowManager:
         self._request("unmaximize", id=int(hwnd))
         return True
 
-    def move_window_to_monitor(self, hwnd, monitor_id, maximize=True):
-        """Move through the helper's workspace API when target workspace is known."""
+    def _target_workspace(self, monitor_id, workspace_number):
         output = self._monitor_output(monitor_id)
         if not output:
             raise RuntimeError(f"Target monitor {monitor_id} has no COSMIC output")
+
         result = self._snapshot()
-        workspaces = result.get("workspaces", [])
         output_ids = {
-            item.get("id") for item in result.get("outputs", [])
+            item.get("id")
+            for item in result.get("outputs", [])
             if item.get("name") == output or item.get("description") == output
         }
-        target = next((item for item in workspaces if output_ids.intersection(item.get("output_ids", []))), None)
-        if target is None and workspaces:
-            target = workspaces[0]
-        if target is None or not target.get("id") and not target.get("name"):
-            raise RuntimeError("COSMIC helper exposed no target workspace for monitor move")
-        self._request("move_workspace", id=int(hwnd), workspace=target.get("id") or target.get("name"), target_output=output)
+        workspaces = [
+            item
+            for item in result.get("workspaces", [])
+            if output_ids.intersection(item.get("output_ids", []))
+        ]
+        if workspace_number < 1 or workspace_number > len(workspaces):
+            raise RuntimeError(
+                f"COSMIC output {output} has {len(workspaces)} workspace(s); "
+                f"workspace {workspace_number} is unavailable"
+            )
+        target = workspaces[workspace_number - 1]
+        target_ref = target.get("id") or target.get("name")
+        if not target_ref:
+            raise RuntimeError("COSMIC helper returned a workspace without an ID or name")
+        return output, target_ref
+
+    def move_window_to_monitor(
+        self, hwnd, monitor_id, maximize=True, workspace_number=1
+    ):
+        """Move to the selected output's 1-based workspace number."""
+        output, target_workspace = self._target_workspace(monitor_id, workspace_number)
+        self._request(
+            "move_workspace",
+            id=int(hwnd),
+            workspace=str(target_workspace),
+            target_output=output,
+        )
         if maximize:
             self.maximize_window(hwnd)
         return True
 
-    def apply_window_rule(self, hwnd, monitor_id, maximize=MaximizeState.UNSET, skip_popups=False, fullscreen=None):
+    def apply_window_rule(
+        self,
+        hwnd,
+        monitor_id,
+        maximize=MaximizeState.UNSET,
+        skip_popups=False,
+        fullscreen=None,
+        workspace_number=1,
+    ):
         current = next((item for item in self.get_all_windows() if item["hwnd"] == int(hwnd)), None)
         if current is None:
             return {"changed": False, "operations": []}
         operations = []
-        if current.get("monitor_id") != monitor_id:
-            self.move_window_to_monitor(hwnd, monitor_id, maximize=False)
-            operations.append("move")
+        output, target_workspace = self._target_workspace(monitor_id, workspace_number)
+        current_workspaces = {
+            workspace.get("id") or workspace.get("name")
+            for workspace in current.get("workspaces", [])
+        }
+        if (
+            current.get("monitor_id") != monitor_id
+            or target_workspace not in current_workspaces
+        ):
+            self._request(
+                "move_workspace",
+                id=int(hwnd),
+                workspace=str(target_workspace),
+                target_output=output,
+            )
+            operations.append(f"workspace_{workspace_number}")
         if maximize is MaximizeState.MAXIMIZED and not current["is_maximized"]:
             self.maximize_window(hwnd)
             operations.append("maximize")
@@ -245,7 +288,14 @@ class CosmicWindowManager:
                 candidate = window.get("process_path")
             matches = value and (candidate or "").lower() == value if match_type == "exe" else value and value in (candidate or "").lower()
             if matches:
-                result = self.apply_window_rule(int(hwnd), rule.get("target_monitor_id"), MaximizeState.from_rule(rule.get("maximize")), rule.get("skip_popups", False), rule.get("fullscreen"))
+                result = self.apply_window_rule(
+                    int(hwnd),
+                    rule.get("target_monitor_id"),
+                    MaximizeState.from_rule(rule.get("maximize")),
+                    rule.get("skip_popups", False),
+                    rule.get("fullscreen"),
+                    rule.get("target_workspace", 1),
+                )
                 return {**result, "matched": True, "rule_id": rule.get("rule_id"), "message": ", ".join(result["operations"]) or "Window already in correct state"}
         return {"matched": False, "changed": False, "operations": [], "rule_id": None, "message": "No rule matched window"}
 

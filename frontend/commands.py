@@ -748,6 +748,7 @@ class WindowDetailsView:
 
         # Configuration options
         self.selected_display = 1  # Default to slot 1
+        self.target_workspace = 1  # First workspace is the implicit default
         self.maximize = "unset"  # MaximizeState: "unset" | "maximized" | "not_maximized"
 
         # match_type: "exe" or "window_title" (substring)
@@ -777,6 +778,14 @@ class WindowDetailsView:
                     "target_slot",
                     self.existing_rule.get("target_display", 1),  # v1 fallback
                 )
+                workspace_value = self.existing_rule.get("target_workspace", 1)
+                self.target_workspace = (
+                    workspace_value
+                    if isinstance(workspace_value, int)
+                    and not isinstance(workspace_value, bool)
+                    and 1 <= workspace_value <= 9
+                    else 1
+                )
                 self.maximize = self.existing_rule.get("maximize", False)
                 # Migrate old bool format: False -> "unset", True -> "maximized"
                 if self.maximize is False:
@@ -796,6 +805,10 @@ class WindowDetailsView:
         logger.info(
             f"WindowDetailsView initialized for window: {window_data.get('title', 'Unknown')}"
         )
+
+    def _cycle_workspace(self) -> None:
+        """Cycle the 1-based workspace ordinal through 1-9."""
+        self.target_workspace = (self.target_workspace % 9) + 1
 
     def _cycle_maximize(self) -> None:
         """Cycle maximize state: unset -> maximized -> not_maximized -> unset."""
@@ -842,8 +855,8 @@ class WindowDetailsView:
         if key_escape or key_backspace:
             return "close"
 
-        # Get total items count (screens + match-type row + maximize row + skip-popups row + save button)
-        total_items = len(self.screens) + 4
+        # Screen rows, workspace, match, maximize, skip-popups, and save.
+        total_items = len(self.screens) + 5
 
         # Navigation
         if key_down:
@@ -854,10 +867,11 @@ class WindowDetailsView:
             logger.debug(f"Selected: {self.selected}")
 
         # Index offsets for the option rows that follow the slot list
-        idx_match_type = len(self.screens)
-        idx_maximize = len(self.screens) + 1
-        idx_skip_popups = len(self.screens) + 2
-        idx_save = len(self.screens) + 3
+        idx_workspace = len(self.screens)
+        idx_match_type = len(self.screens) + 1
+        idx_maximize = len(self.screens) + 2
+        idx_skip_popups = len(self.screens) + 3
+        idx_save = len(self.screens) + 4
 
         # Enter key - toggle or save
         if key_enter:
@@ -865,6 +879,8 @@ class WindowDetailsView:
                 # Selecting a slot
                 self.selected_display = self.screens[self.selected]["slot"]
                 logger.info(f"Selected slot: {self.selected_display}")
+            elif self.selected == idx_workspace:
+                self._cycle_workspace()
             elif self.selected == idx_match_type:
                 # If already window_title, Enter opens the text editor for the substring
                 if self.match_type == "window_title":
@@ -888,7 +904,10 @@ class WindowDetailsView:
                 return "save"
 
         # Keyboard shortcuts
-        if ch == ord("m") or ch == ord("M"):
+        if ch == ord("w") or ch == ord("W"):
+            self._cycle_workspace()
+            logger.info(f"Target workspace set to: {self.target_workspace}")
+        elif ch == ord("m") or ch == ord("M"):
             self._cycle_maximize()
             logger.info(f"Maximize cycled to: {self.maximize}")
         elif ch == ord("t") or ch == ord("T"):
@@ -943,6 +962,15 @@ class WindowDetailsView:
                 }
             )
 
+        # Workspace 1 is the implicit default; users can choose 1-9 with Enter/W.
+        items.append(
+            {
+                "label": f"[W] Workspace: {self.target_workspace}"
+                + (" (default)" if self.target_workspace == 1 else ""),
+                "connected": True,
+            }
+        )
+
         # Add match-type row
         if self.match_type == "exe":
             match_label = f"[T] Match: exe = {exe_name}"
@@ -976,9 +1004,9 @@ class WindowDetailsView:
         # Build help text
         help_parts = [f"Window: {exe_name}"]
         if self.match_type == "window_title":
-            help_parts.append("T=edit substring  M=maximize  P=skip popups  S=save")
+            help_parts.append("W=workspace  T=edit substring  M=maximize  P=skip popups  S=save")
         else:
-            help_parts.append("T=match type  M=maximize  P=skip popups  S=save")
+            help_parts.append("W=workspace  T=match type  M=maximize  P=skip popups  S=save")
         if self.is_edit_mode:
             help_parts.append("D=delete")
         help_parts.append("Esc=cancel")
@@ -1015,13 +1043,16 @@ class WindowDetailsView:
         else:
             match_value = exe_name
 
-        return {
+        config = {
             "match_type": self.match_type,
             "match_value": match_value,
             "target_slot": self.selected_display,  # Slot number (1, 2, 3...)
             "maximize": self.maximize,
             "skip_popups": self.skip_popups,
         }
+        if self.target_workspace != 1:
+            config["target_workspace"] = self.target_workspace
+        return config
 
 
 class SettingsView:

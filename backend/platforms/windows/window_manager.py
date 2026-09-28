@@ -600,7 +600,32 @@ class WindowsWindowManager:
         win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
         self.logger.info(f"Maximized '{window_title}'")
 
-    def apply_window_rule(self, hwnd, monitor_id, maximize: MaximizeState = MaximizeState.UNSET, skip_popups=False):
+    def move_window_to_workspace(self, hwnd: int, workspace_number: int) -> bool:
+        """Move a window to a 1-based Windows virtual desktop number."""
+        try:
+            from pyvda import AppView, VirtualDesktop
+        except ImportError as exc:
+            raise RuntimeError("Workspace movement requires the 'pyvda' package") from exc
+
+        view = AppView(hwnd=int(hwnd))
+        current_desktop = getattr(view, "desktop", None)
+        current_number = getattr(current_desktop, "number", None)
+        if callable(current_number):
+            current_number = current_number()
+        if current_number == workspace_number:
+            return False
+
+        view.move(VirtualDesktop(workspace_number))
+        return True
+
+    def apply_window_rule(
+        self,
+        hwnd,
+        monitor_id,
+        maximize: MaximizeState = MaximizeState.UNSET,
+        skip_popups=False,
+        workspace_number: int = 1,
+    ):
         """Apply positioning rule to window with smart state checking.
 
         Only performs operations that are needed to reach desired state.
@@ -624,13 +649,7 @@ class WindowsWindowManager:
             self.logger.warning(f"Monitor {monitor_id} not connected")
             return {"changed": False, "operations": []}
 
-        # Check if already in correct state
-        if self.is_window_in_correct_state(hwnd, monitor_id, monitor, maximize):
-            self.logger.debug(
-                f"Window '{window_title}' already in correct state, skipping"
-            )
-            return {"changed": False, "operations": []}
-
+        # Preserve workspace enforcement even if the monitor/maximize state is already correct.
         operations = []
 
         # Step 1: Check if window needs to move to different monitor
@@ -671,7 +690,10 @@ class WindowsWindowManager:
                 win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
                 operations.append("restore")
 
-        return {"changed": True, "operations": operations}
+        if self.move_window_to_workspace(hwnd, workspace_number):
+            operations.append(f"workspace_{workspace_number}")
+
+        return {"changed": bool(operations), "operations": operations}
 
     def apply_rules_for_window(self, hwnd: int, layout_name: str, assignment: dict) -> dict:
         """Apply rules to a single window identified by hwnd.
@@ -798,6 +820,7 @@ class WindowsWindowManager:
             target_monitor_id,
             maximize=MaximizeState.from_rule(matched_rule.get("maximize")),
             skip_popups=matched_rule.get("skip_popups", False),
+            workspace_number=matched_rule.get("target_workspace", 1),
         )
 
         return {
@@ -960,6 +983,7 @@ class WindowsWindowManager:
                         target_monitor_id,
                         maximize=MaximizeState.from_rule(rule.get("maximize")),
                         skip_popups=rule.get("skip_popups", False),
+                        workspace_number=rule.get("target_workspace", 1),
                     )
 
                     if result["changed"]:
