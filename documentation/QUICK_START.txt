@@ -45,11 +45,11 @@ FILES INVOLVED:
 ──────────────────────────────────────────────────────────────────────────────
 
 NEW FILES:
-  └─ window_stuff/monitor_fingerprint.py
+  └─ backend/monitor_fingerprint.py
      Core fingerprinting engine (177 lines)
 
 MODIFIED FILES:
-  └─ window_stuff/config_manager.py
+  └─ backend/config_manager.py
      Uses fingerprints for monitor matching
 
 DOCUMENTATION:

@@ -34,7 +34,7 @@ Successfully implemented a comprehensive system to prevent duplicate window rule
 
 ## 📦 Files Modified
 
-### 1. **window_stuff/layout_manager.py**
+### 1. **backend/layout_manager.py**
 **Added utility functions:**
 - `normalize_exe_name(exe_name: str) -> str`
   - Normalizes exe names for consistent matching (lowercase, .exe suffix)
@@ -46,7 +46,7 @@ Successfully implemented a comprehensive system to prevent duplicate window rule
 **Modified:**
 - `get_active_layout()` - Now includes full "data" dictionary in response
 
-### 2. **window_stuff/api.py**
+### 2. **backend/backend.py**
 **Added endpoint:**
 - `DELETE /layouts/<layout_name>/rules/<rule_id>`
   - Deletes a rule from layout file
@@ -59,7 +59,7 @@ Successfully implemented a comprehensive system to prevent duplicate window rule
   - Updates existing rule if found, creates new rule if not
   - Returns appropriate message
 
-### 3. **commands.py**
+### 3. **frontend/commands.py**
 **WindowsView class:**
 - Added `_identify_windows_with_rules() -> Set[int]` method
   - Returns set of HWNDs for windows that have rules

@@ -1,158 +1,97 @@
-# ScreenAssign
+# BlinkSwitch
 
-A service that automatically assigns windows to specific monitors based on configurable rules. ScreenAssign runs as a headless service and integrates with Dashboard through a REST API, with no UI dependencies required.
-
-## Features
-
-- Automatically detect and track connected monitors
-- Define rules to place windows on specific monitors and workspaces/virtual desktops
-- Match windows by executable name or window title
-- Configure window state (maximize or fullscreen)
-- Integrates with Dashboard via REST API
-- Works as a background service
+BlinkSwitch is a desktop window switcher and monitor-assignment service. A
+Flask backend manages windows, monitors, layouts, and browser tabs; a Python
+Raylib frontend provides the switcher and command palette.
 
 ## Installation
 
-1. Install Python 3.11+ and [uv](https://docs.astral.sh/uv/)
-2. Clone or download this repository
-3. Start both processes with one command:
+Install Python 3.11+ and [uv](https://docs.astral.sh/uv/), then run one launcher
+from the repository root:
 
 Windows:
+
 ```bat
 start.bat
 ```
 
 Linux:
+
 ```bash
 ./start.sh
 ```
 
-Use `--update` to reinstall dependencies after changing requirements:
+The launcher creates one root `.venv`, installs `requirements.txt` with `uv`,
+starts the backend, waits for its health endpoint, and starts the frontend.
+Backend and frontend remain separate processes and are stopped together.
+
+Use `--update` to reinstall dependencies after changing `requirements.txt`:
+
 ```bash
 ./start.sh --update
 # Windows: start.bat --update
 ```
 
-### COSMIC Wayland
+The old `start_assigner.bat` and `start_switcher.bat` names remain as
+compatibility wrappers for `start.bat`.
 
-Native Linux support targets the COSMIC Wayland compositor. Build the helper
-before starting BlinkSwitch:
+## COSMIC Wayland
 
-```
+Linux support targets the COSMIC Wayland compositor. `start.sh` automatically
+enters the repository Nix development shell when Nix is available. Build the
+Rust helper once before the first launch:
+
+```bash
 cargo build --release --manifest-path cosmic-helper/Cargo.toml
 ./start.sh
 ```
 
-On NixOS or systems with Nix, use the provided development shell to supply
-Rust and the native Wayland build dependencies:
+Without Nix, install Rust, Tk, Raylib's native libraries, and the required
+Wayland/X11 development libraries through the host distribution first. The
+frontend uses XWayland for positionable overlay windows; window discovery and
+management remain native COSMIC Wayland operations.
 
-```
-nix develop
-cargo build --release --manifest-path cosmic-helper/Cargo.toml
-./start.sh
-```
+Global hotkeys are compositor-owned on Wayland. Configure `Alt+Space` in COSMIC
+Settings to run:
 
-`start.sh` enters the repository Nix development shell automatically, then
-creates the shared root `.venv` and starts backend plus frontend together:
-
-```
-./start.sh
+```text
+/home/mw/BlinkSwitch/scripts/blinkswitch-toggle
 ```
 
-The helper uses COSMIC Wayland protocols for window discovery, focus,
-fullscreen, maximize, and moving a window to a selected workspace on a selected
-monitor. Layout rules may specify an optional 1-based `target_workspace`; when
-omitted, the first workspace is used. Windows uses the `pyvda` dependency to move
-windows between virtual desktops, with the same default of desktop 1. Set `COSMIC_HELPER` if the helper is installed elsewhere. The
-protocols are currently unstable, so use a COSMIC release that provides
-`zcosmic_toplevel_info_v1` and `zcosmic_toplevel_manager_v1`.
+## Layouts
 
-Global hotkeys are compositor-owned on Wayland. Configure the desired launch
-binding in COSMIC Settings; the frontend does not install a global hook.
-Raylib is forced through XWayland for overlay positioning; window discovery
-and management remain native COSMIC Wayland.
-For an already-running frontend, bind `Alt+Space` to the absolute executable `/home/mw/BlinkSwitch/scripts/blinkswitch-toggle` so COSMIC signals it to toggle.
+Layouts live in `layouts/*.json`. Current layout schema uses positional `slot`
+values and `target_slot` rule fields. The frontend supplies a slot-to-monitor
+assignment using each monitor's `identity_key`; the backend does not persist
+that assignment.
 
-## Configuration
+See `documentation/LAYOUTS.md` for the schema and API examples.
 
-ScreenAssign uses a JSON configuration file located at `monitors_config.json` by default. The file is created automatically when the service starts.
+## Browser Tabs
 
-### JSON Configuration Structure
+The optional browser extension sends local tab data to the backend on port
+`5555`. Load `extensions/chromebased-browser` as an unpacked extension, then
+start BlinkSwitch with `start.bat` or `./start.sh`.
 
-```json
-{
-  "known_monitors": [
-    {
-      "id": "monitor_1",
-      "name": "Main Display",
-      "width": 1920,
-      "height": 1080,
-      "x": 0,
-      "y": 0,
-      "is_primary": true,
-      "first_detected": "2024-01-21T08:00:00",
-      "last_connected": "2024-01-21T08:00:00"
-    }
-  ],
-  "application_rules": [
-    {
-      "rule_id": "rule_1",
-      "match_type": "exe",
-      "match_value": "chrome.exe",
-      "target_monitor_id": "monitor_1",
-      "fullscreen": false,
-      "maximize": true,
-      "enabled": true,
-      "last_applied": "2024-01-21T08:05:00"
-    },
-    {
-      "rule_id": "rule_2",
-      "match_type": "window_title",
-      "match_value": "Microsoft Excel",
-      "target_monitor_id": "monitor_2",
-      "fullscreen": false,
-      "maximize": true,
-      "enabled": true,
-      "last_applied": "2024-01-21T08:05:00"
-    }
-  ]
-}
+## Development
+
+```bash
+ruff check .
+python -m py_compile scripts/start_blinkswitch.py
 ```
 
-## Running as a Service
+Backend health endpoint:
 
-To run ScreenAssign as a background service:
-
-```
-python screenassign_service.py --daemon
+```text
+http://127.0.0.1:5555/screenassign/health
 ```
 
-Options:
-- `--config PATH`: Path to custom config file
-- `--log PATH`: Path to custom log file
-- `--daemon`: Run as background service
-- `--no-autostart`: Don't start service automatically
+## Documentation
 
-## Logs
+All project documentation lives under `documentation/`:
 
-Logs are written to `logs/screenassign_YYYYMMDD.log` by default.
-
-## Behavior
-
-- If a rule specifies a monitor that is not connected, the rule is ignored
-- If an application specified in a rule is not running, the rule is ignored
-- The service checks for windows and applies rules every 5 seconds
-- The service checks for monitor changes every 30 seconds
-
-## Architecture
-
-ScreenAssign is designed as a headless service with no UI dependencies. All configuration and control happens through:
-- The REST API endpoints for integration with Dashboard
-- Signal files for simple enable/disable functionality
-- The JSON configuration file for manual editing if needed
-
-The Angular component example provided in `angular-component-example.ts` is purely for reference to show how to integrate with the Dashboard frontend.
-
-## License
-
-MIT
+- `documentation/COSMIC_WAYLAND.md` for Linux platform behavior
+- `documentation/INTERNALS.md` for backend architecture
+- `documentation/LAYOUTS.md` for layout schemas and APIs
+- `documentation/COMMANDS_USAGE.md` for frontend commands
+- `documentation/hotkey-suppression-options.md` for hotkey design notes

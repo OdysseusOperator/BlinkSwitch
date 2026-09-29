@@ -1,13 +1,13 @@
-# Screeny Tab Tracker - Browser Extension
+# BlinkSwitch Tab Tracker - Browser Extension
 
-This extension sends browser tab information to the Screeny window switcher, allowing you to switch between tabs across all browser windows using Alt+Space.
+This extension sends browser tab information to the BlinkSwitch window switcher, allowing you to switch between tabs across all browser windows using Alt+Space.
 
 ## Features
 
 - Automatically detects browser type (Chrome, Edge, Vivaldi, Brave, Opera)
 - Monitors all tabs across all browser windows
-- Sends tab data to local Screeny API (localhost:5555)
-- Supports tab activation from Screeny window switcher
+- Sends tab data to local BlinkSwitch API (localhost:5555)
+- Supports tab activation from BlinkSwitch window switcher
 - Privacy-focused: All data stays on your local machine
 
 ## Installation
@@ -23,34 +23,34 @@ This extension sends browser tab information to the Screeny window switcher, all
 
 3. **Load the Extension:**
    - Click "Load unpacked"
-   - Navigate to and select this folder: `C:\dev\mytools\screeny\extensions\chromebased-browser`
+    - Navigate to and select this folder: `<BlinkSwitch>\extensions\chromebased-browser`
    - The extension should now appear in your extensions list
 
 4. **Verify Installation:**
    - Click the extension icon in your browser toolbar
-   - You should see the Screeny Tab Tracker popup
+    - You should see the BlinkSwitch Tab Tracker popup
 
 ## Usage
 
 ### Prerequisites
 
-The Screeny API must be running for the extension to work:
+The BlinkSwitch API must be running for the extension to work:
 
 ```bash
-cd C:\dev\mytools\screeny
-start_assigner.bat
+cd <BlinkSwitch>
+start.bat
 ```
 
 ### Verification
 
 1. **Check Extension Status:**
    - Click the extension icon
-   - Status should show: "✓ Connected to Screeny API"
+    - Status should show: "✓ Connected to BlinkSwitch API"
    - If disconnected, make sure the API is running
 
 2. **Test Window Switcher:**
    - Open several tabs in your browser
-   - Press `Alt+Space` to open Screeny window switcher
+    - Press `Alt+Space` to open BlinkSwitch window switcher
    - Your browser tabs should appear in the list
    - Type to filter, use arrow keys to select, press Enter to switch
 
@@ -66,22 +66,22 @@ start_assigner.bat
 
 3. **Tab Activation:**
    - Extension polls `http://localhost:5555/screenassign/chrome-commands` every 500ms
-   - When you select a tab in Screeny, it queues an activation command
+    - When you select a tab in BlinkSwitch, it queues an activation command
    - Extension receives the command and activates the tab
 
 ## Troubleshooting
 
 ### Extension shows "Not connected"
 
-**Solution:** Start the Screeny API service:
+**Solution:** Start the BlinkSwitch API service:
 ```bash
-cd C:\dev\mytools\screeny
-start_assigner.bat
+cd <BlinkSwitch>
+start.bat
 ```
 
 Verify the API is running by visiting http://localhost:5555/screenassign/health in your browser.
 
-### Tabs not appearing in Screeny window switcher
+### Tabs not appearing in BlinkSwitch window switcher
 
 1. Check extension popup shows correct tab count
 2. Verify extension is sending data (check extension console):
@@ -89,7 +89,7 @@ Verify the API is running by visiting http://localhost:5555/screenassign/health 
    - Should see messages about API availability
 3. Try refreshing the extension:
    - Go to browser extensions page
-   - Click the reload icon on the Screeny Tab Tracker extension
+    - Click the reload icon on the BlinkSwitch Tab Tracker extension
 
 ### Tab activation doesn't work
 
@@ -101,7 +101,7 @@ Verify the API is running by visiting http://localhost:5555/screenassign/health 
 
 **Common error: "Failed to fetch"**
 - This means the API isn't running or isn't reachable
-- Start `start_assigner.bat` and wait a few seconds
+- Start `start.bat` and wait a few seconds
 
 **Error: "API not available"**
 - The API health check failed
@@ -152,7 +152,7 @@ Tab data is stored in memory on the API server with a 10-second TTL (Time To Liv
 
 ## Support
 
-For issues or questions, refer to the main Screeny documentation in `C:\dev\mytools\screeny\README.md`.
+For issues or questions, refer to the main BlinkSwitch documentation in `README.md`.
 
 ## Version History
 

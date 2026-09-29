@@ -10,29 +10,27 @@ This document is the operations manual for agentic assistants working inside Bli
 - `cosmic-helper/` contains the Rust helper used by the COSMIC adapter for native Wayland operations.
 
 - Platform-specific behavior belongs in the matching adapter under `backend/platforms/windows/` or `backend/platforms/cosmic/`. Do not infer the active platform from incidental payload fields such as `process_path`, executable names, or nullability; expose an explicit normalized field from the adapter when shared frontend code needs platform-specific behavior.
-- Root-level `start_assigner.bat` and `start_switcher.bat` launch the primary Windows workflow.
+- Root-level `start.bat` and `start.sh` launch the complete backend/frontend workflow; the older Windows names are compatibility wrappers.
 - Logs are rotated into `logs/` (backend) and `frontend/logs/`; configs such as `monitors_config.json` live at repo root.
 
 ## Environment Reality
 - Windows is the primary supported workflow and requires Windows-specific dependencies such as pywin32. An experimental COSMIC Wayland backend exists for Linux; see `documentation/COSMIC_WAYLAND.md`. Do not assume every feature or launcher works cross-platform.
 - Use 64-bit Python 3.11+; repo `.python-version` pins interpreter expectations.
-- Always operate inside a venv: `.venv` for the backend, `frontend/.venv` for the window switcher.
-- Microsoft Visual C++ Build Tools must be available so pip can compile Raylib bindings if binaries are missing.
+- Always use the shared root `.venv`, created and maintained by the launchers with `uv`.
+- Microsoft Visual C++ Build Tools must be available so uv can compile Raylib bindings if binaries are missing.
 - Run terminals as Administrator when interacting with Win32 APIs that elevate (window focus, keyboard hooks, registry writes).
 
 ## Virtual Environment Workflow
-- Backend setup: `python -m venv .venv && .venv\Scripts\activate && python -m pip install -r requirements.txt`.
-- Frontend setup: `python -m venv frontend\.venv && frontend\.venv\Scripts\activate && python -m pip install -r frontend\requirements.txt`.
-- Prefer running the BAT scripts; they self-heal the envs and install dependencies quietly.
+- Setup: `uv venv .venv --python 3.11 && uv pip install --python .venv\Scripts\python.exe -r requirements.txt` on Windows, or run `./start.sh` on Linux.
+- Prefer running `start.bat` or `./start.sh`; they create the shared environment, install changed dependencies, wait for backend readiness, and manage both processes.
 - Keep virtual environments checked out of git (`.gitignore` already excludes them); never commit site-packages artifacts.
-- When Raylib or pywin32 wheels break, nuke the affected `.venv` folder and rerun the matching start script to rebuild from scratch.
+- When Raylib or pywin32 wheels break, remove root `.venv` and rerun the matching launcher to rebuild from scratch.
 
 ## Build & Run Commands
-- Full backend: `start_assigner.bat` (creates `.venv`, installs `requirements.txt`, runs `python -m backend.backend`).
-- Backend without BAT: `.venv\Scripts\activate && python -m backend.backend`.
-- Frontend window switcher: `start_switcher.bat` (manages `frontend/.venv`, installs `frontend/requirements.txt`, runs `python -m frontend.frontend-switcher`).
-- Frontend without BAT: `frontend\.venv\Scripts\activate && python -m frontend.frontend-switcher`.
-- Combined developer loop: run `start_assigner.bat`, wait for port `127.0.0.1:5555`, then `start_switcher.bat`; both consoles must stay open.
+- Complete application: `start.bat` on Windows or `./start.sh` on Linux.
+- Force dependency refresh: `start.bat --update` or `./start.sh --update`.
+- Run backend directly: `.venv\Scripts\python.exe -m backend.backend` on Windows, or `.venv/bin/python -m backend.backend` on Linux.
+- Run frontend directly: `.venv\Scripts\python.exe -m frontend.frontend-switcher` on Windows, or `.venv/bin/python -m frontend.frontend-switcher` on Linux.
 
 ## Lint & Static Analysis
 - Ruff is the de-facto linter (cache lives in `.ruff_cache` even though no pyproject is present); run `ruff check .` from the repo root.
@@ -50,7 +48,7 @@ This document is the operations manual for agentic assistants working inside Bli
 
 ## Running One-Off Commands
 - Enumerate connected monitors using the backend monitor manager/API; platform-specific CLI support may vary.
-- Refresh assignment cache: `frontend\.venv\Scripts\activate && python - <<'PY'` imports `frontend.assignment` to rewrite `frontend/assignment.json`.
+- Refresh assignment cache with the shared environment: `.venv\Scripts\python.exe -c "import frontend.assignment"` on Windows, or `.venv/bin/python -c "import frontend.assignment"` on Linux.
 - Browser tab bridge debug: inspect `backend/tab_enumerators/` while the browser extension runs.
 - Layout diffing: `python compare_styles.py "logs/layout_a.json" "logs/layout_b.json"` to inspect UI tweaks.
 - Stress test backend loop: `.venv\Scripts\activate && python -m backend.service --dry-run --iterations 100` (service module includes CLI helpers).
@@ -123,7 +121,7 @@ This document is the operations manual for agentic assistants working inside Bli
 - When behavior changes, update this `AGENTS.md` plus any relevant `documentation/*.md` explainer before opening a PR.
 - Architecture decisions belong in `documentation/IMPLEMENTATION_SUMMARY.md`; include motivation, tradeoffs, and rollback plan.
 - CLI additions require usage notes in `documentation/COMMANDS_USAGE.md` so operators have a copy/paste ready sequence.
-- UI/UX changes should include screenshots or GIFs stored externally and linked from `layout-redesign.md` or a new doc page.
+- UI/UX changes should include screenshots or GIFs stored externally and linked from a relevant page under `documentation/`.
 - Keep README installation steps accurate for new dependencies; spell out Win32 prerequisites explicitly.
 - If you touch monitor fingerprint logic, echo the delta in `documentation/QUICK_START.txt` so downstream teams can resync.
 

@@ -17,24 +17,20 @@ Build the helper from the repository root:
 
 ```sh
 cargo build --release --manifest-path cosmic-helper/Cargo.toml
-python -m backend.backend
+./start.sh
 ```
 
-Nix users can provide the required Rust and native libraries reproducibly:
+Nix users can provide the required Rust and native libraries reproducibly. The
+launcher enters the repository shell automatically:
 
 ```sh
-nix develop
 cargo build --release --manifest-path cosmic-helper/Cargo.toml
+./start.sh
 ```
 
-The shell provides Python with Tk support for the Raylib frontend overlays.
-Recreate the frontend environment after entering the shell:
-
-```sh
-python -m venv --clear frontend/.venv
-source frontend/.venv/bin/activate
-python -m pip install -r frontend/requirements.txt
-```
+`start.sh` enters the repository shell automatically when Nix is available. It
+creates the shared root `.venv` with `uv`, installs `requirements.txt`, then
+starts backend and frontend together.
 
 The backend launches `cosmic-helper` automatically. Set `COSMIC_HELPER` to an
 executable path when using a system or separately built helper.

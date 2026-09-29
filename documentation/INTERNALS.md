@@ -19,8 +19,8 @@ Monitor-specific OS operations are also behind providers under
 registration, identity, and position lookup remain in `backend/monitor_manager.py`.
 A `MonitorProviderProtocol` allows tests and callers to inject a provider. The
 frontend is largely shared, but the Linux COSMIC setup uses XWayland for its
-overlay and a Unix socket for toggling. Windows BAT launchers and Windows-centric
-setup instructions remain the primary workflow.
+overlay and a Unix socket for toggling. `start.bat` and `start.sh` provide the
+same shared-venv startup workflow on Windows and Linux.
 
 ---
 
