@@ -719,7 +719,7 @@ def main() -> None:
     _error_state: dict = {"last_error": None, "error_timestamp": 0.0}
 
     def activate_layout_tracked(layout_name: str) -> dict:
-        nonlocal active_layout
+        nonlocal active_layout, current_view, query
         try:
             layout_assignment = assignments.get(layout_name, {})
             response = _http_session.post(
@@ -746,6 +746,23 @@ def main() -> None:
             logger.warning(
                 f"apply-rules on activate returned {response.status_code}: {error}"
             )
+            if response.status_code == 409:
+                active_layout = None
+                assign_command = command_registry.commands.get("assign")
+                if assign_command:
+                    try:
+                        assign_view = assign_command.execute(
+                            {"layout_name": layout_name}
+                        )
+                        if isinstance(assign_view, AssignView):
+                            current_view = assign_view
+                            show_monitor_numbers()
+                            query = ""
+                            logger.info(
+                                f"Opened /assign after layout activation failure: {layout_name}"
+                            )
+                    except Exception as e:
+                        logger.warning(f"Could not open /assign after activation failure: {e}")
             _error_state["last_error"] = error
             _error_state["error_timestamp"] = time.time()
             logger.warning(f"UI error surfaced: {error}")
@@ -778,13 +795,17 @@ def main() -> None:
     )
     logger.info("Built-in commands registered")
 
-    # Set default layout locally (no HTTP activation call — backend is stateless)
+    # Activate default through backend validation before reporting it active.
     try:
         settings = fetch_settings()
         default_layout = settings.get("default_layout")
         if default_layout:
-            active_layout = default_layout
-            logger.info(f"Default layout set locally: {default_layout}")
+            activation = activate_layout_tracked(default_layout)
+            if not activation.get("success"):
+                logger.warning(
+                    f"Default layout '{default_layout}' is not active: "
+                    f"{activation.get('error', 'activation failed')}"
+                )
     except Exception as e:
         logger.warning(f"Could not read default layout from settings: {e}")
 

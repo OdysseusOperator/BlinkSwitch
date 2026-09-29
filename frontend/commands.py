@@ -1337,7 +1337,7 @@ def register_builtin_commands(
             activating anything.
             """
             logger.info("Executing /assign command")
-            target_layout_name = get_active_layout_name_fn()
+            target_layout_name = context.get("layout_name") or get_active_layout_name_fn()
 
             # If no layout is active, fall back to any available layout
             if not target_layout_name:
