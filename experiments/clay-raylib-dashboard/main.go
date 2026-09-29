@@ -11,6 +11,7 @@ import (
 const (
 	screenWidth  = 960
 	screenHeight = 620
+	fontPath     = "../../frontend/fonts/MonaspaceNeonFrozen-Medium.ttf"
 )
 
 var currentFont rl.Font
@@ -129,6 +130,16 @@ func buildUI() {
 			text("Current arrangement", 20, clay.Color{R: 232, G: 239, B: 255, A: 255})
 			text("A small Clay layout rendered directly through Raylib.", 15, clay.Color{R: 142, G: 157, B: 181, A: 255})
 			clay.UI()(clay.ElementDeclaration{
+				Id: clay.ID("Description"),
+				Layout: clay.LayoutConfig{
+					Sizing:  clay.Sizing{Width: clay.SizingGrow(0)},
+					Padding: clay.PaddingAll(16),
+				},
+				BackgroundColor: clay.Color{R: 28, G: 34, B: 47, A: 255},
+			}, func() {
+				text("This intentionally long description demonstrates Clay's text wrapping. When a layout has less horizontal space than the text needs, Clay breaks the sentence into additional lines while keeping each line inside its parent element. Resize the window or change the panel width to explore how the measured text and surrounding elements respond.", 16, clay.Color{R: 190, G: 202, B: 224, A: 255})
+			})
+			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("Arrangement"),
 				Layout: clay.LayoutConfig{
 					LayoutDirection: clay.LEFT_TO_RIGHT,
@@ -147,11 +158,18 @@ func buildUI() {
 }
 
 func main() {
+	rl.SetConfigFlags(rl.FlagWindowUndecorated)
 	rl.InitWindow(screenWidth, screenHeight, "Clay + Raylib Dashboard")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
-	currentFont = rl.GetFontDefault()
+	currentFont = rl.LoadFontEx(fontPath, 64, nil, 0)
+	if currentFont.Texture.ID == 0 {
+		fmt.Printf("Could not load %s; using Raylib default font\n", fontPath)
+		currentFont = rl.GetFontDefault()
+	} else {
+		defer rl.UnloadFont(currentFont)
+	}
 
 	arena := clay.CreateArenaWithCapacityAndMemory(make([]byte, clay.MinMemorySize()))
 	clay.Initialize(

@@ -18,6 +18,8 @@ run.bat
 
 `raylib.dll` is included beside the source and must remain beside the built executable.
 
+The demo loads `../../frontend/fonts/MonaspaceNeonFrozen-Medium.ttf` at runtime, relative to this experiment directory. It falls back to Raylib's default font if that path is unavailable.
+
 ## Linux
 
 Linux needs a shared Raylib library rather than `raylib.dll`. Install Raylib through the system package manager, or build it as `libraylib.so`, then make it discoverable through the normal library path or `LD_LIBRARY_PATH`. The Go binding loads the platform-native Raylib library at runtime.
