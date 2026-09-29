@@ -23,6 +23,7 @@
             packages = with pkgs; [
               cargo
               rustc
+              uv
               pythonRuntime
               pkg-config
               libxkbcommon

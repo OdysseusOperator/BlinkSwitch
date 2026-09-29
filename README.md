@@ -13,21 +13,34 @@ A service that automatically assigns windows to specific monitors based on confi
 
 ## Installation
 
-1. Ensure Python 3.8+ is installed
+1. Install Python 3.11+ and [uv](https://docs.astral.sh/uv/)
 2. Clone or download this repository
-3. Install dependencies:
+3. Start both processes with one command:
+
+Windows:
+```bat
+start.bat
 ```
-pip install -r requirements.txt
+
+Linux:
+```bash
+./start.sh
+```
+
+Use `--update` to reinstall dependencies after changing requirements:
+```bash
+./start.sh --update
+# Windows: start.bat --update
 ```
 
 ### COSMIC Wayland
 
 Native Linux support targets the COSMIC Wayland compositor. Build the helper
-before starting the backend:
+before starting BlinkSwitch:
 
 ```
 cargo build --release --manifest-path cosmic-helper/Cargo.toml
-python -m backend.backend
+./start.sh
 ```
 
 On NixOS or systems with Nix, use the provided development shell to supply
@@ -36,15 +49,14 @@ Rust and the native Wayland build dependencies:
 ```
 nix develop
 cargo build --release --manifest-path cosmic-helper/Cargo.toml
+./start.sh
 ```
 
-Create the frontend virtual environment after entering the shell so it uses
-the Nix Python runtime with Tk support:
+`start.sh` enters the repository Nix development shell automatically, then
+creates the shared root `.venv` and starts backend plus frontend together:
 
 ```
-python -m venv --clear frontend/.venv
-source frontend/.venv/bin/activate
-python -m pip install -r frontend/requirements.txt
+./start.sh
 ```
 
 The helper uses COSMIC Wayland protocols for window discovery, focus,
