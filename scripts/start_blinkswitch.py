@@ -66,7 +66,7 @@ def request_shutdown(_signum: int, _frame: object) -> None:
     raise KeyboardInterrupt
 
 
-def run(update: bool) -> int:
+def run(update: bool, frontend_name: str) -> int:
     install_requirements(update)
     signal.signal(signal.SIGTERM, request_shutdown)
     environment = os.environ.copy()
@@ -89,10 +89,22 @@ def run(update: bool) -> int:
             print("ERROR: BlinkSwitch backend did not become ready within 30 seconds.", file=sys.stderr)
             return 1
 
-        print("Starting BlinkSwitch frontend...")
-        frontend = subprocess.Popen(
-            [sys.executable, "-m", "frontend.frontend-switcher"], cwd=ROOT_DIR, env=environment
-        )
+        print(f"Starting BlinkSwitch frontend: {frontend_name}...")
+        if frontend_name == "python":
+            frontend_command = [sys.executable, "-m", "frontend.frontend-switcher"]
+        else:
+            executable_name = "blinkswitch-frontend.exe" if os.name == "nt" else "blinkswitch-frontend"
+            frontend_path = ROOT_DIR / "frontend-go" / executable_name
+            if not frontend_path.is_file():
+                print(
+                    f"ERROR: Clay frontend binary not found: {frontend_path}\n"
+                    "Build it with frontend-go\\build.bat on Windows or "
+                    "frontend-go/build.sh on Linux.",
+                    file=sys.stderr,
+                )
+                return 1
+            frontend_command = [str(frontend_path)]
+        frontend = subprocess.Popen(frontend_command, cwd=ROOT_DIR, env=environment)
         while True:
             frontend_code = frontend.poll()
             backend_code = backend.poll()
@@ -112,8 +124,14 @@ def run(update: bool) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Start BlinkSwitch backend and frontend together.")
     parser.add_argument("--update", action="store_true", help="reinstall requirements before starting")
+    parser.add_argument(
+        "--frontend",
+        choices=("python", "clay"),
+        default=os.environ.get("BLINKSWITCH_FRONTEND", "python"),
+        help="frontend implementation to start, default: python",
+    )
     args = parser.parse_args()
-    return run(args.update)
+    return run(args.update, args.frontend)
 
 
 if __name__ == "__main__":

@@ -29,6 +29,10 @@ ENV/
 # Rust build output
 cosmic-helper/target/
 
+# Go frontend build output
+frontend-go/blinkswitch-frontend
+frontend-go/blinkswitch-frontend.exe
+
 # Local tool caches
 .direnv/
 .ruff_cache/

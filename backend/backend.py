@@ -341,7 +341,8 @@ def get_windows_and_tabs():
             "tabs": [...],
             "cached": true,
             "cache_age_ms": 1234,
-            "timestamp": 1234567890.123
+            "timestamp": 1234567890.123,
+            "mru": {"chrome.exe": 12}
         }
     """
     import time
@@ -372,8 +373,28 @@ def get_windows_and_tabs():
             "cached": True,
             "cache_age_ms": cache_data["age_ms"],
             "timestamp": cache_data["timestamp"],
+            "mru": svc.get_mru(),
         }
     )
+
+
+@screenassign_api.route("/mru/touch", methods=["POST"])
+def touch_mru():
+    """Record a selected app for runtime-only switcher ordering."""
+    data = request.json or {}
+    app_key = data.get("app_key")
+    if not isinstance(app_key, str) or not app_key.strip():
+        return jsonify({"error": "app_key is required"}), 400
+
+    svc = _require_service()
+    svc.touch_mru(app_key)
+    return jsonify({"success": True, "mru": svc.get_mru()})
+
+
+@screenassign_api.route("/mru", methods=["GET"])
+def get_mru():
+    """Return runtime-only app usage ordering."""
+    return jsonify(_require_service().get_mru())
 
 
 def _activate_browser_window(exe_name: str, chrome_window_id: Optional[int] = None) -> bool:

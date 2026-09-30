@@ -51,6 +51,12 @@ class ScreenAssignService:
         self.cache_timestamp = 0
         self.cache_lock = threading.Lock()
 
+        # Window switcher MRU is deliberately runtime-only. The frontend reports
+        # selections; the backend keeps ordering consistent across frontends.
+        self.mru_lock = threading.Lock()
+        self.mru_by_app: dict[str, int] = {}
+        self.mru_counter = 0
+
         # No longer using signal files - service runs when started
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -282,3 +288,17 @@ class ScreenAssignService:
                 "timestamp": self.cache_timestamp,
                 "age_ms": age_ms,
             }
+
+    def touch_mru(self, app_key: str) -> None:
+        """Record a selected app in memory for window switcher ordering."""
+        normalized_key = str(app_key or "").strip()
+        if not normalized_key:
+            return
+        with self.mru_lock:
+            self.mru_counter += 1
+            self.mru_by_app[normalized_key] = self.mru_counter
+
+    def get_mru(self) -> dict[str, int]:
+        """Return a snapshot of runtime-only app usage ordering."""
+        with self.mru_lock:
+            return self.mru_by_app.copy()
