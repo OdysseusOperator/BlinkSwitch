@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -33,6 +34,7 @@ type item struct {
 	ExeName        string `json:"exe_name"`
 	AppName        string `json:"app_name"`
 	AppDisplayName string `json:"app_display_name"`
+	DisplayAppName string `json:"display_app_name"`
 	HWND           int64  `json:"hwnd"`
 	ChromeWindowID *int64 `json:"chrome_window_id"`
 }
@@ -43,19 +45,55 @@ type switcherData struct {
 	MRU     map[string]int `json:"mru"`
 }
 
+type command struct {
+	name        string
+	description string
+}
+
+type viewKind int
+
+const (
+	viewSwitcher viewKind = iota
+	viewLayouts
+	viewAssign
+	viewWindows
+	viewDetails
+	viewSettings
+)
+
+var commands = []command{
+	{name: "layouts", description: "Manage layouts"},
+	{name: "assign", description: "Assign physical monitors to layout slots"},
+	{name: "windows", description: "Manage windows"},
+	{name: "settings", description: "Application settings"},
+}
+
 type frontend struct {
-	client      *http.Client
-	items       []item
-	filtered    []item
-	mru         map[string]int
-	query       string
-	selected    int
-	lastFetch   time.Time
-	loading     bool
-	status      string
-	statusUntil time.Time
-	visible     bool
-	toggle      chan struct{}
+	client           *http.Client
+	items            []item
+	filtered         []item
+	mru              map[string]int
+	query            string
+	selected         int
+	lastFetch        time.Time
+	loading          bool
+	status           string
+	statusUntil      time.Time
+	visible          bool
+	toggle           chan struct{}
+	view             viewKind
+	viewTitle        string
+	viewHelp         string
+	viewRows         []string
+	layouts          []map[string]any
+	settings         map[string]any
+	activeLayout     string
+	assignLayoutName string
+	assignSlots      []map[string]any
+	monitors         []map[string]any
+	assignment       map[string]string
+	textInput        bool
+	textValue        string
 }
 
 func clayError(errorData clay.ErrorData) {
@@ -98,17 +136,17 @@ func appKey(value item) string {
 	return "unknown"
 }
 
+func displayApp(value item) string {
+	for _, candidate := range []string{value.DisplayAppName, value.AppDisplayName, value.AppName, value.ExeName} {
+		if strings.TrimSpace(candidate) != "" {
+			return strings.TrimSpace(candidate)
+		}
+	}
+	return "Unknown app"
+}
+
 func label(value item) string {
-	app := value.AppDisplayName
-	if app == "" {
-		app = value.AppName
-	}
-	if app == "" {
-		app = value.ExeName
-	}
-	if app == "" {
-		app = "Unknown app"
-	}
+	app := displayApp(value)
 	title := strings.TrimSpace(value.Title)
 	if title == "" {
 		title = "(untitled)"
@@ -144,6 +182,261 @@ func (f *frontend) fetch() {
 	f.mru = data.MRU
 	f.lastFetch = time.Now()
 	f.filter()
+}
+
+func (f *frontend) request(method string, path string, payload any, result any) error {
+	var body io.Reader
+	if payload != nil {
+		encoded, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+		body = strings.NewReader(string(encoded))
+	}
+	request, err := http.NewRequest(method, apiURL+path, body)
+	if err != nil {
+		return err
+	}
+	if payload != nil {
+		request.Header.Set("Content-Type", "application/json")
+	}
+	response, err := f.client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		message, _ := io.ReadAll(response.Body)
+		return fmt.Errorf("backend returned %d: %s", response.StatusCode, strings.TrimSpace(string(message)))
+	}
+	if result == nil {
+		return nil
+	}
+	return json.NewDecoder(response.Body).Decode(result)
+}
+
+func (f *frontend) openView(view viewKind) {
+	f.view = view
+	f.selected = 0
+	f.query = ""
+	f.viewRows = nil
+	f.viewHelp = "Esc to close"
+	switch view {
+	case viewLayouts:
+		f.loadLayouts()
+	case viewSettings:
+		f.loadSettings()
+	case viewAssign:
+		f.loadAssignment()
+	case viewWindows:
+		f.loadWindowsView()
+	}
+}
+
+func (f *frontend) loadLayouts() {
+	var layouts []map[string]any
+	if err := f.request(http.MethodGet, "/layouts", nil, &layouts); err != nil {
+		f.showStatus(err.Error())
+		return
+	}
+	f.layouts = layouts
+	f.viewTitle = "Layout Management"
+	f.viewRows = make([]string, 0, len(layouts))
+	for _, layout := range layouts {
+		name := stringValue(layout["name"], "Unknown")
+		fileName := stringValue(layout["file_name"], "")
+		screens := intValue(layout["total_screens"])
+		active := ""
+		if strings.TrimSuffix(fileName, ".json") == f.activeLayout {
+			active = " [ACTIVE]"
+		}
+		f.viewRows = append(f.viewRows, fmt.Sprintf("%s (%d screens)%s - %s", name, screens, active, stringValue(layout["description"], "")))
+	}
+	f.viewHelp = "Enter/A activate | D delete | N new | Esc close"
+}
+
+func (f *frontend) loadSettings() {
+	var settings map[string]any
+	if err := f.request(http.MethodGet, "/settings", nil, &settings); err != nil {
+		f.showStatus(err.Error())
+		return
+	}
+	var layouts []map[string]any
+	if err := f.request(http.MethodGet, "/layouts", nil, &layouts); err != nil {
+		f.showStatus(err.Error())
+		return
+	}
+	f.settings = settings
+	f.layouts = layouts
+	f.viewTitle = "Settings"
+	f.viewRows = []string{
+		fmt.Sprintf("Default Layout: %s", stringValue(settings["default_layout"], "(None)")),
+		fmt.Sprintf("Center Mouse on Switch: %s", boolLabel(settings["center_mouse_on_switch"])),
+	}
+	f.viewHelp = "Up/Down navigate | Left/Right cycle layout | Enter toggle | Esc close"
+}
+
+func (f *frontend) loadWindowsView() {
+	var windows []item
+	if err := f.request(http.MethodGet, "/windows", nil, &windows); err != nil {
+		f.showStatus(err.Error())
+		return
+	}
+	f.viewTitle = "Windows Management"
+	f.viewRows = make([]string, 0, len(windows))
+	for _, window := range windows {
+		title := window.Title
+		if len(title) > 50 {
+			title = title[:47] + "..."
+		}
+		f.viewRows = append(f.viewRows, fmt.Sprintf("%s (%s)", title, window.ExeName))
+	}
+	f.viewHelp = "Enter configure | D delete rule | Esc close"
+}
+
+func (f *frontend) loadAssignment() {
+	if len(f.layouts) == 0 {
+		if err := f.request(http.MethodGet, "/layouts", nil, &f.layouts); err != nil {
+			f.showStatus(err.Error())
+			return
+		}
+	}
+	layoutName := f.activeLayout
+	if layoutName == "" && len(f.layouts) > 0 {
+		layoutName = strings.TrimSuffix(stringValue(f.layouts[0]["file_name"], ""), ".json")
+	}
+	if layoutName == "" {
+		f.viewTitle = "Assign Monitors to Slots"
+		f.viewRows = []string{"No layouts found. Create a layout first."}
+		return
+	}
+	var layout map[string]any
+	if err := f.request(http.MethodGet, "/layouts/"+layoutName, nil, &layout); err != nil {
+		f.showStatus(err.Error())
+		return
+	}
+	var screenConfig struct {
+		Monitors []map[string]any `json:"monitors"`
+	}
+	if err := f.request(http.MethodGet, "/screen-config", nil, &screenConfig); err != nil {
+		f.showStatus(err.Error())
+		return
+	}
+	f.assignLayoutName = layoutName
+	f.monitors = screenConfig.Monitors
+	f.assignment = loadAssignments()[layoutName]
+	if f.assignment == nil {
+		f.assignment = map[string]string{}
+	}
+	data, _ := layout["data"].(map[string]any)
+	requirements, _ := data["screen_requirements"].(map[string]any)
+	f.assignSlots, _ = requirements["screens"].([]map[string]any)
+	// JSON decoding uses []any for nested arrays, so normalize screen rows.
+	if raw, ok := requirements["screens"].([]any); ok {
+		f.assignSlots = make([]map[string]any, 0, len(raw))
+		for _, value := range raw {
+			if screen, ok := value.(map[string]any); ok {
+				f.assignSlots = append(f.assignSlots, screen)
+			}
+		}
+	}
+	f.viewTitle = "Assign Monitors to Slots"
+	f.viewHelp = "1-9 assign monitor | Up/Down navigate | S save | Esc cancel"
+	f.rebuildAssignmentRows()
+}
+
+func (f *frontend) rebuildAssignmentRows() {
+	f.viewRows = make([]string, 0, len(f.assignSlots)+len(f.monitors)+1)
+	for index, slot := range f.assignSlots {
+		slotNumber := intValue(slot["slot"])
+		if slotNumber == 0 {
+			slotNumber = index + 1
+		}
+		orientation := stringValue(slot["orientation"], "?")
+		identity := f.assignment[fmt.Sprint(slotNumber)]
+		if identity == "" {
+			identity = "(unassigned)"
+		}
+		marker := "[ ]"
+		if index == f.selected {
+			marker = "[*]"
+		}
+		f.viewRows = append(f.viewRows, fmt.Sprintf("%s Slot %d (%s) -> %s", marker, slotNumber, orientation, identity))
+	}
+	f.viewRows = append(f.viewRows, "")
+	for index, monitor := range f.monitors {
+		f.viewRows = append(f.viewRows, fmt.Sprintf("%d: %s (%s, %dx%d)", index+1, stringValue(monitor["identity_key"], "?"), stringValue(monitor["orientation"], "?"), intValue(monitor["width"]), intValue(monitor["height"])))
+	}
+}
+
+func (f *frontend) handleAssignmentInput() {
+	if rl.IsKeyPressed(rl.KeyS) {
+		assignments := loadAssignments()
+		assignments[f.assignLayoutName] = f.assignment
+		if err := saveAssignments(assignments); err != nil {
+			f.showStatus(err.Error())
+		} else {
+			f.showStatus("Assignments saved")
+		}
+		return
+	}
+	if rl.IsKeyPressed(rl.KeyDown) && f.selected < len(f.assignSlots)-1 {
+		f.selected++
+		f.rebuildAssignmentRows()
+	}
+	if rl.IsKeyPressed(rl.KeyUp) && f.selected > 0 {
+		f.selected--
+		f.rebuildAssignmentRows()
+	}
+}
+
+func loadAssignments() map[string]map[string]string {
+	assignments := map[string]map[string]string{}
+	data, err := os.ReadFile("frontend/assignment.json")
+	if err != nil {
+		return assignments
+	}
+	if err := json.Unmarshal(data, &assignments); err != nil {
+		return map[string]map[string]string{}
+	}
+	return assignments
+}
+
+func saveAssignments(assignments map[string]map[string]string) error {
+	data, err := json.MarshalIndent(assignments, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("frontend/assignment.json", data, 0o600)
+}
+
+func (f *frontend) showStatus(message string) {
+	f.status = message
+	f.statusUntil = time.Now().Add(4 * time.Second)
+}
+
+func stringValue(value any, fallback string) string {
+	if result, ok := value.(string); ok && result != "" {
+		return result
+	}
+	return fallback
+}
+
+func intValue(value any) int {
+	if result, ok := value.(float64); ok {
+		return int(result)
+	}
+	if result, ok := value.(int); ok {
+		return result
+	}
+	return 0
+}
+
+func boolLabel(value any) string {
+	if result, ok := value.(bool); ok && result {
+		return "ON"
+	}
+	return "OFF"
 }
 
 func (f *frontend) filter() {
@@ -217,6 +510,207 @@ func (f *frontend) toggleVisibility() {
 	f.filter()
 }
 
+func (f *frontend) executeCommand() {
+	name := strings.TrimPrefix(strings.ToLower(strings.TrimSpace(f.query)), "/")
+	for _, entry := range commands {
+		if entry.name == name {
+			f.openView(map[string]viewKind{
+				"layouts":  viewLayouts,
+				"assign":   viewAssign,
+				"windows":  viewWindows,
+				"settings": viewSettings,
+			}[entry.name])
+			return
+		}
+	}
+	f.showStatus("Unknown command: /" + name)
+}
+
+func (f *frontend) filteredCommands() []command {
+	query := strings.TrimPrefix(strings.ToLower(strings.TrimSpace(f.query)), "/")
+	result := make([]command, 0, len(commands))
+	for _, entry := range commands {
+		if query == "" || strings.Contains(entry.name+" "+entry.description, query) {
+			result = append(result, entry)
+		}
+	}
+	return result
+}
+
+func (f *frontend) handleViewInput() {
+	if f.textInput {
+		if rl.IsKeyPressed(rl.KeyEscape) {
+			f.textInput = false
+			f.textValue = ""
+		} else if rl.IsKeyPressed(rl.KeyEnter) {
+			f.submitTextInput()
+		} else if rl.IsKeyPressed(rl.KeyBackspace) && len(f.textValue) > 0 {
+			f.textValue = f.textValue[:len(f.textValue)-1]
+		}
+		return
+	}
+	if f.view == viewSwitcher {
+		if rl.IsKeyPressed(rl.KeyEscape) {
+			f.hide()
+			return
+		}
+		if strings.HasPrefix(strings.TrimSpace(f.query), "/") {
+			matches := f.filteredCommands()
+			if rl.IsKeyPressed(rl.KeyDown) && f.selected < len(matches)-1 {
+				f.selected++
+			}
+			if rl.IsKeyPressed(rl.KeyUp) && f.selected > 0 {
+				f.selected--
+			}
+		} else {
+			if rl.IsKeyPressed(rl.KeyDown) && f.selected < len(f.filtered)-1 {
+				f.selected++
+			}
+			if rl.IsKeyPressed(rl.KeyUp) && f.selected > 0 {
+				f.selected--
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyEnter) {
+			if strings.HasPrefix(strings.TrimSpace(f.query), "/") {
+				matches := f.filteredCommands()
+				if len(matches) > 0 && f.selected < len(matches) {
+					f.query = "/" + matches[f.selected].name
+				}
+				f.executeCommand()
+			} else if len(f.filtered) > 0 {
+				f.activate(f.filtered[f.selected])
+			}
+		}
+		return
+	}
+
+	if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyBackspace) {
+		f.view = viewSwitcher
+		f.query = ""
+		f.selected = 0
+		f.filter()
+		return
+	}
+	if rl.IsKeyPressed(rl.KeyDown) && f.selected < len(f.viewRows)-1 {
+		f.selected++
+	}
+	if rl.IsKeyPressed(rl.KeyUp) && f.selected > 0 {
+		f.selected--
+	}
+
+	switch f.view {
+	case viewLayouts:
+		f.handleLayoutsInput()
+	case viewAssign:
+		f.handleAssignmentInput()
+	case viewSettings:
+		f.handleSettingsInput()
+	}
+}
+
+func (f *frontend) handleLayoutsInput() {
+	if len(f.layouts) == 0 {
+		if rl.IsKeyPressed(rl.KeyN) {
+			f.textInput = true
+			f.textValue = ""
+		}
+		return
+	}
+	if rl.IsKeyPressed(rl.KeyN) {
+		f.textInput = true
+		f.textValue = ""
+		return
+	}
+	if rl.IsKeyPressed(rl.KeyEnter) || rl.IsKeyPressed(rl.KeyA) {
+		layoutName := strings.TrimSuffix(stringValue(f.layouts[f.selected]["file_name"], ""), ".json")
+		if layoutName == f.activeLayout {
+			f.activeLayout = ""
+			f.showStatus("Layout deactivated")
+		} else {
+			var result map[string]any
+			assignment := loadAssignments()[layoutName]
+			if assignment == nil {
+				assignment = map[string]string{}
+			}
+			err := f.request(http.MethodPost, "/apply-rules", map[string]any{"layout_name": layoutName, "assignment": assignment}, &result)
+			if err != nil {
+				f.showStatus(err.Error())
+			} else {
+				f.activeLayout = layoutName
+				f.showStatus("Layout activated: " + layoutName)
+			}
+		}
+		f.loadLayouts()
+	}
+	if rl.IsKeyPressed(rl.KeyD) {
+		layoutName := strings.TrimSuffix(stringValue(f.layouts[f.selected]["file_name"], ""), ".json")
+		if err := f.request(http.MethodDelete, "/layouts/"+layoutName, nil, nil); err != nil {
+			f.showStatus(err.Error())
+		} else {
+			f.showStatus("Layout deleted: " + layoutName)
+			f.loadLayouts()
+		}
+	}
+}
+
+func (f *frontend) submitTextInput() {
+	name := strings.TrimSpace(f.textValue)
+	if name == "" {
+		f.showStatus("Layout name cannot be empty")
+		return
+	}
+	if err := f.request(http.MethodPost, "/layouts", map[string]any{"name": name, "description": ""}, nil); err != nil {
+		f.showStatus(err.Error())
+	} else {
+		f.showStatus("Layout created: " + name)
+		f.textInput = false
+		f.textValue = ""
+		f.loadLayouts()
+	}
+}
+
+func (f *frontend) handleSettingsInput() {
+	if f.selected == 0 && (rl.IsKeyPressed(rl.KeyLeft) || rl.IsKeyPressed(rl.KeyRight)) {
+		layoutNames := []string{""}
+		for _, layout := range f.layouts {
+			layoutNames = append(layoutNames, strings.TrimSuffix(stringValue(layout["file_name"], ""), ".json"))
+		}
+		current := stringValue(f.settings["default_layout"], "")
+		index := 0
+		for i, name := range layoutNames {
+			if name == current {
+				index = i
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyLeft) {
+			index = (index - 1 + len(layoutNames)) % len(layoutNames)
+		} else {
+			index = (index + 1) % len(layoutNames)
+		}
+		value := any(nil)
+		if layoutNames[index] != "" {
+			value = layoutNames[index]
+		}
+		if err := f.request(http.MethodPut, "/settings", map[string]any{"default_layout": value}, nil); err != nil {
+			f.showStatus(err.Error())
+		} else {
+			f.settings["default_layout"] = value
+			f.showStatus("Default layout updated")
+		}
+		f.loadSettings()
+	}
+	if f.selected == 1 && rl.IsKeyPressed(rl.KeyEnter) {
+		value := !(f.settings["center_mouse_on_switch"] == true)
+		if err := f.request(http.MethodPut, "/settings", map[string]any{"center_mouse_on_switch": value}, nil); err != nil {
+			f.showStatus(err.Error())
+		} else {
+			f.settings["center_mouse_on_switch"] = value
+			f.showStatus("Mouse centering updated")
+		}
+		f.loadSettings()
+	}
+}
+
 func (f *frontend) focusBrowserWindow(value item) {
 	if value.ExeName == "" || value.ChromeWindowID == nil {
 		return
@@ -270,6 +764,50 @@ func (f *frontend) draw() {
 	muted := clay.Color{R: 135, G: 135, B: 135, A: 255}
 	selection := clay.Color{R: 135, G: 206, B: 235, A: 255}
 	clay.UI()(clay.ElementDeclaration{Id: clay.ID("Root"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, Padding: clay.PaddingAll(20), ChildGap: 10}, BackgroundColor: background}, func() {
+		if f.textInput {
+			text("Create New Layout", 24, primary)
+			text("Layout name:", 18, muted)
+			text(f.textValue+"_", 24, primary)
+			text("Enter create | Esc cancel", 16, muted)
+			return
+		}
+		if f.view != viewSwitcher {
+			text(f.viewTitle, 24, primary)
+			clay.UI()(clay.ElementDeclaration{Id: clay.ID("ViewList"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, ChildGap: 4}}, func() {
+				for index, row := range f.viewRows {
+					color := primary
+					prefix := "  "
+					if index == f.selected {
+						color = selection
+						prefix = "> "
+					}
+					text(prefix+row, 20, color)
+				}
+			})
+			help := f.viewHelp
+			if time.Now().Before(f.statusUntil) {
+				help = f.status
+			}
+			text(help, 16, muted)
+			return
+		}
+
+		if strings.HasPrefix(strings.TrimSpace(f.query), "/") {
+			text("command: "+f.query, 24, primary)
+			clay.UI()(clay.ElementDeclaration{Id: clay.ID("Commands"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, ChildGap: 4}}, func() {
+				for index, entry := range f.filteredCommands() {
+					color := primary
+					prefix := "  "
+					if index == f.selected {
+						color = selection
+						prefix = "> "
+					}
+					text(prefix+"/"+entry.name+" - "+entry.description, 20, color)
+				}
+			})
+			text("Enter execute | Esc close", 16, muted)
+			return
+		}
 		clay.UI()(clay.ElementDeclaration{Id: clay.ID("Header"), Layout: clay.LayoutConfig{Sizing: clay.Sizing{Width: clay.SizingGrow(0)}}}, func() {
 			text("query: "+f.query, 24, primary)
 		})
@@ -358,6 +896,8 @@ func main() {
 	rl.SetConfigFlags(rl.FlagWindowUndecorated | rl.FlagWindowTopmost)
 	rl.InitWindow(width, height, "BlinkSwitch Clay Frontend")
 	defer rl.CloseWindow()
+	// Escape toggles the switcher; it must not be Raylib's process exit key.
+	rl.SetExitKey(0)
 	rl.SetTargetFPS(60)
 
 	currentFont = rl.LoadFontEx(fontPath, 64, nil, 0)
@@ -394,27 +934,29 @@ func main() {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		}
-		if rl.IsKeyPressed(rl.KeyEscape) {
-			f.hide()
-			continue
-		}
-		if rl.IsKeyPressed(rl.KeyDown) && f.selected < len(f.filtered)-1 {
-			f.selected++
-		}
-		if rl.IsKeyPressed(rl.KeyUp) && f.selected > 0 {
-			f.selected--
-		}
-		if rl.IsKeyPressed(rl.KeyEnter) && len(f.filtered) > 0 {
-			f.activate(f.filtered[f.selected])
-		}
+		f.handleViewInput()
 		for character := rl.GetCharPressed(); character > 0; character = rl.GetCharPressed() {
 			if character >= 32 && character <= 126 {
-				f.query += string(rune(character))
-				f.selected = 0
-				f.filter()
+				if f.textInput {
+					f.textValue += string(rune(character))
+				} else if f.view == viewSwitcher {
+					f.query += string(rune(character))
+					f.selected = 0
+					f.filter()
+				} else if f.view == viewAssign && character >= '1' && character <= '9' && f.selected < len(f.assignSlots) {
+					monitorIndex := int(character - '1')
+					if monitorIndex < len(f.monitors) {
+						slotNumber := intValue(f.assignSlots[f.selected]["slot"])
+						if slotNumber == 0 {
+							slotNumber = f.selected + 1
+						}
+						f.assignment[fmt.Sprint(slotNumber)] = stringValue(f.monitors[monitorIndex]["identity_key"], "")
+						f.rebuildAssignmentRows()
+					}
+				}
 			}
 		}
-		if rl.IsKeyPressed(rl.KeyBackspace) && len(f.query) > 0 {
+		if f.view == viewSwitcher && rl.IsKeyPressed(rl.KeyBackspace) && len(f.query) > 0 {
 			f.query = f.query[:len(f.query)-1]
 			f.selected = 0
 			f.filter()
