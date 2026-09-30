@@ -119,11 +119,11 @@ This document is the operations manual for agentic assistants working inside Bli
 
 ## Documentation Expectations
 - When behavior changes, update this `AGENTS.md` plus any relevant `documentation/*.md` explainer before opening a PR.
-- Architecture decisions belong in `documentation/IMPLEMENTATION_SUMMARY.md`; include motivation, tradeoffs, and rollback plan.
+- Architecture decisions belong in the relevant page under `documentation/`; include motivation, tradeoffs, and rollback plan.
 - CLI additions require usage notes in `documentation/COMMANDS_USAGE.md` so operators have a copy/paste ready sequence.
 - UI/UX changes should include screenshots or GIFs stored externally and linked from a relevant page under `documentation/`.
 - Keep README installation steps accurate for new dependencies; spell out Win32 prerequisites explicitly.
-- If you touch monitor fingerprint logic, echo the delta in `documentation/QUICK_START.txt` so downstream teams can resync.
+- If you touch monitor identity logic, update `documentation/INTERNALS.md` so downstream teams can resync.
 
 ## Git & Review Checklist
 - Do not commit `.venv` folders, `.ruff_cache`, compiled artifacts, or user logs; verify with `git status` after every change.
