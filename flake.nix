@@ -27,6 +27,7 @@
               pythonRuntime
               pkg-config
               libxkbcommon
+              libei
               wayland
               libx11
               libglvnd

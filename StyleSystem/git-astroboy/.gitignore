@@ -1,0 +1,9 @@
+# Executables
+*.exe
+
+# Virtual environments
+.venv
+venv/
+
+# Git
+.git/

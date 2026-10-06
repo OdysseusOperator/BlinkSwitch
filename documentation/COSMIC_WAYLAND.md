@@ -8,8 +8,10 @@ enumeration and output scale metadata live in
 `backend/platforms/cosmic/monitor_provider.py`; shared monitor registration and
 identity handling live in `backend/monitor_manager.py`.
 
-The backend does not use X11, XWayland, `wmctrl`, or synthetic pointer input for
-window management. The frontend overlay itself uses XWayland, as described below.
+The backend does not use X11, XWayland, or `wmctrl` for window management. The
+planned mouse-centering integration will use permission-controlled `libei`
+input rather than an unrestricted synthetic-input tool. The frontend overlay
+itself uses XWayland, as described below.
 
 ## Setup
 
@@ -42,6 +44,8 @@ executable path when using a system or separately built helper.
 - Request maximize or unmaximize.
 - Move a window to a workspace on a selected output.
 - Request fullscreen on a selected output.
+- Pointer centering is reserved for the planned RemoteDesktop portal and
+  `libei` integration; it is currently skipped on Wayland.
 
 Wayland does not provide arbitrary client-side window coordinates. COSMIC's
 workspace/output operation is therefore the supported equivalent of moving a
