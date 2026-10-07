@@ -28,7 +28,10 @@ This document is the operations manual for agentic assistants working inside Bli
 
 ## Build & Run Commands
 - Complete application: `start.bat` on Windows or `./start.sh` on Linux.
+- Launchers reuse an already-running healthy backend on port 5555; shutdown stops only processes started by that launcher.
+- Go keep-open testing mode skips hotkey and toggle IPC registration so the normal frontend can keep using Alt+Space during side-by-side comparison.
 - Force dependency refresh: `start.bat --update` or `./start.sh --update`.
+- Go frontend migration testing on Linux: `./start_blinkswitch_new.sh` rebuilds the Go binary and starts backend/frontend with `BLINKSWITCH_KEEP_OPEN=1`; the window opens immediately and does not hide on selection, Escape, or toggles. Stop both processes with terminal Ctrl+C; `--update` refreshes Python dependencies.
 - Run backend directly: `.venv\Scripts\python.exe -m backend.backend` on Windows, or `.venv/bin/python -m backend.backend` on Linux.
 - Run frontend directly: `.venv\Scripts\python.exe -m frontend.frontend-switcher` on Windows, or `.venv/bin/python -m frontend.frontend-switcher` on Linux.
 
@@ -118,10 +121,11 @@ This document is the operations manual for agentic assistants working inside Bli
 - When tests or scripts fail, capture both console output and snippet of the relevant log file in the issue description.
 
 ## Documentation Expectations
-- When behavior changes, update this `AGENTS.md` plus any relevant `documentation/*.md` explainer before opening a PR.
+- Add to `AGENTS.md`, `README.md`, or `documentation/` only for important, project-wide changes such as architecture, supported workflows, dependencies, or configuration schemas; do not document routine bug fixes, minor UI/layout tweaks, or implementation details unless explicitly requested.
+- Ask the user for permission before editing documentation when its necessity or scope is unclear; a code change alone does not authorize documentation changes.
 - Architecture decisions belong in the relevant page under `documentation/`; include motivation, tradeoffs, and rollback plan.
 - CLI additions require usage notes in `documentation/COMMANDS_USAGE.md` so operators have a copy/paste ready sequence.
-- UI/UX changes should include screenshots or GIFs stored externally and linked from a relevant page under `documentation/`.
+- For major UI/UX changes, ask the user before adding screenshots, GIFs, or explanatory documentation.
 - Keep README installation steps accurate for new dependencies; spell out Win32 prerequisites explicitly.
 - If you touch monitor identity logic, update `documentation/INTERNALS.md` so downstream teams can resync.
 
@@ -129,7 +133,7 @@ This document is the operations manual for agentic assistants working inside Bli
 - Do not commit `.venv` folders, `.ruff_cache`, compiled artifacts, or user logs; verify with `git status` after every change.
 - Before requesting review, run `ruff check .`, `python -m backend.backend --help` (verifies module imports), and smoke-test the switcher.
 - Ensure BAT scripts still run end-to-end after modifying dependency installation or activation steps.
-- Update documentation whenever behavior changes; `AGENTS.md`, `README.md`, and `documentation/` must stay synchronized.
+- For important, project-wide changes, keep relevant documentation synchronized under the Documentation Expectations above; routine fixes do not require documentation edits.
 - Summarize Windows-specific caveats in PR descriptions so reviewers understand why cross-platform fixes might not apply.
 
 ## Missing Cursor/Copilot Rules

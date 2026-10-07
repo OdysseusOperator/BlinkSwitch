@@ -80,6 +80,7 @@ type frontend struct {
 	status           string
 	statusUntil      time.Time
 	visible          bool
+	keepOpen         bool
 	toggle           chan struct{}
 	view             viewKind
 	viewTitle        string
@@ -495,6 +496,9 @@ func (f *frontend) show() {
 }
 
 func (f *frontend) hide() {
+	if f.keepOpen {
+		return
+	}
 	rl.SetWindowState(rl.FlagWindowHidden)
 	f.visible = false
 }
@@ -763,7 +767,21 @@ func (f *frontend) draw() {
 	primary := clay.Color{R: 255, G: 255, B: 255, A: 255}
 	muted := clay.Color{R: 135, G: 135, B: 135, A: 255}
 	selection := clay.Color{R: 135, G: 206, B: 235, A: 255}
-	clay.UI()(clay.ElementDeclaration{Id: clay.ID("Root"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, Padding: clay.PaddingAll(20), ChildGap: 10}, BackgroundColor: background}, func() {
+	padding := clay.PaddingAll(20)
+	if f.view == viewSwitcher && !f.textInput {
+		padding.Top = 0
+	}
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID("Root"),
+		Layout: clay.LayoutConfig{
+			LayoutDirection: clay.TOP_TO_BOTTOM,
+			Sizing:          clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)},
+			ChildAlignment:  clay.ChildAlignment{X: clay.ALIGN_X_LEFT, Y: clay.ALIGN_Y_TOP},
+			Padding:         padding,
+			ChildGap:        10,
+		},
+		BackgroundColor: background,
+	}, func() {
 		if f.textInput {
 			text("Create New Layout", 24, primary)
 			text("Layout name:", 18, muted)
@@ -808,10 +826,10 @@ func (f *frontend) draw() {
 			text("Enter execute | Esc close", 16, muted)
 			return
 		}
-		clay.UI()(clay.ElementDeclaration{Id: clay.ID("Header"), Layout: clay.LayoutConfig{Sizing: clay.Sizing{Width: clay.SizingGrow(0)}}}, func() {
+		clay.UI()(clay.ElementDeclaration{Id: clay.ID("Header"), Layout: clay.LayoutConfig{Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingFixed(32)}}}, func() {
 			text("query: "+f.query, 24, primary)
 		})
-		clay.UI()(clay.ElementDeclaration{Id: clay.ID("List"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, ChildGap: 4}}, func() {
+		clay.UI()(clay.ElementDeclaration{Id: clay.ID("List"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, ChildAlignment: clay.ChildAlignment{X: clay.ALIGN_X_LEFT, Y: clay.ALIGN_Y_TOP}, ChildGap: 4}}, func() {
 			if f.loading {
 				text("loading...", 20, muted)
 			}
@@ -829,6 +847,9 @@ func (f *frontend) draw() {
 			}
 		})
 		help := "Enter to switch | Esc to quit"
+		if f.keepOpen {
+			help = "Enter to switch | Testing: window stays open | Ctrl+C in terminal to quit"
+		}
 		if time.Now().Before(f.statusUntil) {
 			help = f.status
 		}
@@ -886,6 +907,17 @@ func notifyToggle() bool {
 	return err == nil
 }
 
+func configureWindowPlatform() error {
+	if runtime.GOOS != "linux" {
+		return nil
+	}
+	if os.Getenv("WAYLAND_DISPLAY") == "" {
+		return fmt.Errorf("BlinkSwitch Go frontend requires a Wayland session on Linux")
+	}
+	// Linux uses native Wayland even when an XWayland display is also available.
+	return os.Unsetenv("DISPLAY")
+}
+
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--toggle" {
 		if notifyToggle() {
@@ -893,7 +925,11 @@ func main() {
 		}
 		os.Exit(1)
 	}
-	rl.SetConfigFlags(rl.FlagWindowUndecorated | rl.FlagWindowTopmost)
+	if err := configureWindowPlatform(); err != nil {
+		fmt.Fprintf(os.Stderr, "Could not select window platform: %v\n", err)
+		os.Exit(1)
+	}
+	rl.SetConfigFlags(rl.FlagWindowUndecorated | rl.FlagWindowTopmost | rl.FlagWindowResizable)
 	rl.InitWindow(width, height, "BlinkSwitch Clay Frontend")
 	defer rl.CloseWindow()
 	// Escape toggles the switcher; it must not be Raylib's process exit key.
@@ -912,15 +948,22 @@ func main() {
 	clay.SetMeasureTextFunction(measureText, unsafe.Pointer(&currentFont))
 
 	f := &frontend{
-		client:  &http.Client{Timeout: 500 * time.Millisecond},
-		mru:     map[string]int{},
-		visible: false,
-		toggle:  make(chan struct{}, 1),
+		client:   &http.Client{Timeout: 500 * time.Millisecond},
+		mru:      map[string]int{},
+		visible:  false,
+		keepOpen: os.Getenv("BLINKSWITCH_KEEP_OPEN") == "1",
+		toggle:   make(chan struct{}, 1),
 	}
 	f.fetch()
-	startHotkeyListener(f.toggle)
-	startIPCListener(f.toggle)
-	f.hide()
+	if f.keepOpen {
+		f.show()
+	} else {
+		startHotkeyListener(f.toggle)
+		startIPCListener(f.toggle)
+		f.hide()
+	}
+	renderCheck := os.Getenv("BLINKSWITCH_RENDER_CHECK") == "1"
+	lastRenderReport := ""
 	for !rl.WindowShouldClose() {
 		select {
 		case <-f.toggle:
@@ -962,12 +1005,24 @@ func main() {
 			f.filter()
 		}
 
+		clay.SetLayoutDimensions(clay.Dimensions{Width: float32(rl.GetScreenWidth()), Height: float32(rl.GetScreenHeight())})
 		clay.BeginLayout()
 		f.draw()
 		commands := clay.EndLayout()
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Color{R: 50, G: 50, B: 50, A: 255})
 		renderClay(commands)
+		if renderCheck {
+			report := probeRenderViewport()
+			if report != lastRenderReport {
+				fmt.Println(report)
+				lastRenderReport = report
+			}
+			rl.DrawRectangleLinesEx(rl.Rectangle{Width: float32(rl.GetScreenWidth()), Height: float32(rl.GetScreenHeight())}, 2, rl.SkyBlue)
+			mouse := rl.GetMousePosition()
+			rl.DrawLine(int32(mouse.X)-8, int32(mouse.Y), int32(mouse.X)+8, int32(mouse.Y), rl.Yellow)
+			rl.DrawLine(int32(mouse.X), int32(mouse.Y)-8, int32(mouse.X), int32(mouse.Y)+8, rl.Yellow)
+		}
 		rl.EndDrawing()
 	}
 }

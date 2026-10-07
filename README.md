@@ -24,6 +24,8 @@ Linux:
 The launcher creates one root `.venv`, installs `requirements.txt` with `uv`,
 starts the backend, waits for its health endpoint, and starts the frontend.
 Backend and frontend remain separate processes and are stopped together.
+If a healthy BlinkSwitch backend is already running, the launcher reuses it and
+leaves it running when the new frontend exits.
 
 Use `--update` to reinstall dependencies after changing `requirements.txt`:
 
@@ -74,6 +76,19 @@ The optional browser extension sends local tab data to the backend on port
 start BlinkSwitch with `start.bat` or `./start.sh`.
 
 ## Development
+
+Test the new Go frontend during migration on Linux:
+
+```bash
+./start_blinkswitch_new.sh
+```
+
+This rebuilds the Go frontend with `frontend-go/build.sh`, then starts it with
+the backend. Go or Nix is required for the build. The window appears immediately
+and stays visible after selection, Escape, or hotkey toggles. Press `Ctrl+C` in
+the launch terminal to stop both processes. `--update` refreshes Python dependencies.
+Testing mode leaves hotkeys and the toggle IPC socket to the normal frontend,
+so you can open it with `Alt+Space` while comparing both frontends.
 
 ```bash
 ruff check .

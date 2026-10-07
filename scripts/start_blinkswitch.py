@@ -72,15 +72,19 @@ def run(update: bool, frontend_name: str) -> int:
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
 
-    backend = subprocess.Popen(
-        [sys.executable, "-m", "backend.backend"], cwd=ROOT_DIR, env=environment
-    )
+    backend: subprocess.Popen[bytes] | None = None
+    if backend_is_ready():
+        print("Reusing running BlinkSwitch backend...")
+    else:
+        backend = subprocess.Popen(
+            [sys.executable, "-m", "backend.backend"], cwd=ROOT_DIR, env=environment
+        )
     frontend: subprocess.Popen[bytes] | None = None
     try:
         print("Waiting for BlinkSwitch backend...")
         deadline = time.monotonic() + HEALTH_TIMEOUT_SECONDS
         while time.monotonic() < deadline:
-            if backend.poll() is not None:
+            if backend is not None and backend.poll() is not None:
                 return backend.returncode or 1
             if backend_is_ready():
                 break
@@ -107,7 +111,7 @@ def run(update: bool, frontend_name: str) -> int:
         frontend = subprocess.Popen(frontend_command, cwd=ROOT_DIR, env=environment)
         while True:
             frontend_code = frontend.poll()
-            backend_code = backend.poll()
+            backend_code = backend.poll() if backend is not None else None
             if frontend_code is not None:
                 return frontend_code
             if backend_code is not None:

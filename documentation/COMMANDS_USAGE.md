@@ -23,6 +23,24 @@ Access system management features by typing commands starting with `/`.
 
 ## Usage
 
+### Go Frontend Migration Testing on Linux
+
+```bash
+./start_blinkswitch_new.sh
+# Refresh Python dependencies as well:
+./start_blinkswitch_new.sh --update
+```
+
+The launcher rebuilds the Go frontend, starts the backend, and opens the frontend
+immediately with `BLINKSWITCH_KEEP_OPEN=1`. Selection, Escape in switch mode, and
+hotkey/IPC toggles leave the window visible. Escape inside management views still
+returns to switch mode. Press `Ctrl+C` in the launch terminal to stop both processes.
+The build requires Go or Nix; normal launchers keep their existing visibility behavior.
+An already-running healthy backend is reused; stopping this launcher leaves that
+backend running.
+Testing mode skips hotkey and toggle IPC registration, leaving `Alt+Space` free
+to open a concurrently running normal frontend for comparison.
+
 ### Accessing Commands
 
 1. **Open BlinkSwitch**: Press `Alt+Space` to open the window frontend (enters switch_mode)

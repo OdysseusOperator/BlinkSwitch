@@ -4,8 +4,10 @@ set -euo pipefail
 script_dir=$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$script_dir"
 
+build_args=(-tags wayland -o blinkswitch-frontend)
+
 if command -v go >/dev/null 2>&1; then
-    go build -o blinkswitch-frontend .
+    go build "${build_args[@]}" .
     exit 0
 fi
 
@@ -51,4 +53,4 @@ nix shell \
     --command env \
     "C_INCLUDE_PATH=$wayland_dev/include:$libx11_dev/include:$libxkbcommon_dev/include:$libxcursor_dev/include:$libxinerama_dev/include:$libxrandr_dev/include:$libxi_dev/include:$libxrender_dev/include:$libxfixes_dev/include:$libxext_dev/include:$xorgproto/include" \
     "CGO_LDFLAGS=-L$wayland/lib -L$libxkbcommon/lib -L$libgl/lib" \
-    go build -o blinkswitch-frontend .
+    go build "${build_args[@]}" .

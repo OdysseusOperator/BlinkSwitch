@@ -32,6 +32,7 @@ cosmic-helper/target/
 # Go frontend build output
 frontend-go/blinkswitch-frontend
 frontend-go/blinkswitch-frontend.exe
+frontend-go/blinkswitch-frontend-wayland
 
 # Local tool caches
 .direnv/
