@@ -16,7 +16,7 @@ from urllib.request import urlopen
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 REQUIREMENTS_FILE = ROOT_DIR / "requirements.txt"
-VENV_DIR = ROOT_DIR / ".venv"
+VENV_DIR = Path(os.environ.get("BLINKSWITCH_VENV", ROOT_DIR / ".venv-uv"))
 REQUIREMENTS_MARKER = VENV_DIR / ".requirements.sha256"
 HEALTH_URL = "http://127.0.0.1:5555/screenassign/health"
 HEALTH_TIMEOUT_SECONDS = 30

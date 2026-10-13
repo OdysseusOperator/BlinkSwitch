@@ -12,9 +12,10 @@ if ! command -v uv >/dev/null 2>&1; then
     exit 1
 fi
 
-if [[ ! -x "$SCRIPT_DIR/.venv/bin/python" ]]; then
+VENV_DIR="$SCRIPT_DIR/.venv-uv"
+if [[ ! -x "$VENV_DIR/bin/python" ]]; then
     echo "Creating shared Python environment..."
-    uv venv "$SCRIPT_DIR/.venv" --python 3.11
+    uv venv "$VENV_DIR" --python 3.11
 fi
 
-exec "$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/scripts/start_blinkswitch.py" "$@"
+BLINKSWITCH_VENV="$VENV_DIR" exec "$VENV_DIR/bin/python" "$SCRIPT_DIR/scripts/start_blinkswitch.py" "$@"

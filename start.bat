@@ -9,11 +9,13 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist ".venv\Scripts\python.exe" (
+set "BLINKSWITCH_VENV=%~dp0.venv-uv"
+
+if not exist "%BLINKSWITCH_VENV%\Scripts\python.exe" (
     echo Creating shared Python environment...
-    uv venv ".venv" --python 3.11
+    uv venv "%BLINKSWITCH_VENV%" --python 3.11
     if errorlevel 1 exit /b 1
 )
 
-".venv\Scripts\python.exe" "scripts\start_blinkswitch.py" %*
+"%BLINKSWITCH_VENV%\Scripts\python.exe" "scripts\start_blinkswitch.py" %*
 exit /b %errorlevel%

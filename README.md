@@ -21,7 +21,7 @@ Linux:
 ./start.sh
 ```
 
-The launcher creates one root `.venv`, installs `requirements.txt` with `uv`,
+The launcher creates one root `.venv-uv`, installs `requirements.txt` with `uv`,
 starts the backend, waits for its health endpoint, and starts the frontend.
 Backend and frontend remain separate processes and are stopped together.
 If a healthy BlinkSwitch backend is already running, the launcher reuses it and
