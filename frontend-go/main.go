@@ -60,9 +60,12 @@ const (
 	viewWindows
 	viewDetails
 	viewSettings
+	viewTestWindows
+	viewTestActions
 )
 
 var commands = []command{
+	{name: "test", description: "Test screen, workspace and maximize operations"},
 	{name: "layouts", description: "Manage layouts"},
 	{name: "assign", description: "Assign physical monitors to layout slots"},
 	{name: "windows", description: "Manage windows"},
@@ -98,6 +101,7 @@ type frontend struct {
 	ruleEditor       *windowRuleEditor
 	textInput        bool
 	textValue        string
+	test             *windowTest
 }
 
 func clayError(errorData clay.ErrorData) {
@@ -226,6 +230,8 @@ func (f *frontend) openView(view viewKind) {
 	f.viewRows = nil
 	f.viewHelp = "Esc to close"
 	switch view {
+	case viewTestWindows:
+		f.loadTestWindows()
 	case viewLayouts:
 		f.loadLayouts()
 	case viewSettings:
@@ -466,7 +472,7 @@ func (f *frontend) filter() {
 		}
 		return strings.ToLower(label(f.filtered[i])) < strings.ToLower(label(f.filtered[j]))
 	})
-	if f.selected >= len(f.filtered) {
+	if f.view == viewSwitcher && f.selected >= len(f.filtered) {
 		f.selected = max(0, len(f.filtered)-1)
 	}
 }
@@ -529,6 +535,7 @@ func (f *frontend) executeCommand() {
 	for _, entry := range commands {
 		if entry.name == name {
 			f.openView(map[string]viewKind{
+				"test":     viewTestWindows,
 				"layouts":  viewLayouts,
 				"assign":   viewAssign,
 				"windows":  viewWindows,
@@ -599,6 +606,10 @@ func (f *frontend) handleViewInput() {
 	}
 
 	if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyBackspace) {
+		if f.view == viewTestActions {
+			f.openView(viewTestWindows)
+			return
+		}
 		if f.view == viewDetails {
 			f.openView(viewWindows)
 			return
@@ -617,6 +628,8 @@ func (f *frontend) handleViewInput() {
 	}
 
 	switch f.view {
+	case viewTestWindows, viewTestActions:
+		f.handleTestInput()
 	case viewLayouts:
 		f.handleLayoutsInput()
 	case viewAssign:
@@ -829,6 +842,13 @@ func (f *frontend) draw() {
 			text(f.viewTitle, 24, primary)
 			clay.UI()(clay.ElementDeclaration{Id: clay.ID("ViewList"), Layout: clay.LayoutConfig{LayoutDirection: clay.TOP_TO_BOTTOM, Sizing: clay.Sizing{Width: clay.SizingGrow(0), Height: clay.SizingGrow(0)}, ChildGap: 4}}, func() {
 				for index, row := range f.viewRows {
+					if f.view == viewTestWindows {
+						visibleRows := max(1, int((rl.GetScreenHeight()-110)/24))
+						start := max(0, f.selected-visibleRows+1)
+						if index < start || index >= start+visibleRows {
+							continue
+						}
+					}
 					color := primary
 					prefix := "  "
 					if index == f.selected {
@@ -1028,6 +1048,7 @@ func main() {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		}
+		f.pollTestResult()
 		f.handleViewInput()
 		for character := rl.GetCharPressed(); character > 0; character = rl.GetCharPressed() {
 			if character >= 32 && character <= 126 {

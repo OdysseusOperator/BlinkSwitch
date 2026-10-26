@@ -157,7 +157,14 @@ impl App {
         let handle = info.cosmic_toplevel.clone().ok_or("COSMIC handle unavailable".to_string())?;
         let output = self.output(output.as_deref()).ok_or("target output not found".to_string())?;
         let workspace = workspace.ok_or("missing workspace".to_string())?;
-        let target = self.workspace.workspaces().find(|item| item.id.as_deref() == Some(&workspace) || item.name == workspace).ok_or("target workspace not found".to_string())?.handle.clone();
+        // Workspace names (e.g. "1") repeat across outputs. Never resolve a
+        // name globally, or a cross-screen move can select the source workspace.
+        let target = self.workspace.workspaces().find(|item| {
+            let on_output = self.workspace.workspace_groups().any(|group| {
+                group.outputs.contains(&output) && group.workspaces.contains(&item.handle)
+            });
+            workspace_matches(&workspace, item.id.as_deref(), &item.name, on_output)
+        }).ok_or("target workspace not found on requested output".to_string())?.handle.clone();
         self.toplevel_manager.manager.move_to_ext_workspace(&handle, &target, &output);
         self.flush();
         Ok(json!({"id": id, "requested": true, "workspace": workspace}))
@@ -232,6 +239,24 @@ delegate_registry!(App);
 delegate_toplevel_info!(App);
 delegate_toplevel_manager!(App);
 delegate_workspace!(App);
+
+fn workspace_matches(requested: &str, id: Option<&str>, name: &str, on_output: bool) -> bool {
+    on_output && (id == Some(requested) || name == requested)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::workspace_matches;
+
+    #[test]
+    fn repeated_workspace_names_are_scoped_to_output() {
+        assert!(!workspace_matches("1", None, "1", false));
+        assert!(workspace_matches("1", None, "1", true));
+        assert!(!workspace_matches("1", None, "2", true));
+        assert!(workspace_matches("unique-id", Some("unique-id"), "1", true));
+        assert!(!workspace_matches("unique-id", Some("unique-id"), "1", false));
+    }
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let connection = Connection::connect_to_env()?;

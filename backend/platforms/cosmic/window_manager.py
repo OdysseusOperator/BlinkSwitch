@@ -120,9 +120,13 @@ class CosmicWindowManager:
                 if output.get("id") not in output_ids:
                     continue
                 output_name = output.get("name") or output.get("description")
-                for monitor in self.monitor_manager.get_all_connected_monitors().values():
-                    if output_name in {getattr(monitor, "name", None), monitor.get("name") if isinstance(monitor, dict) else None}:
-                        return monitor.get("id") if isinstance(monitor, dict) else None
+                for monitor_id, monitor in self.monitor_manager.get_all_connected_monitors().items():
+                    if output_name and output_name in {
+                        getattr(monitor, "name", None),
+                        monitor.get("name") if isinstance(monitor, dict) else None,
+                    }:
+                        # Runtime monitor objects have no ID field; the registry key is canonical.
+                        return monitor_id
                 return self._monitor_at_output(output)
         if self.monitor_manager:
             x = geometry.get("x", 0) + geometry.get("width", 0) // 2
@@ -185,6 +189,15 @@ class CosmicWindowManager:
     def get_window_monitor_id(self, hwnd):
         window = next((item for item in self.get_all_windows() if item["hwnd"] == int(hwnd)), None)
         return window.get("monitor_id") if window else None
+
+    def move_window_to_workspace(self, hwnd: int, workspace_number: int) -> bool:
+        """Move within the window's current output, without maximizing."""
+        monitor_id = self.get_window_monitor_id(hwnd)
+        if not monitor_id:
+            raise RuntimeError(f"Could not determine monitor for window {hwnd}")
+        return self.move_window_to_monitor(
+            hwnd, monitor_id, maximize=False, workspace_number=workspace_number
+        )
 
     def restore_window(self, hwnd):
         self._request("unmaximize", id=int(hwnd))

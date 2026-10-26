@@ -50,6 +50,19 @@ to open a concurrently running normal frontend for comparison.
 
 ### Available Commands
 
+#### `/test` - One-shot Window Tests (Go frontend)
+
+1. Type `/test`, press `Enter`, then select a window with `Up`/`Down` and `Enter`.
+2. Select **Move to screen**, **Move to workspace**, or **Maximize**.
+3. For moves, choose the destination with `Left`/`Right`, then press `Enter` to run.
+4. Press `Esc` to return to the window picker.
+
+These actions affect real windows immediately, without saving rules or providing undo.
+Workspace numbers are 1-based: Windows uses virtual desktops (requires `pyvda`);
+COSMIC uses workspaces on the selected window's current output. Unavailable
+workspaces are reported as errors. Active layout rules may subsequently reapply.
+
+
 #### `/assign` - Monitor Assignment
 
 Assign physical monitors to layout slots. The monitor number overlay appears on screen while this view is open.

@@ -217,6 +217,50 @@ def get_windows():
     return jsonify(svc.get_running_windows())
 
 
+@screenassign_api.route("/test-window-action", methods=["POST"])
+def test_window_action():
+    """Perform a one-shot native operation without creating a layout rule."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Expected a JSON object"}), 400
+    hwnd = data.get("hwnd")
+    action = data.get("action")
+    if not isinstance(hwnd, int) or isinstance(hwnd, bool) or hwnd <= 0:
+        return jsonify({"error": "hwnd must be a positive integer"}), 400
+    if action not in ("screen", "workspace", "maximize"):
+        return jsonify({"error": "Unknown test action"}), 400
+    workspace = data.get("workspace")
+    if action == "workspace" and (
+        not isinstance(workspace, int) or isinstance(workspace, bool) or workspace < 1
+    ):
+        return jsonify({"error": "workspace must be a positive integer"}), 400
+    if service is None:
+        return jsonify({"error": "Service unavailable"}), 503
+    try:
+        svc = _require_service()
+        manager = svc.window_manager
+        if not any(window["hwnd"] == hwnd for window in manager.get_all_windows()):
+            return jsonify({"error": "Window is no longer available"}), 404
+        if action == "screen":
+            monitor_id = data.get("monitor_id")
+            if not isinstance(monitor_id, str):
+                return jsonify({"error": "monitor_id is required"}), 400
+            svc.monitor_manager.detect_monitors()
+            if not svc.monitor_manager.get_connected_monitor(monitor_id):
+                return jsonify({"error": "Monitor is not connected"}), 400
+            if not manager.move_window_to_monitor(hwnd, monitor_id, maximize=False):
+                raise RuntimeError("Could not move window to monitor")
+        elif action == "workspace":
+            # False means the window is already on that workspace, not failure.
+            manager.move_window_to_workspace(hwnd, workspace)
+        else:
+            manager.maximize_window(hwnd, None)
+        return jsonify({"success": True})
+    except Exception as exc:
+        api_logger.warning("Test action %s failed for hwnd=%s: %s", action, hwnd, exc)
+        return jsonify({"error": str(exc)}), 409
+
+
 def _focus_window(hwnd: int) -> None:
     """Focus a window through the active platform window manager."""
     if not _require_service().focus_window(hwnd):
