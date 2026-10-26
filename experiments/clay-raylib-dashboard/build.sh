@@ -25,7 +25,7 @@ xorgproto=$(nix eval --raw nixpkgs#xorgproto.outPath)
 cd "$script_dir"
 
 nix shell \
-    nixpkgs#go_1_25 \
+    nixpkgs#go \
     nixpkgs#pkg-config \
     nixpkgs#wayland \
     nixpkgs#wayland.dev \

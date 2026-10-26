@@ -35,6 +35,7 @@ type item struct {
 	AppName        string `json:"app_name"`
 	AppDisplayName string `json:"app_display_name"`
 	DisplayAppName string `json:"display_app_name"`
+	ProcessPath    string `json:"process_path"`
 	HWND           int64  `json:"hwnd"`
 	ChromeWindowID *int64 `json:"chrome_window_id"`
 }
@@ -93,6 +94,8 @@ type frontend struct {
 	assignSlots      []map[string]any
 	monitors         []map[string]any
 	assignment       map[string]string
+	windows          []item
+	ruleEditor       *windowRuleEditor
 	textInput        bool
 	textValue        string
 }
@@ -283,6 +286,7 @@ func (f *frontend) loadWindowsView() {
 		f.showStatus(err.Error())
 		return
 	}
+	f.windows = windows
 	f.viewTitle = "Windows Management"
 	f.viewRows = make([]string, 0, len(windows))
 	for _, window := range windows {
@@ -290,9 +294,9 @@ func (f *frontend) loadWindowsView() {
 		if len(title) > 50 {
 			title = title[:47] + "..."
 		}
-		f.viewRows = append(f.viewRows, fmt.Sprintf("%s (%s)", title, window.ExeName))
+		f.viewRows = append(f.viewRows, fmt.Sprintf("%s (%s)", title, displayApp(window)))
 	}
-	f.viewHelp = "Enter configure | D delete rule | Esc close"
+	f.viewHelp = "Enter configure | Esc close"
 }
 
 func (f *frontend) loadAssignment() {
@@ -376,6 +380,12 @@ func (f *frontend) handleAssignmentInput() {
 		assignments[f.assignLayoutName] = f.assignment
 		if err := saveAssignments(assignments); err != nil {
 			f.showStatus(err.Error())
+		} else if f.assignLayoutName == f.activeLayout {
+			if err := f.configureRules(f.activeLayout, f.assignment); err != nil {
+				f.showStatus("Saved locally; backend update failed: " + err.Error())
+			} else {
+				f.showStatus("Assignments saved")
+			}
 		} else {
 			f.showStatus("Assignments saved")
 		}
@@ -589,6 +599,10 @@ func (f *frontend) handleViewInput() {
 	}
 
 	if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyBackspace) {
+		if f.view == viewDetails {
+			f.openView(viewWindows)
+			return
+		}
 		f.view = viewSwitcher
 		f.query = ""
 		f.selected = 0
@@ -609,6 +623,12 @@ func (f *frontend) handleViewInput() {
 		f.handleAssignmentInput()
 	case viewSettings:
 		f.handleSettingsInput()
+	case viewWindows:
+		if rl.IsKeyPressed(rl.KeyEnter) {
+			f.openWindowRule()
+		}
+	case viewDetails:
+		f.handleRuleInput()
 	}
 }
 
@@ -628,15 +648,17 @@ func (f *frontend) handleLayoutsInput() {
 	if rl.IsKeyPressed(rl.KeyEnter) || rl.IsKeyPressed(rl.KeyA) {
 		layoutName := strings.TrimSuffix(stringValue(f.layouts[f.selected]["file_name"], ""), ".json")
 		if layoutName == f.activeLayout {
-			f.activeLayout = ""
-			f.showStatus("Layout deactivated")
+			if err := f.configureRules("", map[string]string{}); err != nil {
+				f.showStatus(err.Error())
+			} else {
+				f.showStatus("Layout deactivated")
+			}
 		} else {
-			var result map[string]any
 			assignment := loadAssignments()[layoutName]
 			if assignment == nil {
 				assignment = map[string]string{}
 			}
-			err := f.request(http.MethodPost, "/apply-rules", map[string]any{"layout_name": layoutName, "assignment": assignment}, &result)
+			err := f.configureRules(layoutName, assignment)
 			if err != nil {
 				f.showStatus(err.Error())
 			} else {
@@ -658,6 +680,16 @@ func (f *frontend) handleLayoutsInput() {
 }
 
 func (f *frontend) submitTextInput() {
+	if f.view == viewDetails && f.ruleEditor != nil {
+		if strings.TrimSpace(f.textValue) == "" {
+			f.showStatus("Title match cannot be empty")
+			return
+		}
+		f.ruleEditor.Rule.MatchValue = f.textValue
+		f.textInput = false
+		f.rebuildRuleRows()
+		return
+	}
 	name := strings.TrimSpace(f.textValue)
 	if name == "" {
 		f.showStatus("Layout name cannot be empty")
@@ -783,10 +815,14 @@ func (f *frontend) draw() {
 		BackgroundColor: background,
 	}, func() {
 		if f.textInput {
-			text("Create New Layout", 24, primary)
-			text("Layout name:", 18, muted)
+			if f.view == viewDetails {
+				text("Edit title substring", 24, primary)
+			} else {
+				text("Create New Layout", 24, primary)
+				text("Layout name:", 18, muted)
+			}
 			text(f.textValue+"_", 24, primary)
-			text("Enter create | Esc cancel", 16, muted)
+			text("Enter confirm | Esc cancel", 16, muted)
 			return
 		}
 		if f.view != viewSwitcher {
@@ -954,7 +990,13 @@ func main() {
 		keepOpen: os.Getenv("BLINKSWITCH_KEEP_OPEN") == "1",
 		toggle:   make(chan struct{}, 1),
 	}
+	f.initializeRuleState()
 	f.fetch()
+	ruleSyncStop := make(chan struct{})
+	defer close(ruleSyncStop)
+	ruleVisibility := make(chan bool, 1)
+	ruleStates := make(chan ruleState, 1)
+	go f.startRuleStateSync(ruleSyncStop, ruleVisibility, ruleStates)
 	if f.keepOpen {
 		f.show()
 	} else {
@@ -965,6 +1007,15 @@ func main() {
 	renderCheck := os.Getenv("BLINKSWITCH_RENDER_CHECK") == "1"
 	lastRenderReport := ""
 	for !rl.WindowShouldClose() {
+		select {
+		case ruleVisibility <- f.visible && !f.keepOpen:
+		default:
+		}
+		select {
+		case state := <-ruleStates:
+			f.activeLayout = state.Layout
+		default:
+		}
 		select {
 		case <-f.toggle:
 			f.toggleVisibility()

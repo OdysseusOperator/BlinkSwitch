@@ -74,8 +74,8 @@ back to disk). The on-disk migration script is responsible for writing v2 to dis
 
 ## Slot→Monitor Assignment
 
-The backend is **stateless with respect to assignments**. Every call that needs to
-resolve a slot to a physical monitor must include the assignment dict:
+Explicit one-shot operations include the assignment dict to resolve slots to
+physical monitors. The shared rule scheduler also retains an in-memory copy:
 
 ```json
 {
@@ -89,7 +89,35 @@ resolve a slot to a physical monitor must include the assignment dict:
 Keys are slot numbers (strings); values are `identity_key` strings.
 
 The frontend persists the assignment locally (e.g. a JSON file) and sends it on
-every relevant API call. The backend never stores it.
+every relevant API call. The backend retains the active layout and assignment
+only in memory for periodic enforcement; it does not write frontend assignments
+to disk.
+
+### Backend-owned periodic enforcement
+
+`backend/rule_enforcement.py` owns one five-second worker for both frontends.
+Keeping this separate from cache refresh prevents slow window operations from
+blocking `/windows-and-tabs`. Python and Go no longer schedule periodic applies.
+
+- `GET /rule-enforcement` returns `layout_name`, `assignment`, and `configured`.
+- `PUT /rule-enforcement` validates and selects `{layout_name, assignment}`;
+  `{ "layout_name": null }` disables enforcement. Validation failure preserves
+  the previous configuration. Successful assignment changes reset the timer.
+- The initial frontend may select its configured default; subsequent frontends
+  mirror backend state, including an explicitly deactivated layout.
+- `PUT /rule-enforcement/clients/<unique-client-id>` with `{ "visible": true }`
+  pauses automatic enforcement while a normal switcher is open. Clients renew
+  every second; visibility expires after four seconds without a heartbeat.
+  Go keep-open testing reports `false`, so it does not pause enforcement forever.
+- Rules continue with the backend when a frontend exits. Backend restart clears
+  runtime state. Explicit `/apply-rules` remains a one-shot operation and does
+  not select a layout. Automatic, explicit, and single-window applies serialize.
+
+The short visibility lease preserves the Windows focus-theft guard without a
+frontend-owned timer. There is up to a heartbeat interval of visibility latency.
+The backend must be upgraded together with both frontends. Rollback requires
+reverting the scheduler and both client integrations together to restore the
+Python-owned timer; do not run both schedulers concurrently.
 
 ### Endpoints that require `assignment`
 

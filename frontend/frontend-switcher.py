@@ -23,6 +23,7 @@ from .commands import (
     SettingsView,
 )
 from .assignment import load_assignments, save_assignments
+from .rule_enforcement import RuleEnforcementClient
 from .colors import (
     ACCENT_HIGHLIGHT,
     ACCENT_SELECTION,
@@ -710,7 +711,7 @@ def main() -> None:
     logger.info(f"Cached {len(monitors_with_dpi)} monitors locally")
 
     # Register built-in commands
-    # Frontend-owned active_layout state (str | None — layout filename stem)
+    # UI mirror of the backend-owned active layout (layout filename stem).
     active_layout: Optional[str] = None
 
     # Global error surfacing state — defined here (before raylib block) so that
@@ -722,19 +723,16 @@ def main() -> None:
         nonlocal active_layout, current_view, query
         try:
             layout_assignment = assignments.get(layout_name, {})
-            response = _http_session.post(
-                f"{TABS_API_URL}/apply-rules",
+            response = _http_session.put(
+                f"{TABS_API_URL}/rule-enforcement",
                 json={"layout_name": layout_name, "assignment": layout_assignment},
-                timeout=15.0,
+                timeout=0.9,
             )
             if response.ok:
                 result = response.json()
                 active_layout = layout_name
                 logger.info(f"Active layout set to: {layout_name}")
-                logger.info(
-                    f"apply-rules on activate: applied={result.get('applied')}, "
-                    f"failed={result.get('failed')}"
-                )
+                logger.debug("Backend rule enforcement activated: %s", result)
                 return {"success": True}
 
             error = f"Activation failed ({response.status_code})"
@@ -744,10 +742,9 @@ def main() -> None:
             except Exception:
                 pass
             logger.warning(
-                f"apply-rules on activate returned {response.status_code}: {error}"
+                f"Rule enforcement activation returned {response.status_code}: {error}"
             )
             if response.status_code == 409:
-                active_layout = None
                 assign_command = command_registry.commands.get("assign")
                 if assign_command:
                     try:
@@ -768,7 +765,7 @@ def main() -> None:
             logger.warning(f"UI error surfaced: {error}")
             return {"success": False, "error": error}
         except Exception as e:
-            logger.warning(f"apply-rules on activate failed: {e}")
+            logger.warning(f"Rule enforcement activation failed: {e}")
             _error_state["last_error"] = str(e)
             _error_state["error_timestamp"] = time.time()
             logger.warning(f"UI error surfaced: {e}")
@@ -777,6 +774,14 @@ def main() -> None:
     def deactivate_layout_tracked() -> dict:
         nonlocal active_layout
         prev = active_layout
+        try:
+            response = _http_session.put(
+                f"{TABS_API_URL}/rule-enforcement", json={"layout_name": None}, timeout=0.9
+            )
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            logger.warning("Could not deactivate backend rules: %s", exc)
+            return {"success": False, "error": str(exc)}
         active_layout = None
         logger.info(f"Active layout cleared (was: {prev})")
         return {"success": True, "deactivated": prev or "layout"}
@@ -797,9 +802,15 @@ def main() -> None:
 
     # Activate default through backend validation before reporting it active.
     try:
+        response = _http_session.get(f"{TABS_API_URL}/rule-enforcement", timeout=0.9)
+        response.raise_for_status()
+        shared_state = response.json()
+        active_layout = shared_state.get("layout_name")
+        if active_layout:
+            assignments[active_layout] = shared_state.get("assignment", {})
         settings = fetch_settings()
         default_layout = settings.get("default_layout")
-        if default_layout:
+        if default_layout and not shared_state.get("configured", False):
             activation = activate_layout_tracked(default_layout)
             if not activation.get("success"):
                 logger.warning(
@@ -809,6 +820,7 @@ def main() -> None:
     except Exception as e:
         logger.warning(f"Could not read default layout from settings: {e}")
 
+    rule_state_client = None
     try:
         if os.name != "nt":
             # Raylib's bundled GLFW ignores GLFW_PLATFORM. Hide Wayland so it
@@ -1074,71 +1086,7 @@ def main() -> None:
         except Exception:
             current_mouse_pos = [0, 0]  # Fallback if mouse module unavailable
 
-        # Keep-alive thread to maintain HTTP connection
-        def keep_connection_alive():
-            """Periodically ping the API to keep connection alive."""
-            while True:
-                try:
-                    time.sleep(30)  # Ping every 30 seconds
-                    _http_session.get(f"{TABS_API_URL}/status", timeout=1)
-                except Exception:
-                    pass  # Silent failure - will reconnect when needed
-
-        keep_alive_thread = threading.Thread(target=keep_connection_alive, daemon=True)
-        keep_alive_thread.start()
-
-        # Rules apply timer — owned by the frontend so we can suppress it while
-        # the overlay is open (prevents focus theft from fullscreen rule application)
-        RULES_APPLY_INTERVAL = 5  # seconds between apply_rules calls
-
-        def rules_apply_loop():
-            """Periodically call POST /apply-rules on the backend.
-
-            Skips a tick if the switcher overlay is currently visible to avoid
-            SetForegroundWindow calls (from fullscreen rules) stealing focus
-            away from the user mid-interaction.
-            Also skips if no layout is active (active_layout is None).
-            """
-            last_apply = 0.0
-            while True:
-                time.sleep(1)
-                if active_layout is None:
-                    # No layout active — nothing to apply
-                    continue
-                if window_visible:
-                    # Overlay is open — skip this tick, don't steal focus
-                    continue
-                now = time.time()
-                if now - last_apply < RULES_APPLY_INTERVAL:
-                    continue
-                last_apply = now
-                # Capture layout_name and assignment at tick time
-                layout_name_now = active_layout
-                layout_assignment_now = assignments.get(layout_name_now, {})
-                try:
-                    response = _http_session.post(
-                        f"{TABS_API_URL}/apply-rules",
-                        json={
-                            "layout_name": layout_name_now,
-                            "assignment": layout_assignment_now,
-                        },
-                        timeout=15.0,  # rules can be slow (F11 + waits)
-                    )
-                    if response.ok:
-                        result = response.json()
-                        logger.debug(
-                            f"apply-rules tick: applied={result.get('applied')}, "
-                            f"failed={result.get('failed')}"
-                        )
-                    else:
-                        logger.warning(
-                            f"apply-rules tick returned {response.status_code}"
-                        )
-                except Exception as e:
-                    logger.debug(f"apply-rules tick failed (backend may be busy): {e}")
-
-        rules_timer_thread = threading.Thread(target=rules_apply_loop, daemon=True)
-        rules_timer_thread.start()
+        # The backend owns rule timing. This client only mirrors state and visibility.
 
         def request_toggle() -> None:
             # Capture mouse position immediately when hotkey is pressed
@@ -1248,6 +1196,8 @@ def main() -> None:
             print(f"Hide error: {e}")
 
         window_visible = False
+        rule_state_client = RuleEnforcementClient(TABS_API_URL)
+        rule_state_client.start()
 
         # Setup overlay click handler to close when clicking outside main window
         def setup_overlay_click():
@@ -1534,6 +1484,11 @@ def main() -> None:
         print("Entering main loop...")
         while True:
             try:
+                shared_state = rule_state_client.update(window_visible)
+                if shared_state is not None:
+                    active_layout = shared_state.get("layout_name")
+                    if active_layout:
+                        assignments[active_layout] = shared_state.get("assignment", {})
                 if toggle_requested.is_set():
                     toggle_requested.clear()
                     window_visible = not window_visible
@@ -1937,6 +1892,13 @@ def main() -> None:
                                                     new_assignment
                                                 )
                                                 save_assignments(assignments)
+                                                if layout_name_now == active_layout:
+                                                    response = _http_session.put(
+                                                        f"{TABS_API_URL}/rule-enforcement",
+                                                        json={"layout_name": layout_name_now, "assignment": new_assignment},
+                                                        timeout=0.9,
+                                                    )
+                                                    response.raise_for_status()
                                                 logger.info(
                                                     f"Assignment saved for '{layout_name_now}': {new_assignment}"
                                                 )
@@ -2719,6 +2681,10 @@ def main() -> None:
         import traceback
 
         traceback.print_exc()
+
+    finally:
+        if rule_state_client is not None:
+            rule_state_client.stop()
 
 
 def notify_toggle() -> bool:

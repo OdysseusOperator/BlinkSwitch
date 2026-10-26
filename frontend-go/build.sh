@@ -32,7 +32,7 @@ libgl=$(nix eval --raw nixpkgs#libGL.outPath)
 xorgproto=$(nix eval --raw nixpkgs#xorgproto.outPath)
 
 nix shell \
-    nixpkgs#go_1_25 \
+    nixpkgs#go \
     nixpkgs#pkg-config \
     nixpkgs#wayland \
     nixpkgs#wayland.dev \

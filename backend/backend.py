@@ -129,6 +129,41 @@ def restart_service():
     return jsonify({"success": result, "status": svc.get_status()})
 
 
+@screenassign_api.route("/rule-enforcement", methods=["GET", "PUT"])
+def rule_enforcement():
+    """Read or replace the runtime-only shared active layout and assignment."""
+    scheduler = _require_service().rule_enforcement
+    if request.method == "GET":
+        return jsonify(scheduler.state())
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or "layout_name" not in data:
+        return jsonify({"error": "layout_name is required (string or null to deactivate)"}), 400
+    layout = data["layout_name"]
+    assignment = data.get("assignment", {})
+    if layout is not None and (not isinstance(layout, str) or not layout.strip()):
+        return jsonify({"error": "layout_name must be a non-empty string or null"}), 400
+    if not isinstance(assignment, dict) or (layout is not None and not assignment):
+        return jsonify({"error": "assignment must map slots to monitor identity keys"}), 400
+    if any(not isinstance(key, str) or not isinstance(value, str) for key, value in assignment.items()):
+        return jsonify({"error": "assignment keys and values must be strings"}), 400
+    try:
+        return jsonify(scheduler.configure(layout, assignment))
+    except LayoutError as exc:
+        return jsonify({"error": str(exc)}), 409
+    except Exception as exc:
+        api_logger.exception("Could not configure rule enforcement for layout %s", layout)
+        return jsonify({"error": str(exc)}), 500
+
+
+@screenassign_api.route("/rule-enforcement/clients/<client_id>", methods=["PUT"])
+def rule_enforcement_heartbeat(client_id):
+    """Renew a short visibility lease; stale clients cannot pause rules forever."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or not isinstance(data.get("visible"), bool):
+        return jsonify({"error": "visible must be a boolean"}), 400
+    return jsonify(_require_service().rule_enforcement.heartbeat(client_id, data["visible"]))
+
+
 @screenassign_api.route("/apply-rules", methods=["POST"])
 def apply_rules():
     """Apply all rules immediately.

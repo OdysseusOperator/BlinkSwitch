@@ -9,6 +9,7 @@ from .layout_manager import LayoutManager
 from .monitor_manager import MonitorManager
 from .platforms import create_window_manager
 from .platforms.contracts import WindowManagerProtocol
+from .rule_enforcement import RuleEnforcement
 
 
 class ScreenAssignService:
@@ -38,6 +39,8 @@ class ScreenAssignService:
         # Service state
         self.running = False
         self.service_thread = None
+        self.rule_enforcement = RuleEnforcement(self.apply_rules_now, self._validate_rule_enforcement)
+        self._stop_event = threading.Event()
         self.status = {
             "status": "stopped",
             "last_run": None,
@@ -67,11 +70,13 @@ class ScreenAssignService:
             return False
 
         self.running = True
+        self._stop_event.clear()
+        self.rule_enforcement.start()
         self.status["status"] = "starting"
         self._save_status()
 
         # Start the service thread
-        self.service_thread = threading.Thread(target=self._service_loop)
+        self.service_thread = threading.Thread(target=self._service_loop, name="WindowCacheRefresher")
         self.service_thread.daemon = True
         self.service_thread.start()
 
@@ -85,6 +90,8 @@ class ScreenAssignService:
             return False
 
         self.running = False
+        self._stop_event.set()
+        self.rule_enforcement.stop()
         self.status["status"] = "stopping"
         self._save_status()
 
@@ -115,6 +122,10 @@ class ScreenAssignService:
         """
         return self.status
 
+    def _validate_rule_enforcement(self, layout_name: str, assignment: dict) -> None:
+        self.monitor_manager.detect_monitors()
+        self.layout_manager.ensure_layout_can_apply(layout_name, assignment)
+
     def apply_rules_now(self, layout_name: str, assignment: dict):
         """Apply all rules immediately.
 
@@ -126,6 +137,10 @@ class ScreenAssignService:
         Returns:
             dict: Results of rule application
         """
+        with self.rule_enforcement.lock:
+            return self._apply_rules_now(layout_name, assignment)
+
+    def _apply_rules_now(self, layout_name: str, assignment: dict):
         # Update connected monitors
         self.monitor_manager.detect_monitors()
 
@@ -155,17 +170,16 @@ class ScreenAssignService:
         Returns:
             dict: Result of rule application for that window
         """
-        self.monitor_manager.detect_monitors()
-        self.layout_manager.ensure_layout_can_apply(layout_name, assignment)
-        return self.window_manager.apply_rules_for_window(hwnd, layout_name, assignment)
+        with self.rule_enforcement.lock:
+            self.monitor_manager.detect_monitors()
+            self.layout_manager.ensure_layout_can_apply(layout_name, assignment)
+            return self.window_manager.apply_rules_for_window(hwnd, layout_name, assignment)
 
     def _service_loop(self):
         """Main service loop that runs in a separate thread.
 
-        Note: rule application (apply_rules) is intentionally NOT driven from
-        here.  The frontend owns that timer so it can suppress rule ticks while
-        the switcher overlay is visible, preventing focus theft.
-        Use POST /apply-rules from the frontend to trigger rule application.
+        RuleEnforcement owns a separate cancellable worker so rule application
+        does not block cache refresh. Frontends report visibility leases only.
         """
         check_interval = 1  # seconds - check frequently for cache updates
         window_cache_interval = 2  # seconds - faster updates for window switcher
@@ -210,7 +224,7 @@ class ScreenAssignService:
                 self._save_status()
 
             # Sleep before next check
-            time.sleep(check_interval)
+            self._stop_event.wait(check_interval)
 
     def _save_status(self):
         """Save current status to the status file."""
