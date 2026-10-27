@@ -31,7 +31,7 @@ This document is the operations manual for agentic assistants working inside Bli
 - Launchers reuse an already-running healthy backend on port 5555; shutdown stops only processes started by that launcher.
 - Go keep-open testing mode skips hotkey and toggle IPC registration so the normal frontend can keep using Alt+Space during side-by-side comparison.
 - Force dependency refresh: `start.bat --update` or `./start.sh --update`.
-- Go frontend migration testing on Linux: `./start_blinkswitch_new.sh` rebuilds the Go binary and starts backend/frontend with `BLINKSWITCH_KEEP_OPEN=1`; the window opens immediately and does not hide on selection, Escape, or toggles. Stop both processes with terminal Ctrl+C; `--update` refreshes Python dependencies.
+- Linux launchers: `./start.sh` starts Python frontend + backend; `./start_go.sh` rebuilds and starts Go frontend + backend using the same supervisor. Go starts hidden by default; `--toggle` toggles an existing instance without building or starting services. `--keep-open` opens immediately and disables hiding/hotkey/toggle registration for side-by-side testing; add `--render-check` for Wayland scaling diagnostics. Terminal Ctrl+C stops owned processes; `--update` refreshes Python dependencies. These are the only root Linux start scripts.
 - Run backend directly: `.venv\Scripts\python.exe -m backend.backend` on Windows, or `.venv/bin/python -m backend.backend` on Linux.
 - Run frontend directly: `.venv\Scripts\python.exe -m frontend.frontend-switcher` on Windows, or `.venv/bin/python -m frontend.frontend-switcher` on Linux.
 

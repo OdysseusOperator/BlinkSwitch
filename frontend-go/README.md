@@ -16,14 +16,13 @@ start.bat --frontend clay
 
 The frontend keeps filtering and selection local for low latency. The backend supplies cached windows/tabs and runtime-only MRU ordering.
 
-On COSMIC/Linux, bind the desktop shortcut to `start_clay.sh --toggle`. The Go frontend listens on `/tmp/blinkswitch-frontend.sock` while running.
+On Linux, run `./start_go.sh` from the repository root to rebuild this frontend
+and start it with the backend. It starts hidden; bind the COSMIC desktop shortcut
+to `/absolute/path/to/BlinkSwitch/start_go.sh --toggle`. The Go frontend listens on
+`/tmp/blinkswitch-frontend.sock` while running.
 
-For migration testing on Linux, run `./start_blinkswitch_new.sh` from the repository
-root. It rebuilds this frontend and starts it with the backend. The testing launcher
-sets `BLINKSWITCH_KEEP_OPEN=1`: the window is shown at startup and hiding is disabled,
-including after selection, Escape, and hotkey/IPC toggles. Escape still navigates
-back from management views. Stop both processes with `Ctrl+C` in the launch terminal.
-Normal launchers retain their hidden-start behavior.
-An already-running healthy backend is reused and remains running when testing stops.
-Testing mode does not register hotkeys or the toggle IPC socket, so the normal
-frontend can run alongside it and still open with `Alt+Space` for comparison.
+Use `./start_go.sh --keep-open` for migration testing: the window appears immediately,
+hiding is disabled, and hotkeys/toggle IPC are not registered, allowing comparison
+with the normal frontend. Escape still navigates back from management views.
+Add `--render-check` for native Wayland scaling diagnostics or `--update` to refresh
+Python dependencies. Stop with terminal `Ctrl+C`; a reused backend stays running.

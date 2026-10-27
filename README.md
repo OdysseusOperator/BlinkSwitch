@@ -18,10 +18,11 @@ start.bat
 Linux:
 
 ```bash
-./start.sh
+./start.sh       # Python frontend + backend
+./start_go.sh    # Rebuild Go frontend + start Go frontend and backend
 ```
 
-The launcher creates one root `.venv-uv`, installs `requirements.txt` with `uv`,
+The launcher creates one root `.venv`, installs `requirements.txt` with `uv`,
 starts the backend, waits for its health endpoint, and starts the frontend.
 Backend and frontend remain separate processes and are stopped together.
 If a healthy BlinkSwitch backend is already running, the launcher reuses it and
@@ -77,18 +78,21 @@ start BlinkSwitch with `start.bat` or `./start.sh`.
 
 ## Development
 
-Test the new Go frontend during migration on Linux:
+Linux has two launchers: `start.sh` for Python and `start_go.sh` for Go.
+The Go launcher rebuilds with `frontend-go/build.sh` (requires Go or Nix), then
+uses the same shared environment and backend supervisor as the normal launcher.
 
 ```bash
-./start_blinkswitch_new.sh
+./start_go.sh --keep-open                 # Side-by-side migration testing
+./start_go.sh --keep-open --render-check  # Native Wayland scaling diagnostics
+./start_go.sh --update                    # Refresh Python dependencies
+./start_go.sh --toggle                    # Toggle an already-running Go frontend
 ```
 
-This rebuilds the Go frontend with `frontend-go/build.sh`, then starts it with
-the backend. Go or Nix is required for the build. The window appears immediately
-and stays visible after selection, Escape, or hotkey toggles. Press `Ctrl+C` in
-the launch terminal to stop both processes. `--update` refreshes Python dependencies.
-Testing mode leaves hotkeys and the toggle IPC socket to the normal frontend,
-so you can open it with `Alt+Space` while comparing both frontends.
+Without `--keep-open`, the Go frontend starts hidden and registers toggle IPC.
+Keep-open mode shows it immediately, disables hiding, and leaves hotkeys and the
+toggle socket to the normal frontend for comparison. Press `Ctrl+C` in the launch
+terminal to stop processes started by that launcher; a reused backend stays running.
 
 ```bash
 ruff check .

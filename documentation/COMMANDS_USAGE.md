@@ -26,20 +26,24 @@ Access system management features by typing commands starting with `/`.
 ### Go Frontend Migration Testing on Linux
 
 ```bash
-./start_blinkswitch_new.sh
-# Refresh Python dependencies as well:
-./start_blinkswitch_new.sh --update
+./start.sh                              # Python frontend + backend
+./start_go.sh                           # Rebuild Go frontend + start with backend
+./start_go.sh --keep-open               # Side-by-side migration testing
+./start_go.sh --keep-open --render-check # Native Wayland scaling diagnostics
+./start_go.sh --update                  # Refresh Python dependencies
+./start_go.sh --toggle                  # Toggle an existing Go instance only
 ```
 
-The launcher rebuilds the Go frontend, starts the backend, and opens the frontend
-immediately with `BLINKSWITCH_KEEP_OPEN=1`. Selection, Escape in switch mode, and
-hotkey/IPC toggles leave the window visible. Escape inside management views still
-returns to switch mode. Press `Ctrl+C` in the launch terminal to stop both processes.
-The build requires Go or Nix; normal launchers keep their existing visibility behavior.
-An already-running healthy backend is reused; stopping this launcher leaves that
-backend running.
-Testing mode skips hotkey and toggle IPC registration, leaving `Alt+Space` free
-to open a concurrently running normal frontend for comparison.
+These are the only root Linux launchers. The Go build requires Go or Nix.
+Both use the shared root `.venv` and supervisor; a healthy existing backend is reused.
+Terminal `Ctrl+C` stops only processes started by that launcher.
+
+The Go frontend starts hidden by default. `--keep-open` shows it immediately,
+disables hiding, and skips hotkey/toggle IPC registration, leaving `Alt+Space` free
+for a concurrently running normal frontend. Escape inside management views still
+returns to switch mode. `--render-check` requires a Wayland session and reports
+viewport diagnostics in the terminal. `--toggle` skips building and service startup;
+it is for a normally launched instance, not keep-open mode.
 
 ### Accessing Commands
 
