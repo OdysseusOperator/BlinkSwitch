@@ -35,7 +35,7 @@ type windowTest struct {
 func (f *frontend) loadTestWindows() {
 	t := &windowTest{workspace: 1, busy: true, results: make(chan testResult, 1)}
 	f.test = t
-	f.viewTitle = "Test - select a window"
+	f.viewTitle = "Test - windows and mouse"
 	f.viewRows = []string{"Loading windows and screens..."}
 	f.viewHelp = "Enter select | Esc close"
 	go func() {
@@ -59,13 +59,7 @@ func (f *frontend) pollTestResult() {
 		if r.loading {
 			t.windows, t.monitors = r.windows, r.monitors
 			if f.view == viewTestWindows {
-				f.viewRows = nil
-				for _, w := range t.windows {
-					f.viewRows = append(f.viewRows, label(w))
-				}
-				if len(f.viewRows) == 0 {
-					f.viewRows = []string{"No windows available"}
-				}
+				f.rebuildTestPickerRows()
 			}
 		}
 		if r.err != nil {
@@ -75,6 +69,21 @@ func (f *frontend) pollTestResult() {
 		}
 	default:
 	}
+}
+
+func (f *frontend) rebuildTestPickerRows() {
+	t := f.test
+	f.viewRows = nil
+	for _, w := range t.windows {
+		f.viewRows = append(f.viewRows, label(w))
+	}
+	row := "Center mouse on screen [no connected screens]"
+	if len(t.monitors) > 0 {
+		m := t.monitors[t.screen]
+		row = fmt.Sprintf("Center mouse on screen [%d]: %s (%dx%d)", t.screen+1, stringValue(m.Name, m.ID), m.Width, m.Height)
+	}
+	f.viewRows = append(f.viewRows, row)
+	f.viewHelp = "Enter select/run | Left/Right screen | Esc close"
 }
 
 func (f *frontend) rebuildTestRows() {
@@ -95,6 +104,23 @@ func (f *frontend) handleTestInput() {
 		return
 	}
 	if f.view == viewTestWindows {
+		if f.selected == len(t.windows) {
+			delta := 0
+			if rl.IsKeyPressed(rl.KeyLeft) {
+				delta = -1
+			}
+			if rl.IsKeyPressed(rl.KeyRight) {
+				delta = 1
+			}
+			if len(t.monitors) > 0 {
+				t.screen = (t.screen + delta + len(t.monitors)) % len(t.monitors)
+			}
+			f.rebuildTestPickerRows()
+			if rl.IsKeyPressed(rl.KeyEnter) {
+				f.runTestPointerAction()
+			}
+			return
+		}
 		if rl.IsKeyPressed(rl.KeyEnter) && f.selected >= 0 && f.selected < len(t.windows) {
 			t.window = t.windows[f.selected]
 			f.view = viewTestActions
@@ -120,6 +146,21 @@ func (f *frontend) handleTestInput() {
 	if rl.IsKeyPressed(rl.KeyEnter) {
 		f.runTestAction()
 	}
+}
+
+func (f *frontend) runTestPointerAction() {
+	t := f.test
+	if t == nil || t.busy {
+		return
+	}
+	if t.screen < 0 || t.screen >= len(t.monitors) {
+		f.showStatus("No connected screens")
+		return
+	}
+	payload := map[string]any{"monitor_id": t.monitors[t.screen].ID}
+	t.busy = true
+	f.showStatus("Centering mouse...")
+	go func() { t.results <- testResult{err: f.request(http.MethodPost, "/test-center-mouse", payload, nil)} }()
 }
 
 func (f *frontend) runTestAction() {

@@ -155,6 +155,12 @@ class CosmicWindowManager:
                 return output.get("name") or output.get("description")
         return None
 
+    def center_mouse_on_monitor(self, monitor) -> bool:
+        """Wayland pointer movement needs an authorized RemoteDesktop/EIS session."""
+        raise NotImplementedError(
+            "COSMIC mouse centering needs RemoteDesktop portal permission and libei; not implemented yet"
+        )
+
     def focus_window(self, hwnd):
         self._request("focus", id=int(hwnd))
         return True

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -34,7 +35,7 @@ func TestTestCommandLoadsWindowPicker(t *testing.T) {
 		t.Fatal("picker did not load")
 	}
 	f.pollTestResult()
-	if f.test.busy || len(f.test.windows) != 1 || len(f.test.monitors) != 1 || len(f.viewRows) != 1 {
+	if f.test.busy || len(f.test.windows) != 1 || len(f.test.monitors) != 1 || len(f.viewRows) != 2 {
 		t.Fatalf("invalid picker state: %+v", f.test)
 	}
 	f.selected = 8
@@ -47,6 +48,48 @@ func TestTestCommandLoadsWindowPicker(t *testing.T) {
 	f.pollTestResult()
 	if f.status != "Workspace unavailable" {
 		t.Fatalf("missing error: %s", f.status)
+	}
+}
+
+func TestPointerActionDoesNotRequireAWindow(t *testing.T) {
+	requests := make(chan map[string]any, 2)
+	f := &frontend{client: &http.Client{Transport: ruleTransport(func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodPost || r.URL.Path != "/screenassign/test-center-mouse" {
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+		}
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Error(err)
+		}
+		requests <- payload
+		return ruleResponse(`{"error":"Portal permission required"}`, 501), nil
+	})}, test: &windowTest{monitors: []testMonitor{{ID: "screen-b", Name: "DP-1"}}, results: make(chan testResult, 1)}}
+	f.rebuildTestPickerRows()
+	if len(f.viewRows) != 1 || f.viewRows[0] != "Center mouse on screen [1]: DP-1 (0x0)" {
+		t.Fatalf("missing standalone pointer test: %v", f.viewRows)
+	}
+	f.runTestPointerAction()
+	f.runTestPointerAction()
+	select {
+	case result := <-f.test.results:
+		f.test.results <- result
+	case <-time.After(time.Second):
+		t.Fatal("pointer operation did not finish")
+	}
+	f.pollTestResult()
+	if f.test.busy || !strings.Contains(f.status, "Portal permission required") {
+		t.Fatalf("missing native error: %s", f.status)
+	}
+	if got := <-requests; !reflect.DeepEqual(got, map[string]any{"monitor_id": "screen-b"}) {
+		t.Fatalf("unexpected pointer payload: %v", got)
+	}
+	if len(requests) != 0 {
+		t.Fatal("duplicate pointer operation")
+	}
+	f.test.monitors = nil
+	f.runTestPointerAction()
+	if f.test.busy || f.status != "No connected screens" {
+		t.Fatal("must reject missing screens")
 	}
 }
 

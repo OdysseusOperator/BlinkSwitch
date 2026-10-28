@@ -10,6 +10,24 @@ import (
 	"github.com/TotallyGamerJet/clay"
 )
 
+func TestSwitcherHidesFrontendMarkerButKeepsTabs(t *testing.T) {
+	f := frontend{items: []item{
+		{Title: frontendWindowTitle},
+		{Title: frontendWindowMarker}, // Python frontend, including side-by-side testing.
+		{Title: "Editor"},
+		{Type: "tab", Title: frontendWindowMarker},
+	}}
+	f.filter()
+	if len(f.filtered) != 2 {
+		t.Fatalf("expected editor and tab, got %+v", f.filtered)
+	}
+	for _, value := range f.filtered {
+		if value.Type != "tab" && strings.Contains(value.Title, frontendWindowMarker) {
+			t.Errorf("frontend leaked into switcher: %+v", value)
+		}
+	}
+}
+
 func TestNativeWaylandSelectionPreservesSession(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("Wayland selection applies to Linux")

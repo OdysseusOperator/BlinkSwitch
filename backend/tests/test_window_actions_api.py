@@ -28,6 +28,43 @@ class WindowActionsTests(unittest.TestCase):
     def post(self, **payload):
         return self.client.post("/screenassign/test-window-action", json={"hwnd": 42, **payload})
 
+    def test_pointer_action_does_not_touch_windows_or_settings(self):
+        response = self.client.post("/screenassign/test-center-mouse", json={"monitor_id": "screen-b"})
+        self.assertEqual(response.status_code, 200)
+        monitor = self.monitors.get_connected_monitor.return_value
+        self.manager.center_mouse_on_monitor.assert_called_once_with(monitor)
+        self.manager.focus_window.assert_not_called()
+        self.manager.get_all_windows.assert_not_called()
+        self.manager.apply_rules.assert_not_called()
+
+    def test_pointer_validation_and_native_errors(self):
+        for payload in (None, [], {}, {"monitor_id": True}, {"monitor_id": ""}):
+            response = self.client.post("/screenassign/test-center-mouse", json=payload)
+            self.assertEqual(response.status_code, 400)
+        self.monitors.get_connected_monitor.return_value = None
+        self.assertEqual(self.client.post(
+            "/screenassign/test-center-mouse", json={"monitor_id": "gone"}
+        ).status_code, 400)
+        self.monitors.get_connected_monitor.return_value = SimpleNamespace()
+        self.manager.center_mouse_on_monitor.side_effect = NotImplementedError("Portal permission required")
+        response = self.client.post("/screenassign/test-center-mouse", json={"monitor_id": "screen-b"})
+        self.assertEqual(response.status_code, 501)
+        self.assertIn("Portal permission", response.json["error"])
+        self.manager.center_mouse_on_monitor.side_effect = RuntimeError("Pointer unavailable")
+        self.assertEqual(self.client.post(
+            "/screenassign/test-center-mouse", json={"monitor_id": "screen-b"}
+        ).status_code, 409)
+        self.manager.center_mouse_on_monitor.side_effect = None
+        self.manager.center_mouse_on_monitor.return_value = False
+        self.assertEqual(self.client.post(
+            "/screenassign/test-center-mouse", json={"monitor_id": "screen-b"}
+        ).status_code, 409)
+
+    def test_cosmic_pointer_does_not_claim_success(self):
+        manager = CosmicWindowManager.__new__(CosmicWindowManager)
+        with self.assertRaisesRegex(NotImplementedError, "RemoteDesktop"):
+            manager.center_mouse_on_monitor(SimpleNamespace())
+
     def test_screen_move_does_not_maximize(self):
         self.assertEqual(self.post(action="screen", monitor_id="screen-b").status_code, 200)
         self.manager.move_window_to_monitor.assert_called_once_with(42, "screen-b", maximize=False)

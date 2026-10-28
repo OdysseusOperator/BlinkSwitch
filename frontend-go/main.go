@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,6 +24,8 @@ const (
 	ipcPath  = "/tmp/blinkswitch-frontend.sock"
 	width    = int32(720)
 	height   = int32(430)
+
+	switcherRowFontSize = uint16(22)
 )
 
 var currentFont rl.Font
@@ -65,7 +68,7 @@ const (
 )
 
 var commands = []command{
-	{name: "test", description: "Test screen, workspace and maximize operations"},
+	{name: "test", description: "Test screen, workspace, maximize and mouse centering"},
 	{name: "layouts", description: "Manage layouts"},
 	{name: "assign", description: "Assign physical monitors to layout slots"},
 	{name: "windows", description: "Manage windows"},
@@ -85,6 +88,7 @@ type frontend struct {
 	statusUntil      time.Time
 	visible          bool
 	keepOpen         bool
+	focusCancel      context.CancelFunc
 	toggle           chan struct{}
 	view             viewKind
 	viewTitle        string
@@ -109,7 +113,7 @@ func clayError(errorData clay.ErrorData) {
 }
 
 func measureText(text clay.StringSlice, config *clay.TextElementConfig, _ unsafe.Pointer) clay.Dimensions {
-	size := rl.MeasureTextEx(currentFont, text.String(), float32(config.FontSize), 1)
+	size := rl.MeasureTextEx(fontForSize(config.FontSize), text.String(), float32(config.FontSize), 1)
 	return clay.Dimensions{Width: size.X, Height: size.Y}
 }
 
@@ -126,7 +130,7 @@ func renderClay(commands clay.RenderCommandArray) {
 			rl.DrawRectangle(int32(box.X), int32(box.Y), int32(box.Width), int32(box.Height), rayColor(command.RenderData.Rectangle.BackgroundColor))
 		case clay.RENDER_COMMAND_TYPE_TEXT:
 			text := command.RenderData.Text
-			rl.DrawTextEx(currentFont, text.StringContents.String(), rl.Vector2{X: box.X, Y: box.Y}, float32(text.FontSize), 1, rayColor(text.TextColor))
+			rl.DrawTextEx(fontForSize(text.FontSize), text.StringContents.String(), rl.Vector2{X: box.X, Y: box.Y}, float32(text.FontSize), 1, rayColor(text.TextColor))
 		}
 	}
 }
@@ -460,6 +464,9 @@ func (f *frontend) filter() {
 	query := strings.ToLower(strings.TrimSpace(f.query))
 	f.filtered = f.filtered[:0]
 	for _, value := range f.items {
+		if value.Type != "tab" && strings.Contains(value.Title, frontendWindowMarker) {
+			continue
+		}
 		if query == "" || strings.Contains(strings.ToLower(label(value)), query) {
 			f.filtered = append(f.filtered, value)
 		}
@@ -506,15 +513,34 @@ func (f *frontend) activate(value item) {
 	f.hide()
 }
 
+func (f *frontend) cancelFocus() {
+	if f.focusCancel != nil {
+		f.focusCancel()
+		f.focusCancel = nil
+	}
+}
+
 func (f *frontend) show() {
 	rl.ClearWindowState(rl.FlagWindowHidden)
 	f.visible = true
+	if runtime.GOOS == "linux" {
+		f.cancelFocus()
+		ctx, cancel := context.WithTimeout(context.Background(), frontendFocusTimeout)
+		f.focusCancel = cancel
+		go func() {
+			defer cancel()
+			if err := focusFrontend(ctx, f.client, apiURL, frontendWindowTitle); err != nil && err != context.Canceled {
+				fmt.Fprintf(os.Stderr, "Frontend focus failed: %v\n", err)
+			}
+		}()
+	}
 }
 
 func (f *frontend) hide() {
 	if f.keepOpen {
 		return
 	}
+	f.cancelFocus()
 	rl.SetWindowState(rl.FlagWindowHidden)
 	f.visible = false
 }
@@ -876,7 +902,7 @@ func (f *frontend) draw() {
 						color = selection
 						prefix = "> "
 					}
-					text(prefix+"/"+entry.name+" - "+entry.description, 20, color)
+					text(prefix+"/"+entry.name+" - "+entry.description, switcherRowFontSize, color)
 				}
 			})
 			text("Enter execute | Esc close", 16, muted)
@@ -899,7 +925,7 @@ func (f *frontend) draw() {
 					color = selection
 					prefix = "> "
 				}
-				text(prefix+label(value), 22, color)
+				text(prefix+label(value), switcherRowFontSize, color)
 			}
 		})
 		help := "Enter to switch | Esc to quit"
@@ -986,17 +1012,16 @@ func main() {
 		os.Exit(1)
 	}
 	rl.SetConfigFlags(rl.FlagWindowUndecorated | rl.FlagWindowTopmost | rl.FlagWindowResizable)
-	rl.InitWindow(width, height, "BlinkSwitch Clay Frontend")
+	rl.InitWindow(width, height, frontendWindowTitle)
 	defer rl.CloseWindow()
 	// Escape toggles the switcher; it must not be Raylib's process exit key.
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(60)
 
-	currentFont = rl.LoadFontEx(fontPath, 64, nil, 0)
-	if currentFont.Texture.ID == 0 {
-		currentFont = rl.GetFontDefault()
-	} else {
-		defer rl.UnloadFont(currentFont)
+	currentFont = rl.GetFontDefault()
+	defer unloadFrontendFonts()
+	for _, size := range []uint16{16, 18, 20, 22, 24} {
+		fontForSize(size)
 	}
 
 	arena := clay.CreateArenaWithCapacityAndMemory(make([]byte, clay.MinMemorySize()))
@@ -1010,6 +1035,7 @@ func main() {
 		keepOpen: os.Getenv("BLINKSWITCH_KEEP_OPEN") == "1",
 		toggle:   make(chan struct{}, 1),
 	}
+	defer f.cancelFocus()
 	f.initializeRuleState()
 	f.fetch()
 	ruleSyncStop := make(chan struct{})

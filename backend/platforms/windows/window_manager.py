@@ -169,6 +169,15 @@ class WindowsWindowManager:
         win32gui.EnumWindows(_cb, None)
         return hwnds
 
+    def center_mouse_on_monitor(self, monitor) -> bool:
+        """Use the connected monitor's desktop coordinates, including negative origins."""
+        try:
+            win32api.SetCursorPos((monitor.x + monitor.width // 2, monitor.y + monitor.height // 2))
+            return True
+        except Exception:
+            self.logger.warning("Could not center mouse on monitor=%s", getattr(monitor, "name", None), exc_info=True)
+            raise
+
     def focus_window(self, hwnd: int) -> bool:
         """Focus a Win32 window, restoring it first when minimized."""
         if os.name != "nt":

@@ -217,6 +217,34 @@ def get_windows():
     return jsonify(svc.get_running_windows())
 
 
+@screenassign_api.route("/test-center-mouse", methods=["POST"])
+def test_center_mouse():
+    """Center on a connected screen without focusing or moving any window."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Expected a JSON object"}), 400
+    monitor_id = data.get("monitor_id")
+    if not isinstance(monitor_id, str) or not monitor_id.strip():
+        return jsonify({"error": "monitor_id is required"}), 400
+    if service is None:
+        return jsonify({"error": "Service unavailable"}), 503
+    try:
+        svc = _require_service()
+        svc.monitor_manager.detect_monitors()
+        monitor = svc.monitor_manager.get_connected_monitor(monitor_id)
+        if monitor is None:
+            return jsonify({"error": "Monitor is not connected"}), 400
+        if not svc.window_manager.center_mouse_on_monitor(monitor):
+            raise RuntimeError("Could not center mouse")
+        return jsonify({"success": True})
+    except NotImplementedError as exc:
+        api_logger.warning("Mouse centering unavailable for monitor=%s: %s", monitor_id, exc)
+        return jsonify({"error": str(exc)}), 501
+    except Exception as exc:
+        api_logger.warning("Mouse centering failed for monitor=%s: %s", monitor_id, exc, exc_info=True)
+        return jsonify({"error": str(exc)}), 409
+
+
 @screenassign_api.route("/test-window-action", methods=["POST"])
 def test_window_action():
     """Perform a one-shot native operation without creating a layout rule."""
