@@ -23,10 +23,12 @@ LOG_FILE = os.path.join(
 
 # Configure logging
 _stderr_utf8 = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+_console_handler = logging.StreamHandler(_stderr_utf8)
+_console_handler.setLevel(logging.WARNING)
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s [%(name)s] [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler(_stderr_utf8)],
+    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), _console_handler],
 )
 api_logger = logging.getLogger("ScreenAssign.API")
 
